@@ -1,23 +1,23 @@
 // src/app/roof-calculator/page.tsx
 // Main roof calculator page with integrated components
 
-'use client'
+"use client";
 
-import React, { useState, useCallback } from 'react'
-import { 
-  AddressSearch, 
-  MapContainer, 
-  RoofAreaDisplay, 
-  EditControls 
-} from '@/components/features/quote-calculator'
-import { Card, Button, Alert } from '@/components/ui'
-import { SearchAddress, RoofPolygon } from '@/types'
-import { 
-  HomeIcon, 
-  MapIcon, 
+import React, { useState, useCallback } from "react";
+import {
+  AddressSearch,
+  MapContainer,
+  RoofAreaDisplay,
+  EditControls,
+} from "@/components/features/quote-calculator";
+import { Card, Button, Alert } from "@/components/ui";
+import { SearchAddress, RoofPolygon } from "@/types";
+import {
+  HomeIcon,
+  MapIcon,
   CalculatorIcon,
-  InformationCircleIcon 
-} from '@heroicons/react/24/outline'
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 /**
  * Main roof calculator page
@@ -25,57 +25,68 @@ import {
  */
 export default function QuoteCalculatorPage() {
   // State management
-  const [selectedAddress, setSelectedAddress] = useState<SearchAddress | null>(null)
-  const [roofPolygons, setRoofPolygons] = useState<RoofPolygon[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [currentStep, setCurrentStep] = useState<'address' | 'drawing' | 'results'>('address')
-  const [error, setError] = useState<string | null>(null)
+  const [selectedAddress, setSelectedAddress] = useState<SearchAddress | null>(
+    null
+  );
+  const [roofPolygons, setRoofPolygons] = useState<RoofPolygon[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState<
+    "address" | "drawing" | "results"
+  >("address");
+  const [error, setError] = useState<string | null>(null);
 
   // Handle address selection
   const handleAddressSelected = useCallback((address: SearchAddress) => {
-    setSelectedAddress(address)
-    setCurrentStep('drawing')
-    setError(null)
+    setSelectedAddress(address);
+    setCurrentStep("drawing");
+    setError(null);
     // Clear previous calculations
-    setRoofPolygons([])
-  }, [])
+    setRoofPolygons([]);
+  }, []);
 
   // Handle area calculations from map
   const handleAreaCalculated = useCallback((polygons: RoofPolygon[]) => {
-    setRoofPolygons(polygons)
+    setRoofPolygons(polygons);
     if (polygons.length > 0) {
-      setCurrentStep('results')
+      setCurrentStep("results");
     }
-  }, [])
+  }, []);
 
   // Handle manual area updates
-  const handleManualAreaUpdate = useCallback((polygonId: string, newArea: number) => {
-    setRoofPolygons(prev => prev.map(polygon => {
-      if (polygon.id === polygonId) {
-        return {
-          ...polygon,
-          area: {
-            ...polygon.area,
-            squareFeet: newArea,
-            squareMeters: newArea / 10.7639,
-            formatted: newArea.toFixed(2)
+  const handleManualAreaUpdate = useCallback(
+    (polygonId: string, newArea: number) => {
+      setRoofPolygons((prev) =>
+        prev.map((polygon) => {
+          if (polygon.id === polygonId) {
+            return {
+              ...polygon,
+              area: {
+                ...polygon.area,
+                squareFeet: newArea,
+                squareMeters: newArea / 10.7639,
+                formatted: newArea.toFixed(2),
+              },
+            };
           }
-        }
-      }
-      return polygon
-    }))
-  }, [])
+          return polygon;
+        })
+      );
+    },
+    []
+  );
 
   // Handle polygon deletion
   const handleDeletePolygon = useCallback((polygonId: string) => {
-    setRoofPolygons(prev => prev.filter(polygon => polygon.id !== polygonId))
-  }, [])
+    setRoofPolygons((prev) =>
+      prev.filter((polygon) => polygon.id !== polygonId)
+    );
+  }, []);
 
   // Handle clear all
   const handleClearAll = useCallback(() => {
-    setRoofPolygons([])
-    setCurrentStep('drawing')
-  }, [])
+    setRoofPolygons([]);
+    setCurrentStep("drawing");
+  }, []);
 
   // Handle export data
   // const handleExportData = useCallback(() => {
@@ -93,9 +104,9 @@ export default function QuoteCalculatorPage() {
 
   //   const dataStr = JSON.stringify(exportData, null, 2)
   //   const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
-    
+
   //   const exportFileDefaultName = `roof-calculation-${new Date().toISOString().split('T')[0]}.json`
-    
+
   //   const linkElement = document.createElement('a')
   //   linkElement.setAttribute('href', dataUri)
   //   linkElement.setAttribute('download', exportFileDefaultName)
@@ -108,45 +119,48 @@ export default function QuoteCalculatorPage() {
   // }, [])
 
   // Handle share results
-//   const handleShareResults = useCallback(async () => {
-//     const totalArea = roofPolygons.reduce((sum, roof) => sum + roof.area.squareFeet, 0)
-//     const shareText = `Roof Area Calculation Results:
-// Address: ${selectedAddress?.address || 'Unknown'}
-// Total Roof Area: ${totalArea.toFixed(2)} sq ft
-// Roof Sections: ${roofPolygons.length}
-// Calculated on: ${new Date().toLocaleDateString()}`
+  //   const handleShareResults = useCallback(async () => {
+  //     const totalArea = roofPolygons.reduce((sum, roof) => sum + roof.area.squareFeet, 0)
+  //     const shareText = `Roof Area Calculation Results:
+  // Address: ${selectedAddress?.address || 'Unknown'}
+  // Total Roof Area: ${totalArea.toFixed(2)} sq ft
+  // Roof Sections: ${roofPolygons.length}
+  // Calculated on: ${new Date().toLocaleDateString()}`
 
-//     if (navigator.share) {
-//       try {
-//         await navigator.share({
-//           title: 'Roof Area Calculator Results',
-//           text: shareText,
-//           url: window.location.href
-//         })
-//       } catch (err) {
-//         console.log('Share cancelled or failed')
-//       }
-//     } else {
-//       // Fallback to clipboard
-//       try {
-//         await navigator.clipboard.writeText(shareText)
-//         alert('Results copied to clipboard!')
-//       } catch (err) {
-//         console.error('Failed to copy to clipboard:', err)
-//       }
-//     }
-//   }, [selectedAddress, roofPolygons])
+  //     if (navigator.share) {
+  //       try {
+  //         await navigator.share({
+  //           title: 'Roof Area Calculator Results',
+  //           text: shareText,
+  //           url: window.location.href
+  //         })
+  //       } catch (err) {
+  //         console.log('Share cancelled or failed')
+  //       }
+  //     } else {
+  //       // Fallback to clipboard
+  //       try {
+  //         await navigator.clipboard.writeText(shareText)
+  //         alert('Results copied to clipboard!')
+  //       } catch (err) {
+  //         console.error('Failed to copy to clipboard:', err)
+  //       }
+  //     }
+  //   }, [selectedAddress, roofPolygons])
 
   // Handle start over
   const handleStartOver = useCallback(() => {
-    setSelectedAddress(null)
-    setRoofPolygons([])
-    setCurrentStep('address')
-    setError(null)
-  }, [])
+    setSelectedAddress(null);
+    setRoofPolygons([]);
+    setCurrentStep("address");
+    setError(null);
+  }, []);
 
-  const totalArea = roofPolygons.reduce((sum, roof) => sum + roof.area.squareFeet, 0)
-
+  const totalArea = roofPolygons.reduce(
+    (sum, roof) => sum + roof.area.squareFeet,
+    0
+  );
+  console.log("roof polygon", roofPolygons);
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -164,19 +178,19 @@ export default function QuoteCalculatorPage() {
                 </p>
               </div>
             </div>
-            
-      {selectedAddress && (
-        <Button
-          variant="outline"
-          onClick={handleStartOver}
-          className="hidden sm:flex"
-        >
-          Start Over
-        </Button>
-      )}
-    </div>
-  </div>
-</div>
+
+            {selectedAddress && (
+              <Button
+                variant="outline"
+                onClick={handleStartOver}
+                className="hidden sm:flex"
+              >
+                Start Over
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Progress Steps */}
       <div className="bg-white border-b">
@@ -184,14 +198,24 @@ export default function QuoteCalculatorPage() {
           <div className="flex items-center py-4">
             <div className="flex items-center space-x-4">
               {/* Step 1: Address */}
-              <div className={`flex items-center ${
-                currentStep === 'address' ? 'text-blue-600' : 
-                selectedAddress ? 'text-green-600' : 'text-gray-400'
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  currentStep === 'address' ? 'bg-blue-100 text-blue-600' :
-                  selectedAddress ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-                }`}>
+              <div
+                className={`flex items-center ${
+                  currentStep === "address"
+                    ? "text-blue-600"
+                    : selectedAddress
+                    ? "text-green-600"
+                    : "text-gray-400"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    currentStep === "address"
+                      ? "bg-blue-100 text-blue-600"
+                      : selectedAddress
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                >
                   1
                 </div>
                 <span className="ml-2 text-sm font-medium">Select Address</span>
@@ -200,14 +224,24 @@ export default function QuoteCalculatorPage() {
               <div className="h-px w-8 bg-gray-300"></div>
 
               {/* Step 2: Drawing */}
-              <div className={`flex items-center ${
-                currentStep === 'drawing' ? 'text-blue-600' : 
-                totalArea > 0 ? 'text-green-600' : 'text-gray-400'
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  currentStep === 'drawing' ? 'bg-blue-100 text-blue-600' :
-                  totalArea > 0 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-                }`}>
+              <div
+                className={`flex items-center ${
+                  currentStep === "drawing"
+                    ? "text-blue-600"
+                    : totalArea > 0
+                    ? "text-green-600"
+                    : "text-gray-400"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    currentStep === "drawing"
+                      ? "bg-blue-100 text-blue-600"
+                      : totalArea > 0
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                >
                   2
                 </div>
                 <span className="ml-2 text-sm font-medium">Draw Roof</span>
@@ -216,12 +250,18 @@ export default function QuoteCalculatorPage() {
               <div className="h-px w-8 bg-gray-300"></div>
 
               {/* Step 3: Results */}
-              <div className={`flex items-center ${
-                currentStep === 'results' ? 'text-blue-600' : 'text-gray-400'
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  currentStep === 'results' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
-                }`}>
+              <div
+                className={`flex items-center ${
+                  currentStep === "results" ? "text-blue-600" : "text-gray-400"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    currentStep === "results"
+                      ? "bg-blue-100 text-blue-600"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                >
                   3
                 </div>
                 <span className="ml-2 text-sm font-medium">View Results</span>
@@ -263,8 +303,12 @@ export default function QuoteCalculatorPage() {
               <Card className="p-4 bg-blue-50 border-blue-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium text-blue-900">Selected Address</h3>
-                    <p className="text-sm text-blue-700">{selectedAddress.address}</p>
+                    <h3 className="font-medium text-blue-900">
+                      Selected Address
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      {selectedAddress.address}
+                    </p>
                   </div>
                   <Button
                     size="sm"
@@ -305,8 +349,8 @@ export default function QuoteCalculatorPage() {
                     </h2>
                   </div>
                   <p className="text-sm text-gray-600 mb-4">
-                    The building should be automatically detected. Use the drawing tools 
-                    to adjust or add additional roof sections.
+                    The building should be automatically detected. Use the
+                    drawing tools to adjust or add additional roof sections.
                   </p>
                 </Card>
 
@@ -368,31 +412,32 @@ export default function QuoteCalculatorPage() {
                   <div>
                     <h4 className="font-medium mb-2">1. Search Address</h4>
                     <p>
-                      Enter your complete address in the search box. Select from 
+                      Enter your complete address in the search box. Select from
                       the dropdown suggestions for best results.
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-2">2. Draw or Adjust</h4>
                     <p>
-                      The system will try to detect your building automatically. 
+                      The system will try to detect your building automatically.
                       Use drawing tools to refine or add roof sections.
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-2">3. Review Results</h4>
                     <p>
-                      View calculated areas, solar estimates, and export your 
+                      View calculated areas, solar estimates, and export your
                       results for future reference or sharing.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-700">
-                    <strong>Accuracy Note:</strong> This tool provides estimates based on satellite imagery. 
-                    For precise measurements needed for solar installations or construction, 
-                    please consult with professionals who can perform on-site assessments.
+                    <strong>Accuracy Note:</strong> This tool provides estimates
+                    based on satellite imagery. For precise measurements needed
+                    for solar installations or construction, please consult with
+                    professionals who can perform on-site assessments.
                   </p>
                 </div>
               </div>
@@ -401,5 +446,5 @@ export default function QuoteCalculatorPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
