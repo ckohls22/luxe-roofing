@@ -274,7 +274,7 @@ export default function QuoteCalculatorPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <Alert variant="error" title="Error" className="mb-6">
+          <Alert variant="destructive" title="Error" className="mb-6">
             {error}
           </Alert>
         )}
