@@ -2,7 +2,7 @@
 // Loading component for roof calculator page
 
 import React from 'react'
-import { Card } from '@/components/ui'
+import { Card } from '@/components/ui';
 import { HomeIcon, MapIcon, CalculatorIcon } from '@heroicons/react/24/outline'
 
 /**

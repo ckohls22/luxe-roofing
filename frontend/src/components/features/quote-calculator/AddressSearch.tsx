@@ -85,7 +85,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
 
   if (googleError) {
     return (
-      <Alert variant="error" title="Address Search Unavailable">
+      <Alert variant="destructive" title="Address Search Unavailable">
         {googleError}. Please check your internet connection and try again.
       </Alert>
     )
@@ -101,7 +101,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
           value={inputValue}
           onChange={handleInputChange}
           disabled={!googleLoaded || isLoading}
-          error={searchError || undefined}
+          // error={searchError || undefined}
           className="pr-20"
           aria-label="Address search input"
         />

@@ -191,7 +191,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
   if (error || localError) {
     return (
-      <Alert variant="error" title="Map Error">
+      <Alert variant='destructive' title="Map Error">
         {error || localError}
       </Alert>
     )

@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/sidebar"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
-import { Input } from "@/components/ui/input"
+import { Input } from "@/components/ui"
 
 // Sample data
 const monthlyLeadsData = [
