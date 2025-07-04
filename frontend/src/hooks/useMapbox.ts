@@ -2,7 +2,7 @@
 // Custom hook for managing Mapbox map instance and lifecycle
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import mapboxgl from 'mapbox-gl'
+import mapboxgl, { Map as MapboxMap } from 'mapbox-gl'; // Mapbox GL JS
 import { UseMapboxReturn, MapboxConfig } from '@/types'
 import { initializeMapbox, createMapOptions } from "@/lib/mapbox/config"
 import { addBuildingLayer } from '@/lib/mapbox/building-detection'
@@ -15,7 +15,8 @@ export const useMapbox = (
   containerRef: React.RefObject<HTMLDivElement | null>,
   config?: Partial<MapboxConfig>
 ): UseMapboxReturn => {
-  const mapRef = useRef<mapboxgl.Map | null>(null)
+  const mapRef = useRef<MapboxMap | null>(null)
+  // const map : MapboxMap | null = null // Explicitly typed as MapboxMap | null
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,6 +54,7 @@ export const useMapbox = (
   }, [containerRef, config])
 
   useEffect(() => {
+    console.log('[Mapbox] Initializing map...')
     initializeMap()
 
     // Cleanup on unmount
@@ -66,7 +68,7 @@ export const useMapbox = (
   }, [initializeMap])
 
   return {
-    map: mapRef.current,
+    mapRef,
     isLoaded,
     error
   }

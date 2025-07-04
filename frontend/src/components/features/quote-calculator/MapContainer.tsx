@@ -1,8 +1,8 @@
 // src/components/features/roof-calculator/MapContainer.tsx
 // Main map container component with drawing capabilities
 
-import React, { useRef, useEffect, useState } from 'react'
-import mapboxgl from 'mapbox-gl'
+import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react'
+import mapboxgl,{Map as MapboxMap} from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import centerOfMass from '@turf/center-of-mass'
 import area from '@turf/area'
@@ -16,24 +16,28 @@ import { Alert, LoadingSpinner } from '@/components/ui'
  * Map container component with drawing and building detection capabilities
  * Handles all map-related interactions and calculations
  */
-export const MapContainer: React.FC<MapContainerProps> = ({
+export function MapContainer({
   onAreaCalculated,
   selectedAddress,
   isLoading,
-  onLoadingChange
-}) => {
+  onLoadingChange,
+  // selectedPolygonIndex,
+  roofPolygons
+  
+}: MapContainerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const drawRef = useRef<MapboxDraw | null>(null)
   const labelsRef = useRef<mapboxgl.Marker[]>([])
   
-  const { map, isLoaded, error } = useMapbox(mapContainerRef)
+  const { mapRef, isLoaded, error } = useMapbox(mapContainerRef)
   const [localError, setLocalError] = useState<string | null>(null)
 
   // Initialize drawing controls
   useEffect(() => {
-    if (!map || !isLoaded || drawRef.current) return
+    if (!mapRef.current || !isLoaded || drawRef.current) return
 
     try {
+      const map = mapRef.current
       const draw = createDrawInstance()
       drawRef.current = draw
       map.addControl(draw, 'top-right')
@@ -53,17 +57,17 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       console.error('Failed to initialize drawing controls:', err)
       setLocalError('Failed to initialize drawing tools')
     }
-  }, [map, isLoaded])
+  }, [mapRef, isLoaded])
 
   // Handle address selection and building detection
   useEffect(() => {
-    if (!map || !selectedAddress || !drawRef.current) return
-
+    if (!mapRef.current || !selectedAddress || !drawRef.current || !isLoaded) return
+    console.log('Address effect triggered:', selectedAddress)
     detectAndDrawBuilding(selectedAddress.coordinates)
-  }, [map, selectedAddress])
+  }, [mapRef, isLoaded, selectedAddress?.coordinates])
 
   // Utility: Wait for a source to be loaded
-  const waitForSourceLoaded = (map: mapboxgl.Map, sourceId: string): Promise<void> => {
+  const waitForSourceLoaded = (map: MapboxMap, sourceId: string): Promise<void> => {
     return new Promise<void>(resolve => {
       if (map.isSourceLoaded(sourceId)) {
         resolve();
@@ -83,6 +87,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
    * Detect building at coordinates and add to map
    */
   const detectAndDrawBuilding = async (coordinates: [number, number]) => {
+    const map = mapRef.current
     if (!map || !drawRef.current) return
 
     onLoadingChange(true)
@@ -126,6 +131,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
    * Update roof area calculations and labels
    */
   const updateRoofCalculations = () => {
+    const map = mapRef.current
     if (!drawRef.current || !map) return
 
     const features = drawRef.current.getAll().features
@@ -167,11 +173,64 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           formatted: areaInSquareFeet.toFixed(2)
         },
         label: labelDiv.textContent,
-        centerPoint: centerCoords
+        centerPoint: centerCoords,
+        slope: 'medium'
       }
     })
 
     onAreaCalculated(roofPolygons)
+  }
+
+  // Expose highlightAndEditPolygonByIndex to parent
+  // useImperativeHandle(ref, () => ({
+  //   highlightAndEditPolygonByIndex: (index: number) => {
+  //     if (!drawRef.current || !map) return;
+  //     highlightAndEditPolygon(drawRef.current, map, roofPolygons ?? [], index);
+  //   }
+  // }));
+
+  /**
+   * Highlight and enable editing for the selected polygon
+   */
+  const highlightAndEditPolygon = (draw: MapboxDraw, map: mapboxgl.Map, roofPolygons: RoofPolygon[], selectedPolygonIndex: number | null) => {
+
+    console.log("Highlighting polygon", selectedPolygonIndex, roofPolygons);
+    if (!draw || !map || !roofPolygons || typeof selectedPolygonIndex !== 'number' || selectedPolygonIndex < 0 || selectedPolygonIndex >= roofPolygons.length) return;
+    const features = draw.getAll().features;
+    if (!features.length) return;
+
+    const selectedRoof = roofPolygons[selectedPolygonIndex];
+    if (!selectedRoof) return;
+    const selectedFeature = features.find(f => String(f.id) === String(selectedRoof.id));
+    if (!selectedFeature) return;
+
+    // Set all polygons to gray, then selected to blue
+    features.forEach(f => {
+      if (f.id !== undefined) draw.setFeatureProperty(String(f.id), 'user_color', 'gray');
+    });
+    if (selectedFeature.id !== undefined) draw.setFeatureProperty(String(selectedFeature.id), 'user_color', 'blue');
+
+    // Switch to direct_select mode for the selected polygon
+    // @ts-ignore
+    draw.changeMode('direct_select', { featureId: String(selectedFeature.id) });
+
+    // Custom style for polygons based on user_color
+    if (map.getLayer('gl-draw-polygon-fill-inactive.cold')) {
+      map.setPaintProperty('gl-draw-polygon-fill-inactive.cold', 'fill-color', [
+        'case',
+        ['==', ['get', 'user_color'], 'blue'], '#2563eb', // blue-600
+        ['==', ['get', 'user_color'], 'gray'], '#d1d5db', // gray-300
+        '#d1d5db'
+      ]);
+    }
+    if (map.getLayer('gl-draw-polygon-fill-active.cold')) {
+      map.setPaintProperty('gl-draw-polygon-fill-active.cold', 'fill-color', [
+        'case',
+        ['==', ['get', 'user_color'], 'blue'], '#2563eb',
+        ['==', ['get', 'user_color'], 'gray'], '#d1d5db',
+        '#2563eb'
+      ]);
+    }
   }
 
   /**
@@ -198,8 +257,8 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }
 
   return (
-    <div className="relative w-full h-[70vh] rounded-lg overflow-hidden border border-gray-200 shadow-md">
-      <div ref={mapContainerRef as React.RefObject<HTMLDivElement>} className="w-full h-full" />
+    <div className={`relative max-w-[800px] min-w-[420px] h-[500px] rounded-lg border border-gray-200 shadow-md ${selectedAddress ? 'w-[420px]' : 'w-[800px] '}`}>
+      <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* Loading overlay */}
       {(isLoading || !isLoaded) && (

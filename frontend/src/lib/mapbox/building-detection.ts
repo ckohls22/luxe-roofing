@@ -26,11 +26,11 @@ export const addBuildingLayer = (map: mapboxgl.Map): void => {
   // Remove existing layer and source if they exist
   if (map.getLayer(BUILDING_DETECTION_CONFIG.layerId)) {
     map.removeLayer(BUILDING_DETECTION_CONFIG.layerId);
-    console.log("[Mapbox] Removed existing building layer");
+    // console.log("[Mapbox] Removed existing building layer");
   }
   if (map.getSource(BUILDING_DETECTION_CONFIG.sourceId)) {
     map.removeSource(BUILDING_DETECTION_CONFIG.sourceId);
-    console.log("[Mapbox] Removed existing building source");
+    // console.log("[Mapbox] Removed existing building source");
   }
 
   // Add building source
@@ -38,7 +38,7 @@ export const addBuildingLayer = (map: mapboxgl.Map): void => {
     type: "vector",
     url: "mapbox://mapbox.mapbox-streets-v8",
   });
-  console.log("[Mapbox] Added building source");
+  // console.log("[Mapbox] Added building source");
 
   // Add building layer (invisible but queryable)
   map.addLayer({
@@ -51,7 +51,7 @@ export const addBuildingLayer = (map: mapboxgl.Map): void => {
       "fill-opacity": 0, // Invisible layer for querying only
     },
   });
-  console.log("[Mapbox] Added building layer");
+  // console.log("[Mapbox] Added building layer");
 };
 
 /**
@@ -84,9 +84,9 @@ export const detectBuildingAtLocation = async (
           layers: [BUILDING_DETECTION_CONFIG.layerId],
         }
       ) as BuildingFeature[];
-      console.log("[Mapbox] Queried features:", features);
+      // console.log("[Mapbox] Queried features:", features);
       if (features.length === 0) {
-        console.log("[Mapbox] No building features found in query box");
+        // console.log("[Mapbox] No building features found in query box");
         resolve(null);
         return;
       }
@@ -97,7 +97,7 @@ export const detectBuildingAtLocation = async (
           booleanPointInPolygon(point, feature.geometry as any)
       );
       if (containingBuilding) {
-        console.log("[Mapbox] Found containing building:", containingBuilding);
+        // console.log("[Mapbox] Found containing building:", containingBuilding);
         resolve(containingBuilding);
         return;
       }
@@ -126,15 +126,15 @@ export const detectBuildingAtLocation = async (
         }
       }
       if (nearestBuilding) {
-        console.log("[Mapbox] Found nearest building:", nearestBuilding);
+        // console.log("[Mapbox] Found nearest building:", nearestBuilding);
         // Fit map to building when found
         try {
           fitMapToBuilding(map, nearestBuilding);
         } catch (e) {
-          console.warn("[Mapbox] fitMapToBuilding error:", e);
+          // console.warn("[Mapbox] fitMapToBuilding error:", e);
         }
       } else {
-        console.log("[Mapbox] No nearby building found within max distance");
+        // console.log("[Mapbox] No nearby building found within max distance");
       }
       resolve(nearestBuilding);
       // Clean up event listeners
@@ -145,7 +145,7 @@ export const detectBuildingAtLocation = async (
     // Check source and detect building on idle
     const checkSource = () => {
       if (map.isSourceLoaded(BUILDING_DETECTION_CONFIG.sourceId)) {
-        console.log("[Mapbox] Source loaded");
+        // console.log("[Mapbox] Source loaded");
         checkAndDetect();
       }
     };

@@ -3,148 +3,149 @@
 // npm install mapbox-gl @mapbox/mapbox-gl-draw @turf/area @turf/boolean-point-in-polygon @turf/helpers @turf/center-of-mass
 // npm install --save-dev @types/mapbox-gl @types/mapbox__mapbox-gl-draw
 
-'use client';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import Script from 'next/script';
-import mapboxgl, { Map as MapboxMap } from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import area from '@turf/area';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import distance from '@turf/distance';
-import { point as turfPoint, polygon as turfPolygon } from '@turf/helpers';
-import centerOfMass from '@turf/center-of-mass';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+'use client'; // Next.js directive for client-side rendering
+import { useEffect, useRef, useState, useCallback } from 'react'; // React hooks
+import Script from 'next/script'; // Next.js component for loading external scripts
+import mapboxgl, { Map as MapboxMap } from 'mapbox-gl'; // Mapbox GL JS
+import MapboxDraw from '@mapbox/mapbox-gl-draw'; // Mapbox Draw plugin
+import area from '@turf/area'; // Turf.js for area calculation
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon'; // Turf.js for point-in-polygon
+import distance from '@turf/distance'; // Turf.js for distance calculation
+import { point as turfPoint, polygon as turfPolygon } from '@turf/helpers'; // Turf.js helpers
+import centerOfMass from '@turf/center-of-mass'; // Turf.js for center of mass
+import 'mapbox-gl/dist/mapbox-gl.css'; // Mapbox GL CSS
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'; // Mapbox Draw CSS
 
 // Set your Mapbox access token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-type PolygonFeature = GeoJSON.Feature<GeoJSON.Polygon>;
+type PolygonFeature = GeoJSON.Feature<GeoJSON.Polygon>; // Type alias for polygon features
 
 declare global {
   interface Window {
-    google: any;
+    google: any; // Allow access to Google Maps JS API
   }
 }
 
 export default function QuoteCalculator() {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const addressInput = useRef<HTMLInputElement>(null);
-  const mapRef = useRef<MapboxMap>(undefined);
-  const drawRef = useRef<MapboxDraw>(undefined);
-  const labelRef = useRef<mapboxgl.Marker | null>(null);
+  const mapContainer = useRef<HTMLDivElement>(null); // Ref for the map container div
+  const addressInput = useRef<HTMLInputElement>(null); // Ref for the address input
+  const mapRef = useRef<MapboxMap>(undefined); // Ref for the Mapbox map instance
+  const drawRef = useRef<MapboxDraw>(undefined); // Ref for the Mapbox Draw instance
+  const labelRef = useRef<mapboxgl.Marker | null>(null); // Ref for the roof label marker
 
-  const [featureId, setFeatureId] = useState<string | null>(null);
-  const [roofArea, setRoofArea] = useState<string>('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [featureId, setFeatureId] = useState<string | null>(null); // State for the current polygon feature id
+  const [roofArea, setRoofArea] = useState<string>(''); // State for the calculated roof area
+  const [isEditing, setIsEditing] = useState(false); // State for edit mode
+  const [isLoading, setIsLoading] = useState(false); // State for loading indicator
 
+  // Callback to update the roof area and label when polygons change
   const updateRoofArea = useCallback(() => {
-    const draw = drawRef.current;
-    if (!draw) return;
+    const draw = drawRef.current; // Get the draw instance
+    if (!draw) return; // If not initialized, exit
 
-    const all = draw.getAll().features;
+    const all = draw.getAll().features; // Get all drawn features
     if (all.length === 0) {
-      setFeatureId(null);
-      setRoofArea('');
+      setFeatureId(null); // No features, clear feature id
+      setRoofArea(''); // Clear area
       if (labelRef.current) {
-        labelRef.current.remove();
+        labelRef.current.remove(); // Remove label marker
         labelRef.current = null;
       }
       return;
     }
 
-    const poly = all[0] as PolygonFeature;
-    setFeatureId(poly.id as string);
-    const sqm = area(poly.geometry);
-    const sqft = sqm * 10.7639;
-    setRoofArea(sqft.toFixed(2));
+    const poly = all[0] as PolygonFeature; // Assume first feature is the roof
+    setFeatureId(poly.id as string); // Store its id
+    const sqm = area(poly.geometry); // Calculate area in square meters
+    const sqft = sqm * 10.7639; // Convert to square feet
+    setRoofArea(sqft.toFixed(2)); // Store area as string
   }, []);
 
   useEffect(() => {
-    if (mapRef.current || !mapContainer.current) return;
+    if (mapRef.current || !mapContainer.current) return; // Only run once
 
     const map = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-streets-v11',
-      center: [-77.0365, 38.8977],
-      zoom: 16,
-      maxZoom: 22,
-      interactive: true, // keep map interactive for drawing
-      scrollZoom: false,
-      boxZoom: false,
-      dragRotate: false,
-      // dragPan: false,
-      keyboard: false,
-      doubleClickZoom: false,
-      touchZoomRotate: false
+      container: mapContainer.current, // DOM element for map
+      style: 'mapbox://styles/mapbox/satellite-streets-v11', // Map style
+      center: [-77.0365, 38.8977], // Initial center (White House)
+      zoom: 16, // Initial zoom
+      maxZoom: 22, // Max zoom
+      interactive: true, // Enable map interaction
+      scrollZoom: false, // Disable scroll zoom
+      boxZoom: false, // Disable box zoom
+      dragRotate: false, // Disable drag rotate
+      // dragPan: false, // (optional) disable drag pan
+      keyboard: false, // Disable keyboard controls
+      doubleClickZoom: false, // Disable double click zoom
+      touchZoomRotate: false // Disable touch zoom/rotate
     });
 
     map.on('load', () => {
-      if (map.getLayer('custom-buildings')) map.removeLayer('custom-buildings');
-      if (map.getSource('custom-buildings')) map.removeSource('custom-buildings');
+      if (map.getLayer('custom-buildings')) map.removeLayer('custom-buildings'); // Remove old building layer
+      if (map.getSource('custom-buildings')) map.removeSource('custom-buildings'); // Remove old building source
 
       map.addSource('custom-buildings', {
-        type: 'vector',
-        url: 'mapbox://mapbox.mapbox-streets-v8'
+        type: 'vector', // Vector source
+        url: 'mapbox://mapbox.mapbox-streets-v8' // Mapbox vector tiles
       });
 
       map.addLayer({
-        id: 'custom-buildings',
-        type: 'fill',
-        source: 'custom-buildings',
-        'source-layer': 'building',
+        id: 'custom-buildings', // Layer id
+        type: 'fill', // Fill polygons
+        source: 'custom-buildings', // Source id
+        'source-layer': 'building', // Source layer
         paint: {
-          'fill-color': '#000000',
-          'fill-opacity': 0
+          'fill-color': '#000000', // Black fill (invisible)
+          'fill-opacity': 0 // Fully transparent
         }
       });
     });
 
     const draw = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: { polygon: true, trash: true },
+      displayControlsDefault: true, // Hide default controls
+      controls: { polygon: true, trash: true }, // Show polygon and trash
       styles: [
         {
-          'id': 'gl-draw-polygon-fill',
+          'id': 'gl-draw-polygon-fill', // Polygon fill style
           'type': 'fill',
           'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
           'paint': {
-            'fill-color': '#FFAB91',
-            'fill-outline-color': '#FF8A65',
-            'fill-opacity': 0.5
+            'fill-color': '#FFAB91', // Orange fill
+            'fill-outline-color': '#FF8A65', // Orange outline
+            'fill-opacity': 0.5 // 50% opacity
           }
         },
         {
-          'id': 'gl-draw-polygon-stroke',
+          'id': 'gl-draw-polygon-stroke', // Polygon stroke style
           'type': 'line',
           'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
           'paint': {
-            'line-color': '#FF5722',
-            'line-width': 3
+            'line-color': '#FF5722', // Deep orange stroke
+            'line-width': 3 // 3px width
           }
         },
         {
-          'id': 'gl-draw-polygon-vertex',
+          'id': 'gl-draw-polygon-vertex', // Vertex style
           'type': 'circle',
           'filter': ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
           'paint': {
-            'circle-radius': 5,
-            'circle-color': '#FFF',
-            'circle-stroke-color': '#FF5722',
-            'circle-stroke-width': 2
+            'circle-radius': 5, // 5px radius
+            'circle-color': '#FFF', // White vertex
+            'circle-stroke-color': '#FF5722', // Orange border
+            'circle-stroke-width': 2 // 2px border
           }
         }
       ]
     });
 
-    mapRef.current = map;
-    drawRef.current = draw;
-    map.addControl(draw, 'top-right');
+    mapRef.current = map; // Store map instance
+    drawRef.current = draw; // Store draw instance
+    map.addControl(draw, 'top-right'); // Add draw controls
 
-    map.on('draw.create', updateRoofArea);
-    map.on('draw.update', updateRoofArea);
-    map.on('draw.delete', updateRoofArea);
+    map.on('draw.create', updateRoofArea); // Update area on create
+    map.on('draw.update', updateRoofArea); // Update area on update
+    map.on('draw.delete', updateRoofArea); // Update area on delete
 
     // Add labels for all drawn polygons
     map.on('draw.create', () => {
@@ -213,26 +214,26 @@ export default function QuoteCalculator() {
     });
 
     return () => {
-      map.remove();
+      map.remove(); // Clean up map on unmount
     };
   }, [updateRoofArea]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.google || !addressInput.current) return;
+    if (typeof window === 'undefined' || !window.google || !addressInput.current) return; // Wait for Google Maps
 
     const map = mapRef.current;
     const draw = drawRef.current;
     if (!map || !draw) return;
 
     const autocomplete = new window.google.maps.places.Autocomplete(addressInput.current, {
-      types: ['address'],
-      componentRestrictions: { country: 'us' },
-      fields: ['geometry', 'formatted_address']
+      types: ['address'], // Only addresses
+      componentRestrictions: { country: 'us' }, // Restrict to US
+      fields: ['geometry', 'formatted_address'] // Only need geometry and address
     });
 
     const handlePlaceChange = () => {
-      setIsLoading(true);
-      const place = autocomplete.getPlace();
+      setIsLoading(true); // Show loading
+      const place = autocomplete.getPlace(); // Get selected place
 
       if (!place.geometry?.location) {
         console.warn('Selected place has no geometry');
@@ -240,32 +241,32 @@ export default function QuoteCalculator() {
         return;
       }
 
-      const lat = place.geometry.location.lat();
-      const lng = place.geometry.location.lng();
-      const center: [number, number] = [lng, lat];
+      const lat = place.geometry.location.lat(); // Get latitude
+      const lng = place.geometry.location.lng(); // Get longitude
+      const center: [number, number] = [lng, lat]; // Center as [lng, lat]
 
-      draw.deleteAll();
-      setIsEditing(false);
+      draw.deleteAll(); // Remove previous drawings
+      setIsEditing(false); // Exit edit mode
       if (labelRef.current) {
-        labelRef.current.remove();
+        labelRef.current.remove(); // Remove label marker
         labelRef.current = null;
       }
 
       const detectBuilding = () => {
-        if (!map.getSource('custom-buildings') || !map.isSourceLoaded('custom-buildings')) return;
+        if (!map.getSource('custom-buildings') || !map.isSourceLoaded('custom-buildings')) return; // Wait for source
 
-        const pt = turfPoint(center);
-        const point = map.project(center);
-        const boxSize = 250;
+        const pt = turfPoint(center); // Turf point for center
+        const point = map.project(center); // Project to screen coords
+        const boxSize = 250; // Search box size in px
 
         const features = map.queryRenderedFeatures([
           [point.x - boxSize, point.y - boxSize],
           [point.x + boxSize, point.y + boxSize]
         ], {
           layers: ['custom-buildings']
-        }) as PolygonFeature[];
+        }) as PolygonFeature[]; // Query building polygons
 
-        let building = features.find(f => f.geometry?.type === 'Polygon' && booleanPointInPolygon(pt, f.geometry as any));
+        let building = features.find(f => f.geometry?.type === 'Polygon' && booleanPointInPolygon(pt, f.geometry as any)); // Find containing building
 
         if (!building && features.length > 0) {
           let minDist = Infinity;
@@ -287,8 +288,8 @@ export default function QuoteCalculator() {
         }
 
         if (building) {
-          draw.add(building);
-          updateRoofArea();
+          draw.add(building); // Add building polygon to draw
+          updateRoofArea(); // Update area
 
           // Fit map to building bounds with 20px margin
           if (building.geometry && building.geometry.type === 'Polygon') {
@@ -320,8 +321,8 @@ export default function QuoteCalculator() {
             .setLngLat(centerCoord as [number, number])
             .addTo(map);
 
-          setIsLoading(false);
-          map.off('idle', detectBuilding);
+          setIsLoading(false); // Hide loading
+          map.off('idle', detectBuilding); // Remove listeners
           map.off('sourcedata', checkSource);
         } else {
           setIsLoading(false);
@@ -336,34 +337,35 @@ export default function QuoteCalculator() {
       };
 
       const setupDetection = () => {
-        map.jumpTo({ center, zoom: 19 });
-        map.on('idle', detectBuilding);
-        map.on('sourcedata', checkSource);
+        map.jumpTo({ center, zoom: 19 }); // Move map to address
+        map.on('idle', detectBuilding); // Try detection on idle
+        map.on('sourcedata', checkSource); // Try detection on source load
       };
 
       if (map.loaded()) {
-        setupDetection();
+        setupDetection(); // If map loaded, start detection
       } else {
-        map.on('load', setupDetection);
+        map.on('load', setupDetection); // Else wait for load
       }
     };
 
-    autocomplete.addListener('place_changed', handlePlaceChange);
+    autocomplete.addListener('place_changed', handlePlaceChange); // Listen for address selection
 
     return () => {
-      window.google?.maps.event.clearInstanceListeners(autocomplete);
+      window.google?.maps.event.clearInstanceListeners(autocomplete); // Clean up listeners
     };
   }, [updateRoofArea]);
 
+  // Toggle edit mode for the drawn polygon
   const handleEditToggle = () => {
     const draw = drawRef.current;
     if (!draw || !featureId) return;
     if (isEditing) {
-      draw.changeMode('simple_select');
+      draw.changeMode('simple_select'); // Exit edit mode
     } else {
-      draw.changeMode('direct_select', { featureId });
+      draw.changeMode('direct_select', { featureId }); // Enter edit mode
     }
-    setIsEditing(!isEditing);
+    setIsEditing(!isEditing); // Toggle state
   };
 
   return (
