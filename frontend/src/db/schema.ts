@@ -1,12 +1,10 @@
 import {
   pgTable,
-  serial,
   varchar,
   text,
   timestamp,
   boolean,
   pgEnum,
-  integer,
   uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
@@ -63,6 +61,32 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const suppliers = pgTable("suppliers", {
+  id: uuid().defaultRandom().primaryKey(),
+  logoUrl: varchar("logo_url"),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  installation: text("installation"),
+  phone: varchar("phone", { length: 15 }),
+  email: varchar("email", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const materials = pgTable("materials", {
+  id: uuid().defaultRandom().primaryKey(),
+  supplierId: uuid("supplier_id")
+    .references(() => suppliers.id, { onDelete: "cascade" })
+    .notNull(),
+  materialImage: text("material_image"),
+  type: varchar("type", { length: 50 }),
+  warranty: varchar("warranty", { length: 100 }),
+  topFeatures: varchar("top_features", { length: 150 }),
+  showCase: text("show_case"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const adminRelations = relations(admin, ({ many }) => ({
   sessions: many(adminSessions),
@@ -85,3 +109,14 @@ export const passwordResetTokensRelations = relations(
     }),
   })
 );
+
+const suppliersRelations = relations(suppliers, ({ many }) => ({
+  materials: many(materials),
+}));
+// Define material -> supplier (many-to-one)
+export const materialRelations = relations(materials, ({ one }) => ({
+  supplier: one(suppliers, {
+    fields: [materials.supplierId],
+    references: [suppliers.id],
+  }), // each material belongs to one supplier
+}));

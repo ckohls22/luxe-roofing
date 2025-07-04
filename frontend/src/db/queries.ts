@@ -1,7 +1,14 @@
 import { db } from "./drizzle";
-import { admin, adminSessions, passwordResetTokens } from "./schema";
+import {
+  admin,
+  adminSessions,
+  passwordResetTokens,
+  suppliers,
+  materials,
+} from "./schema";
 import { eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { Material, Supplier } from "@/types/supplierAndMaterialTypes";
 
 // Admin authentication
 export async function authenticateAdmin(username: string, password: string) {
@@ -153,3 +160,45 @@ export async function markPasswordResetTokenAsUsed(token: string) {
     .set({ isUsed: true })
     .where(eq(passwordResetTokens.token, token));
 }
+
+// suppler and material queries
+export const createSupplier = async (
+  supplierData: Supplier
+): Promise<Supplier> => {
+  const [newSupplier] = await db
+    .insert(suppliers)
+    .values(supplierData)
+    .returning();
+  return newSupplier;
+};
+
+export const createMaterial = async (
+  materialData: Material
+): Promise<Material> => {
+  const [newMaterial] = await db
+    .insert(materials)
+    .values(materialData)
+    .returning();
+  return newMaterial;
+};
+
+export const getAllSuppliers = async (): Promise<Supplier[]> => {
+  return await db.select().from(suppliers);
+};
+
+export const getSupplierById = async (id: string): Promise<Supplier | null> => {
+  const [supplier] = await db
+    .select()
+    .from(suppliers)
+    .where(eq(suppliers.id, id));
+  return supplier || null;
+};
+
+export const getMaterialsBySupplier = async (
+  supplierId: string
+): Promise<Material[]> => {
+  return await db
+    .select()
+    .from(materials)
+    .where(eq(materials.supplierId, supplierId));
+};
