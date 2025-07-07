@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     const topFeatures = formData.get("topFeatures") as string;
     const showCase = formData.get("showCase") as File;
     const materialImageFile = formData.get("materialImage") as File;
+    console.log(formData);
 
     let materialImage = "";
     if (materialImageFile && materialImageFile.size > 0) {
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
     let showcaseImage = "";
     if (materialImageFile && materialImageFile.size > 0) {
-      materialImage = await uploadToCloudinary(materialImageFile);
+      materialImage = await uploadToCloudinary(showCase);
     }
 
     console.log(materialImage, showcaseImage);

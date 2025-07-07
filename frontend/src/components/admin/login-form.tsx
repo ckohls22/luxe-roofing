@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";

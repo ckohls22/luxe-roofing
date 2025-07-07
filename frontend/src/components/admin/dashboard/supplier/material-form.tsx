@@ -51,6 +51,10 @@ export function MaterialForm({
   const [materialPreview, setMaterialPreview] = useState<string | null>(null); // For image preview
   const [showcasePreview, setShowcasePreview] = useState<string | null>(null); // For image preview
 
+  const [materialImage, setMaterialImage] = useState<File | undefined>(
+    undefined
+  );
+  const [showCase, setShowCase] = useState<File | undefined>(undefined);
   const { addMaterial } = useMaterials(); // Assuming useSuppliers hook has addMaterial function
 
   const {
@@ -58,7 +62,6 @@ export function MaterialForm({
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<MaterialFormData>();
 
   const onSubmit = async (data: MaterialFormData) => {
@@ -71,9 +74,9 @@ export function MaterialForm({
       formData.append("type", data.type);
       formData.append("warranty", data.warranty);
       formData.append("topFeatures", data.topFeatures);
-      formData.append("materialImage", data.materialImage as File);
-      formData.append("showCase", data.showCase as File);
-      console.log(data.materialImage, data.showCase);
+      formData.append("materialImage", materialImage as File);
+      formData.append("showCase", showCase as File);
+      console.log(materialImage, showCase);
 
       const material = await addMaterial(formData);
       setIsSubmitting(false);
@@ -146,9 +149,9 @@ export function MaterialForm({
                   if (file) {
                     const fileUrl = URL.createObjectURL(file);
                     setMaterialPreview(fileUrl);
-                    setValue("materialImage", file);
+                    setMaterialImage(file);
                   } else {
-                    setValue("materialImage", undefined);
+                    setMaterialImage(undefined);
                   }
                 },
               })}
@@ -179,9 +182,9 @@ export function MaterialForm({
               if (file) {
                 const fileUrl = URL.createObjectURL(file);
                 setShowcasePreview(fileUrl);
-                setValue("showCase", file);
+                setShowCase(file);
               } else {
-                setValue("showCase", undefined);
+                setShowCase(undefined);
               }
             },
           })}
