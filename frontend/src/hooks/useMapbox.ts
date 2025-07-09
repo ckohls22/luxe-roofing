@@ -1,11 +1,11 @@
 // src/hooks/useMapbox.ts
 // Custom hook for managing Mapbox map instance and lifecycle
 
-import { useEffect, useRef, useState, useCallback } from 'react'
-import mapboxgl, { Map as MapboxMap } from 'mapbox-gl'; // Mapbox GL JS
-import { UseMapboxReturn, MapboxConfig } from '@/types'
-import { initializeMapbox, createMapOptions } from "@/lib/mapbox/config"
-import { addBuildingLayer } from '@/lib/mapbox/building-detection'
+import { useEffect, useRef, useState, useCallback } from "react";
+import mapboxgl, { Map as MapboxMap } from "mapbox-gl"; // Mapbox GL JS
+import { UseMapboxReturn, MapboxConfig } from "@/types";
+import { initializeMapbox, createMapOptions } from "@/lib/mapbox/config";
+import { addBuildingLayer } from "@/lib/mapbox/building-detection";
 
 /**
  * Custom hook for managing Mapbox map instance
@@ -15,61 +15,61 @@ export const useMapbox = (
   containerRef: React.RefObject<HTMLDivElement | null>,
   config?: Partial<MapboxConfig>
 ): UseMapboxReturn => {
-  const mapRef = useRef<MapboxMap | null>(null)
+  const mapRef = useRef<MapboxMap | null>(null);
   // const map : MapboxMap | null = null // Explicitly typed as MapboxMap | null
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const initializeMap = useCallback(() => {
-    if (!containerRef.current || mapRef.current) return
+    if (!containerRef.current || mapRef.current) return;
 
     try {
       // Initialize Mapbox access token
-      initializeMapbox()
+      initializeMapbox();
 
       // Create map instance
-      const mapOptions = createMapOptions(containerRef.current, config)
-      const map = new mapboxgl.Map(mapOptions)
+      const mapOptions = createMapOptions(containerRef.current, config);
+      const map = new mapboxgl.Map(mapOptions);
+      // Add default zoom-in / zoom-out buttons
+      map.addControl(new mapboxgl.NavigationControl(), "top-left");
 
       // Set up event listeners
-      map.on('load', () => {
-        addBuildingLayer(map)
-        setIsLoaded(true)
-        setError(null)
-      })
+      map.on("load", () => {
+        addBuildingLayer(map);
+        setIsLoaded(true);
+        setError(null);
+      });
 
-      map.on('error', (e) => {
-        console.error('Mapbox error:', e)
-        setError('Failed to load map. Please check your configuration.')
-        setIsLoaded(false)
-      })
-
-      mapRef.current = map
-
+      map.on("error", (e) => {
+        console.error("Mapbox error:", e);
+        setError("Failed to load map. Please check your configuration.");
+        setIsLoaded(false);
+      });
+      mapRef.current = map;
     } catch (err) {
-      console.error('Failed to initialize Mapbox:', err)
-      setError('Failed to initialize map')
-      setIsLoaded(false)
+      console.error("Failed to initialize Mapbox:", err);
+      setError("Failed to initialize map");
+      setIsLoaded(false);
     }
-  }, [containerRef, config])
+  }, [containerRef, config]);
 
   useEffect(() => {
-    console.log('[Mapbox] Initializing map...')
-    initializeMap()
+    console.log("[Mapbox] Initializing map...");
+    initializeMap();
 
     // Cleanup on unmount
     return () => {
       if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-        setIsLoaded(false)
+        // mapRef.current.remove()
+        // mapRef.current = null
+        setIsLoaded(false);
       }
-    }
-  }, [initializeMap])
+    };
+  }, [initializeMap]);
 
   return {
     mapRef,
     isLoaded,
-    error
-  }
-}
+    error,
+  };
+};

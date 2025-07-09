@@ -11,6 +11,8 @@ import { MapContainerProps, RoofPolygon, BuildingFeature } from '@/types'
 import { createDrawInstance, createDrawEventHandlers } from '@/lib/mapbox/drawing'
 import { detectBuildingAtLocation, fitMapToBuilding } from '@/lib/mapbox/building-detection'
 import { Alert, LoadingSpinner } from '@/components/ui'
+import 'mapbox-gl/dist/mapbox-gl.css'; // Mapbox GL CSS
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'; // Mapbox Draw CSS
 
 /**
  * Map container component with drawing and building detection capabilities
@@ -28,19 +30,23 @@ export function MapContainer({
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const drawRef = useRef<MapboxDraw | null>(null)
   const labelsRef = useRef<mapboxgl.Marker[]>([])
-  
   const { mapRef, isLoaded, error } = useMapbox(mapContainerRef)
-  const [localError, setLocalError] = useState<string | null>(null)
 
+  const [localError, setLocalError] = useState<string | null>(null)
+  
   // Initialize drawing controls
   useEffect(() => {
     if (!mapRef.current || !isLoaded || drawRef.current) return
 
     try {
+      // const map = mapRef.current
       const map = mapRef.current
       const draw = createDrawInstance()
       drawRef.current = draw
       map.addControl(draw, 'top-right')
+      console.log('Map initialized with drawing controls')
+      mapRef.current = map // Update mapRef with the current map instance
+
 
       // Set up event handlers
       const eventHandlers = createDrawEventHandlers(
@@ -257,7 +263,20 @@ export function MapContainer({
   }
 
   return (
-    <div className={`relative max-w-[800px] min-w-[420px] h-[500px] rounded-lg border border-gray-200 shadow-md ${selectedAddress ? 'w-[420px]' : 'w-[800px] '}`}>
+    <>
+     <style jsx global>{`
+        .roof-label {
+          background-color: white;
+          color: black;
+          padding: 4px 8px;
+          font-size: 12px;
+          border-radius: 20px;
+          border: 1px solid white;
+          white-space: nowrap;
+        }
+      `}</style>
+  
+    <div className={`relative w-full h-full rounded-2xl overflow-hidden z-4 `}>
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* Loading overlay */}
@@ -275,15 +294,17 @@ export function MapContainer({
       {/* Map instructions */}
       {isLoaded && !isLoading && (
         <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-md p-3 text-xs text-gray-600 max-w-xs">
-          <p className="font-medium mb-1">Drawing Instructions:</p>
-          <ul className="space-y-1">
+          <p className="font-bold mb-1 text-amber-500 ">Drawing Instructions:</p>
+          <ul className="space-y-1 text-gray-900">
             <li>• Click the polygon tool to start drawing</li>
-            <li>• Click to add points around the roof</li>
-            <li>• Double-click to finish the polygon</li>
+          
+            <li className='hidden lg:block'>• Click to add points around the roof</li>
+            <li className='hidden lg:block'>• Double-click to finish the polygon</li>
             <li>• Use the trash tool to delete shapes</li>
           </ul>
         </div>
       )}
     </div>
+     </>
   )
 }

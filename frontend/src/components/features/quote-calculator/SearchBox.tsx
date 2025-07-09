@@ -1,26 +1,16 @@
-// src/components/features/roof-calculator/AddressSearch.tsx
-// Address search component with Google Places autocomplete
+"use client";
 
-/// <reference types="@types/google.maps" />
-
-import React, { useRef, useEffect, useState } from "react";
-import { Input, Button, Alert } from "@/components/ui";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useGooglePlaces } from "@/hooks/useGooglePlaces";
 import { AddressSearchProps, SearchAddress } from "@/types";
-import { MapPinIcon } from "@heroicons/react/24/outline";
-import { MapPin, Search } from "lucide-react";
-import { on } from "events";
+import { useRef, useState, useEffect, useContext } from "react";
+import { useGooglePlaces } from "@/hooks";
+import { AddressContext } from "./providers/SearchProvider";
+import { Alert, Button, Input } from "@/components/ui";
+import { MapPin, Search, Factory, Warehouse, House } from "lucide-react";
 
-/**
- * Address search component with Google Places integration
- * Provides autocomplete functionality for address selection
- */
-export const AddressSearch: React.FC<AddressSearchProps> = ({
-  onAddressSelected,
-  onSearchBoxFocus,
-  isLoading,
-}) => {
+export const SearchBox = () => {
+  const { handleAddressSelected, onSearchBoxFocus, isLoading } =
+    useContext(AddressContext);
+
   const inputRef = useRef<HTMLInputElement>(null); // Reference to the input element
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null); // Reference to the Google Places Autocomplete instance
   const [inputValue, setInputValue] = useState(""); // State for the input value
@@ -28,7 +18,6 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   const [isFocused, setIsFocused] = useState(false); // State for input focus
 
   const { isLoaded: googleLoaded, error: googleError } = useGooglePlaces(); // Custom hook to load Google Places API
-  // const debouncedInputValue = useDebounce(inputValue, 300)
 
   // Initialize Google Places Autocomplete
   useEffect(() => {
@@ -71,7 +60,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
         };
         setInputValue(place.formatted_address || inputRef.current?.value || "");
 
-        onAddressSelected(address);
+        handleAddressSelected(address);
         console.log("address selected");
         setSearchError(null);
       };
@@ -88,7 +77,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
         google.maps.event.clearInstanceListeners(autocompleteRef.current);
       }
     };
-  }, [googleLoaded, onAddressSelected]);
+  }, [googleLoaded, handleAddressSelected]);
 
   // Handle manual input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +89,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   const handleClear = () => {
     setInputValue("");
     // @ts-ignore
-    onAddressSelected(null); // Clear selected address
+    handleAddressSelected(null); // Clear selected address
     autocompleteRef.current?.set("place_id", ""); // Clear Google Places selection
     setSearchError(null);
     if (inputRef.current) {
@@ -115,35 +104,6 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
       </Alert>
     );
   }
-
-  // Unified handler for Enter key, blur, and search button
-  const handleInputConfirm = () => {
-    if (!inputValue.trim()) {
-      setSearchError("Please enter an address to search.");
-      return;
-    }
-    if (autocompleteRef.current) {
-      const place = autocompleteRef.current.getPlace?.();
-      console.log("handleInputConfirm triggered autocomplete", place);
-      if (place?.geometry?.location) {
-        const address: SearchAddress = {
-          address: place.formatted_address || "",
-          coordinates: [
-            place.geometry.location.lng(),
-            place.geometry.location.lat(),
-          ],
-          placeId: place.place_id || "",
-        };
-
-        onAddressSelected(address);
-        console.log("address selected from input confirm", address);
-        setSearchError(null);
-        return;
-      }
-    }
-    setSearchError("Please select a valid address from the dropdown.");
-  };
-
   // Handle search button click
   async function handleSearch(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -203,7 +163,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
                   ],
                   placeId: place.place_id || "",
                 };
-                onAddressSelected(address);
+                handleAddressSelected(address);
                 setSearchError(null);
               } else {
                 setSearchError(
@@ -225,12 +185,13 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col  mb-7">
+       
       <div className="relative flex gap-3">
-        <div className="relative flex-1">
+        <div className="relative flex-1 cursor-pointer">
           <MapPin
             className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${
-              isFocused ? "text-purple-500" : "text-gray-400"
+              isFocused ? "text-amber-600" : "text-black"
             }`}
             size={20}
           />
@@ -238,7 +199,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
             ref={inputRef}
             type="text"
             placeholder="Enter your address..."
-            className="pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all duration-300 text-gray-700 placeholder-gray-400"
+            className="pl-12 pr-20 py-3 h-12 border-0  rounded-full  bg-amber-100 placeholder:text-black w-full hover:bg-amber-50 "
             value={inputValue}
             onChange={handleInputChange}
             disabled={!googleLoaded || isLoading}
@@ -253,7 +214,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
               variant="ghost"
               size="sm"
               onClick={handleClear}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+              className="absolute right-14 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
               aria-label="Clear address"
             >
               ×
@@ -262,10 +223,9 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
         </div>
         <Button
           onClick={handleSearch}
-          className="h-12 px-6 bg-gradient-to-r from-orange-400 to-orange-600 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+          className="absolute right-2 h-10 w-10 mt-1  bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-400 hover:to-orange-500  transition-all duration-300  rounded-full "
         >
-          <Search size={18} className="mr-2" />
-          Search Now
+          <Search size={20} className="" />
         </Button>
         {/* <Input
           ref={inputRef}
@@ -288,11 +248,11 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
       </div>
 
       {/* Search instructions */}
-      <div className="flex  space-x-0 text-sm gap-1 text-gray-600">
+      <div className="flex  space-x-0 text-sm gap-1 text-gray-600 text-center">
         {/* <MapPinIcon className="h-4 w-4 mt-0.5 flex-shrink-0" /> */}
         <p>
-          Start typing an address and select from the dropdown suggestions. Make
-          sure to select a complete address for accurate roof detection.
+        Make
+          sure to select a complete address for accurate roof detection and pricing.
         </p>
       </div>
 

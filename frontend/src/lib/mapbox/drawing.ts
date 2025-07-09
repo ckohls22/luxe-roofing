@@ -50,7 +50,7 @@ export const roofDrawingStyles: DrawingStyles[] = [
  */
 export const createDrawInstance = (): MapboxDraw => {
   return new MapboxDraw({
-    displayControlsDefault: true, // Show all default controls (polygon, plus, minus, trash, etc.)
+    displayControlsDefault: false, // Show all default controls (polygon, plus, minus, trash, etc.)
     controls: {
       polygon: true, // Enable polygon drawing
       trash: true // Enable trash control for deleting polygons

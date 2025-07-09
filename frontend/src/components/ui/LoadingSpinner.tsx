@@ -11,7 +11,7 @@ export const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size =
 
   return (
     <span
-      className={`inline-block animate-spin rounded-full border-gray-300 border-t-blue-500 ${sizeClasses}`}
+      className={`inline-block animate-spin rounded-full border-gray-300 border-t-amber-500 ${sizeClasses}`}
       role="status"
       aria-label="Loading"
     />

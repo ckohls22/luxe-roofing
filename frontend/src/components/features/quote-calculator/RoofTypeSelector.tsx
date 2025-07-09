@@ -1,0 +1,40 @@
+// components/RoofTypeSelector.tsx
+"use client";
+
+import { useState } from "react";
+import { House, Factory, Warehouse } from "lucide-react";
+import { Button } from "@/components/ui/button"; // adjust import if needed
+
+type RoofType = "residential" | "industrial" | "commercial";
+
+export default function RoofTypeSelector() {
+  const [selected, setSelected] = useState<RoofType>("residential");
+
+  const options: { type: RoofType; icon: React.ReactNode; label: string }[] = [
+    { type: "residential", icon: <House size={18} />, label: "Residential" },
+    { type: "industrial", icon: <Factory size={18} />, label: "Industrial" },
+    // { type: "commercial", icon: <Warehouse size={18} />, label: "Commercial" },
+  ];
+
+  return (
+    <div className="flex mt-5 mb-3 w-full px-4 justify-center items-center gap-2">
+      {options.map(({ type, icon, label }) => {
+        const isActive = selected === type;
+        const base = "rounded-full p-5 transition-colors shadow-none text-sm";
+        const activeClasses = "bg-gray-900 text-white shadow hover:bg-gray-900";
+        const inactiveClasses =
+          "bg-transparent text-gray-700 hover:bg-amber-100";
+
+        return (
+          <Button
+            key={type}
+            onClick={() => setSelected(type)}
+            className={`${base} ${isActive ? activeClasses : inactiveClasses}`}
+          >
+            {icon} {label}
+          </Button>
+        );
+      })}
+    </div>
+  );
+}

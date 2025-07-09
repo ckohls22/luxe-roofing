@@ -68,7 +68,7 @@ export interface GoogleMapsConfig {
 
 // Address search types
 export interface SearchAddress {
-  address: string;
+  address: string
   coordinates: [number, number];
   placeId: string;
 }
