@@ -15,7 +15,8 @@ import { point as turfPoint, polygon as turfPolygon } from '@turf/helpers'; // T
 import centerOfMass from '@turf/center-of-mass'; // Turf.js for center of mass
 import 'mapbox-gl/dist/mapbox-gl.css'; // Mapbox GL CSS
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'; // Mapbox Draw CSS
-import { LeadForm } from '@/components/features/quote-calculator/LeadForm';
+import LeadForm from "@/components/features/quote-calculator/LeadForm"
+// import LeadFormStep from '@/components/features/quote-calculator/LeadFormStep';
 
 // Set your Mapbox access token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';

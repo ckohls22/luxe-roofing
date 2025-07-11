@@ -1,8 +1,9 @@
+
 // src/components/features/roof-calculator/MapContainer.tsx
 // Main map container component with drawing capabilities
 
 import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react'
-import mapboxgl,{Map as MapboxMap} from 'mapbox-gl'
+import mapboxgl, { Map as MapboxMap } from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import centerOfMass from '@turf/center-of-mass'
 import area from '@turf/area'
@@ -23,30 +24,30 @@ export function MapContainer({
   selectedAddress,
   isLoading,
   onLoadingChange,
-  // selectedPolygonIndex,
   roofPolygons
-  
 }: MapContainerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const drawRef = useRef<MapboxDraw | null>(null)
   const labelsRef = useRef<mapboxgl.Marker[]>([])
   const { mapRef, isLoaded, error } = useMapbox(mapContainerRef)
-
   const [localError, setLocalError] = useState<string | null>(null)
-  
+  const [showBuildingNotFound, setShowBuildingNotFound] = useState(false)
+
   // Initialize drawing controls
   useEffect(() => {
     if (!mapRef.current || !isLoaded || drawRef.current) return
 
     try {
-      // const map = mapRef.current
       const map = mapRef.current
       const draw = createDrawInstance()
       drawRef.current = draw
       map.addControl(draw, 'top-right')
-      console.log('Map initialized with drawing controls')
-      mapRef.current = map // Update mapRef with the current map instance
-
+      
+      // Add zoom constraints
+      map.setMaxZoom(22) // Maximum zoom level
+      map.setMinZoom(8)  // Minimum zoom level
+      
+      console.log('Map initialized with drawing controls and zoom constraints')
 
       // Set up event handlers
       const eventHandlers = createDrawEventHandlers(
@@ -98,13 +99,14 @@ export function MapContainer({
 
     onLoadingChange(true)
     setLocalError(null)
+    setShowBuildingNotFound(false)
 
     try {
       // Clear existing drawings
       drawRef.current.deleteAll()
       clearLabels()
 
-      // Jump to location
+      // Jump to location with appropriate zoom
       map.jumpTo({ center: coordinates, zoom: 19 })
 
       // Wait for building source to be loaded
@@ -122,12 +124,18 @@ export function MapContainer({
         
         // Update calculations
         updateRoofCalculations()
+        setShowBuildingNotFound(false)
       } else {
-        setLocalError('No building found at this location. Please try a different address or draw the roof manually.')
+        // Show building not found message but keep map visible
+        setShowBuildingNotFound(true)
+        // Ensure map stays visible at the searched location
+        map.jumpTo({ center: coordinates, zoom: 19 })
       }
     } catch (err) {
       console.error('Building detection failed:', err)
-      setLocalError('Failed to detect building. You can draw the roof outline manually.')
+      setShowBuildingNotFound(true)
+      // Keep map visible even on error
+      map.jumpTo({ center: coordinates, zoom: 19 })
     } finally {
       onLoadingChange(false)
     }
@@ -187,26 +195,19 @@ export function MapContainer({
     onAreaCalculated(roofPolygons)
   }
 
-  // Expose highlightAndEditPolygonByIndex to parent
-  // useImperativeHandle(ref, () => ({
-  //   highlightAndEditPolygonByIndex: (index: number) => {
-  //     if (!drawRef.current || !map) return;
-  //     highlightAndEditPolygon(drawRef.current, map, roofPolygons ?? [], index);
-  //   }
-  // }));
-
   /**
    * Highlight and enable editing for the selected polygon
    */
   const highlightAndEditPolygon = (draw: MapboxDraw, map: mapboxgl.Map, roofPolygons: RoofPolygon[], selectedPolygonIndex: number | null) => {
-
     console.log("Highlighting polygon", selectedPolygonIndex, roofPolygons);
     if (!draw || !map || !roofPolygons || typeof selectedPolygonIndex !== 'number' || selectedPolygonIndex < 0 || selectedPolygonIndex >= roofPolygons.length) return;
+    
     const features = draw.getAll().features;
     if (!features.length) return;
 
     const selectedRoof = roofPolygons[selectedPolygonIndex];
     if (!selectedRoof) return;
+    
     const selectedFeature = features.find(f => String(f.id) === String(selectedRoof.id));
     if (!selectedFeature) return;
 
@@ -214,28 +215,39 @@ export function MapContainer({
     features.forEach(f => {
       if (f.id !== undefined) draw.setFeatureProperty(String(f.id), 'user_color', 'gray');
     });
-    if (selectedFeature.id !== undefined) draw.setFeatureProperty(String(selectedFeature.id), 'user_color', 'blue');
+    
+    if (selectedFeature.id !== undefined) {
+      draw.setFeatureProperty(String(selectedFeature.id), 'user_color', 'blue');
+    }
 
     // Switch to direct_select mode for the selected polygon
-    // @ts-ignore
-    draw.changeMode('direct_select', { featureId: String(selectedFeature.id) });
+    try {
+      // @ts-ignore
+      draw.changeMode('direct_select', { featureId: String(selectedFeature.id) });
+    } catch (err) {
+      console.warn('Failed to change draw mode:', err);
+    }
 
     // Custom style for polygons based on user_color
-    if (map.getLayer('gl-draw-polygon-fill-inactive.cold')) {
-      map.setPaintProperty('gl-draw-polygon-fill-inactive.cold', 'fill-color', [
-        'case',
-        ['==', ['get', 'user_color'], 'blue'], '#2563eb', // blue-600
-        ['==', ['get', 'user_color'], 'gray'], '#d1d5db', // gray-300
-        '#d1d5db'
-      ]);
-    }
-    if (map.getLayer('gl-draw-polygon-fill-active.cold')) {
-      map.setPaintProperty('gl-draw-polygon-fill-active.cold', 'fill-color', [
-        'case',
-        ['==', ['get', 'user_color'], 'blue'], '#2563eb',
-        ['==', ['get', 'user_color'], 'gray'], '#d1d5db',
-        '#2563eb'
-      ]);
+    try {
+      if (map.getLayer('gl-draw-polygon-fill-inactive.cold')) {
+        map.setPaintProperty('gl-draw-polygon-fill-inactive.cold', 'fill-color', [
+          'case',
+          ['==', ['get', 'user_color'], 'blue'], '#2563eb', // blue-600
+          ['==', ['get', 'user_color'], 'gray'], '#d1d5db', // gray-300
+          '#d1d5db'
+        ]);
+      }
+      if (map.getLayer('gl-draw-polygon-fill-active.cold')) {
+        map.setPaintProperty('gl-draw-polygon-fill-active.cold', 'fill-color', [
+          'case',
+          ['==', ['get', 'user_color'], 'blue'], '#2563eb',
+          ['==', ['get', 'user_color'], 'gray'], '#d1d5db',
+          '#2563eb'
+        ]);
+      }
+    } catch (err) {
+      console.warn('Failed to set polygon styles:', err);
     }
   }
 
@@ -243,7 +255,13 @@ export function MapContainer({
    * Clear all roof labels from the map
    */
   const clearLabels = () => {
-    labelsRef.current.forEach(marker => marker.remove())
+    labelsRef.current.forEach(marker => {
+      try {
+        marker.remove()
+      } catch (err) {
+        console.warn('Failed to remove marker:', err);
+      }
+    })
     labelsRef.current = []
   }
 
@@ -254,17 +272,18 @@ export function MapContainer({
     }
   }, [])
 
-  if (error || localError) {
+  // Only show error if it's a critical map initialization error
+  if (error && !isLoaded) {
     return (
       <Alert variant='destructive' title="Map Error">
-        {error || localError}
+        {error}
       </Alert>
     )
   }
 
   return (
     <>
-     <style jsx global>{`
+      <style jsx global>{`
         .roof-label {
           background-color: white;
           color: black;
@@ -273,38 +292,70 @@ export function MapContainer({
           border-radius: 20px;
           border: 1px solid white;
           white-space: nowrap;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
       `}</style>
   
-    <div className={`relative w-full h-full rounded-2xl overflow-hidden z-4 `}>
-      <div ref={mapContainerRef} className="w-full h-full" />
+      <div className="relative w-full h-full rounded-2xl overflow-hidden z-4">
+        <div ref={mapContainerRef} className="w-full h-full" />
 
-      {/* Loading overlay */}
-      {(isLoading || !isLoaded) && (
-        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
-          <div className="text-center">
-            <LoadingSpinner size="lg" />
-            <p className="mt-2 text-sm text-gray-600">
-              {isLoading ? 'Detecting building...' : 'Loading map...'}
-            </p>
+        {/* Loading overlay */}
+        {(isLoading || !isLoaded) && (
+          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
+            <div className="text-center">
+              <LoadingSpinner size="lg" />
+              <p className="mt-2 text-sm text-gray-600">
+                {isLoading ? 'Detecting building...' : 'Loading map...'}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Map instructions */}
-      {isLoaded && !isLoading && (
-        <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-md p-3 text-xs text-gray-600 max-w-xs">
-          <p className="font-bold mb-1 text-amber-500 ">Drawing Instructions:</p>
-          <ul className="space-y-1 text-gray-900">
-            <li>• Click the polygon tool to start drawing</li>
-          
-            <li className='hidden lg:block'>• Click to add points around the roof</li>
-            <li className='hidden lg:block'>• Double-click to finish the polygon</li>
-            <li>• Use the trash tool to delete shapes</li>
-          </ul>
-        </div>
-      )}
-    </div>
-     </>
+        {/* Building not found notification - overlay style instead of replacing map */}
+        {showBuildingNotFound && isLoaded && !isLoading && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md shadow-lg max-w-md z-10">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">
+                  No building detected at this location
+                </p>
+                <p className="text-xs mt-1">
+                  You can manually draw the roof outline using the drawing tools
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Map instructions */}
+        {isLoaded && !isLoading && (
+          <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-md p-3 text-xs text-gray-600 max-w-xs shadow-md">
+            <p className="font-bold mb-1 text-amber-500">Drawing Instructions:</p>
+            <ul className="space-y-1 text-gray-900">
+              <li>• Click the polygon tool to start drawing</li>
+              <li className='hidden lg:block'>• Click to add points around the roof</li>
+              <li className='hidden lg:block'>• Double-click to finish the polygon</li>
+              <li>• Use the trash tool to delete shapes</li>
+              <li className="text-xs text-gray-500 mt-2">
+                Zoom: {mapRef.current?.getZoom().toFixed(1)} (Max: 22, Min: 8)
+              </li>
+            </ul>
+          </div>
+        )}
+
+        {/* Error overlay for non-critical errors */}
+        {localError && (
+          <div className="absolute top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-lg max-w-sm z-10">
+            <p className="text-sm font-medium">Drawing Tool Error</p>
+            <p className="text-xs mt-1">{localError}</p>
+          </div>
+        )}
+      </div>
+    </>
   )
 }

@@ -21,6 +21,8 @@ export interface DrawingStyles {
   paint: Record<string, any>;
 }
 
+
+
 // Roof calculation types
 export interface RoofArea {
   squareMeters: number;
@@ -40,6 +42,8 @@ export interface RoofPolygon {
   centerPoint: [number, number];
   slope?: string;
 }
+
+export type RoofType = 'residential' | 'industrial' | 'commercial';
 
 export interface BuildingFeature extends GeoJSON.Feature<GeoJSON.Polygon> {
   id: string | number;
