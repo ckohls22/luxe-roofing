@@ -36,7 +36,7 @@ export const initializeMapbox = (): void => {
  */
 export const createMapOptions = (container: HTMLElement, customOptions: Partial<mapboxgl.MapOptions> = {}): mapboxgl.MapOptions => {
   const opts = {
-    container,
+    container : container,
     style: mapboxConfig.style,
     center: mapboxConfig.center,
     zoom: mapboxConfig.zoom,

@@ -17,7 +17,7 @@ export const roofDrawingStyles: DrawingStyles[] = [
     paint: {
       'fill-color': '#FFAB91',
       'fill-outline-color': '#FF8A65',
-      'fill-opacity': 0.6
+      'fill-opacity': 0.3
     }
   },
   // Polygon stroke style
@@ -36,7 +36,7 @@ export const roofDrawingStyles: DrawingStyles[] = [
     type: 'circle',
     filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
     paint: {
-      'circle-radius': 6,
+      'circle-radius': 4,
       'circle-color': '#FFF',
       'circle-stroke-color': '#FF5722',
       'circle-stroke-width': 2
@@ -50,18 +50,18 @@ export const roofDrawingStyles: DrawingStyles[] = [
  */
 export const createDrawInstance = (): MapboxDraw => {
   return new MapboxDraw({
-    displayControlsDefault: false,
-    controls: { 
-      polygon: true, 
-      trash: true 
+    displayControlsDefault: false, // Show all default controls (polygon, plus, minus, trash, etc.)
+    controls: {
+      polygon: true, // Enable polygon drawing
+      trash: true // Enable trash control for deleting polygons
     },
     styles: roofDrawingStyles,
     // Custom keybindings
-    keybindings: true,
+    // keybindings: true,
     // Touch support for mobile devices
-    touchEnabled: true,
+    // touchEnabled: true,
     // Box select for easier selection
-    boxSelect: true
+    // boxSelect: true,
   })
 }
 

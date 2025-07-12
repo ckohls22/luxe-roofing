@@ -1,6 +1,10 @@
 // src/types/index.ts
 // Centralized type definitions for the entire application
 
+
+import { RefObject } from "react";
+import { Map as mapboxMap } from "mapbox-gl";
+
 // Mapbox related types
 export interface MapboxConfig {
   accessToken: string;
@@ -17,6 +21,8 @@ export interface DrawingStyles {
   paint: Record<string, any>;
 }
 
+
+
 // Roof calculation types
 export interface RoofArea {
   squareMeters: number;
@@ -27,10 +33,17 @@ export interface RoofArea {
 export interface RoofPolygon {
   id: string;
   coordinates: number[][];
-  area: RoofArea;
+  area: {
+    squareMeters: number;
+    squareFeet: number;
+    formatted: string;
+  };
   label: string;
   centerPoint: [number, number];
+  slope?: string;
 }
+
+export type RoofType = 'residential' | 'industrial' | 'commercial';
 
 export interface BuildingFeature extends GeoJSON.Feature<GeoJSON.Polygon> {
   id: string | number;
@@ -59,7 +72,7 @@ export interface GoogleMapsConfig {
 
 // Address search types
 export interface SearchAddress {
-  address: string;
+  address: string
   coordinates: [number, number];
   placeId: string;
 }
@@ -92,20 +105,24 @@ export interface InputProps
 
 // Map component props
 export interface MapContainerProps {
-  onAreaCalculated: (areas: RoofPolygon[]) => void;
+  onAreaCalculated: (polygons: RoofPolygon[]) => void;
   selectedAddress: SearchAddress | null;
   isLoading: boolean;
   onLoadingChange: (loading: boolean) => void;
+  selectedPolygonIndex?: number | null;
+  roofPolygons?: RoofPolygon[];
 }
 
 export interface AddressSearchProps {
   onAddressSelected: (address: SearchAddress) => void;
+  onSearchBoxFocus: (isFocused: boolean) => void;
   isLoading: boolean;
 }
 
 // Hook return types
 export interface UseMapboxReturn {
-  map: mapboxgl.Map | null;
+  // map: mapboxMap | null;
+  mapRef: RefObject<mapboxMap | null>;
   isLoaded: boolean;
   error: string | null;
 }

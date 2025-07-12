@@ -1,450 +1,424 @@
-// src/app/roof-calculator/page.tsx
-// Main roof calculator page with integrated components
+// File: pages/index.tsx (Next.js + TypeScript)
+// Requires:
+// npm install mapbox-gl @mapbox/mapbox-gl-draw @turf/area @turf/boolean-point-in-polygon @turf/helpers @turf/center-of-mass
+// npm install --save-dev @types/mapbox-gl @types/mapbox__mapbox-gl-draw
 
-"use client";
+'use client'; // Next.js directive for client-side rendering
+import { useEffect, useRef, useState, useCallback } from 'react'; // React hooks
+import Script from 'next/script'; // Next.js component for loading external scripts
+import mapboxgl, { Map as MapboxMap } from 'mapbox-gl'; // Mapbox GL JS
+import MapboxDraw from '@mapbox/mapbox-gl-draw'; // Mapbox Draw plugin
+import area from '@turf/area'; // Turf.js for area calculation
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon'; // Turf.js for point-in-polygon
+import distance from '@turf/distance'; // Turf.js for distance calculation
+import { point as turfPoint, polygon as turfPolygon } from '@turf/helpers'; // Turf.js helpers
+import centerOfMass from '@turf/center-of-mass'; // Turf.js for center of mass
+import 'mapbox-gl/dist/mapbox-gl.css'; // Mapbox GL CSS
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'; // Mapbox Draw CSS
+import LeadForm from "@/components/features/quote-calculator/LeadForm"
+// import LeadFormStep from '@/components/features/quote-calculator/LeadFormStep';
 
-import React, { useState, useCallback } from "react";
-import {
-  AddressSearch,
-  MapContainer,
-  RoofAreaDisplay,
-  EditControls,
-} from "@/components/features/quote-calculator";
-import { Card, Button, Alert } from "@/components/ui";
-import { SearchAddress, RoofPolygon } from "@/types";
-import {
-  HomeIcon,
-  MapIcon,
-  CalculatorIcon,
-  InformationCircleIcon,
-} from "@heroicons/react/24/outline";
+// Set your Mapbox access token
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-/**
- * Main roof calculator page
- * Orchestrates all roof calculation functionality
- */
-export default function QuoteCalculatorPage() {
-  // State management
-  const [selectedAddress, setSelectedAddress] = useState<SearchAddress | null>(
-    null
-  );
-  const [roofPolygons, setRoofPolygons] = useState<RoofPolygon[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState<
-    "address" | "drawing" | "results"
-  >("address");
-  const [error, setError] = useState<string | null>(null);
+type PolygonFeature = GeoJSON.Feature<GeoJSON.Polygon>; // Type alias for polygon features
 
-  // Handle address selection
-  const handleAddressSelected = useCallback((address: SearchAddress) => {
-    setSelectedAddress(address);
-    setCurrentStep("drawing");
-    setError(null);
-    // Clear previous calculations
-    setRoofPolygons([]);
-  }, []);
+declare global {
+  interface Window {
+    google: any; // Allow access to Google Maps JS API
+  }
+}
 
-  // Handle area calculations from map
-  const handleAreaCalculated = useCallback((polygons: RoofPolygon[]) => {
-    setRoofPolygons(polygons);
-    if (polygons.length > 0) {
-      setCurrentStep("results");
+export default function QuoteCalculator() {
+  const mapRef = useRef<MapboxMap>(undefined); // Ref for the Mapbox map instance
+  const mapContainer = useRef<HTMLDivElement>(null); // Ref for the map container div
+
+
+  const addressInput = useRef<HTMLInputElement>(null); // Ref for the address input
+  const drawRef = useRef<MapboxDraw>(undefined); // Ref for the Mapbox Draw instance
+  const labelRef = useRef<mapboxgl.Marker | null>(null); // Ref for the roof label marker
+
+  const [featureId, setFeatureId] = useState<string | null>(null); // State for the current polygon feature id
+  const [roofArea, setRoofArea] = useState<string>(''); // State for the calculated roof area
+  const [isEditing, setIsEditing] = useState(false); // State for edit mode
+  const [isLoading, setIsLoading] = useState(false); // State for loading indicator
+
+  // Callback to update the roof area and label when polygons change
+  const updateRoofArea = useCallback(() => {
+    const draw = drawRef.current; // Get the draw instance
+    if (!draw) return; // If not initialized, exit
+
+    const all = draw.getAll().features; // Get all drawn features
+    if (all.length === 0) {
+      setFeatureId(null); // No features, clear feature id
+      setRoofArea(''); // Clear area
+      if (labelRef.current) {
+        labelRef.current.remove(); // Remove label marker
+        labelRef.current = null;
+      }
+      return;
     }
+
+    const poly = all[0] as PolygonFeature; // Assume first feature is the roof
+    setFeatureId(poly.id as string); // Store its id
+    const sqm = area(poly.geometry); // Calculate area in square meters
+    const sqft = sqm * 10.7639; // Convert to square feet
+    setRoofArea(sqft.toFixed(2)); // Store area as string
   }, []);
 
-  // Handle manual area updates
-  const handleManualAreaUpdate = useCallback(
-    (polygonId: string, newArea: number) => {
-      setRoofPolygons((prev) =>
-        prev.map((polygon) => {
-          if (polygon.id === polygonId) {
-            return {
-              ...polygon,
-              area: {
-                ...polygon.area,
-                squareFeet: newArea,
-                squareMeters: newArea / 10.7639,
-                formatted: newArea.toFixed(2),
-              },
-            };
+  useEffect(() => {
+    if (mapRef.current || !mapContainer.current) return; // Only run once
+
+    const map = new mapboxgl.Map({
+      container: mapContainer.current, // DOM element for map
+      style: 'mapbox://styles/mapbox/satellite-streets-v11', // Map style
+      center: [-77.0365, 38.8977], // Initial center (White House)
+      zoom: 16, // Initial zoom
+      maxZoom: 22, // Max zoom
+      interactive: true, // Enable map interaction
+      scrollZoom: false, // Disable scroll zoom
+      boxZoom: false, // Disable box zoom
+      dragRotate: false, // Disable drag rotate
+      // dragPan: false, // (optional) disable drag pan
+      keyboard: false, // Disable keyboard controls
+      doubleClickZoom: false, // Disable double click zoom
+      touchZoomRotate: false // Disable touch zoom/rotate
+    });
+
+    map.on('load', () => {
+      if (map.getLayer('custom-buildings')) map.removeLayer('custom-buildings'); // Remove old building layer
+      if (map.getSource('custom-buildings')) map.removeSource('custom-buildings'); // Remove old building source
+
+      map.addSource('custom-buildings', {
+        type: 'vector', // Vector source
+        url: 'mapbox://mapbox.mapbox-streets-v8' // Mapbox vector tiles
+      });
+
+      map.addLayer({
+        id: 'custom-buildings', // Layer id
+        type: 'fill', // Fill polygons
+        source: 'custom-buildings', // Source id
+        'source-layer': 'building', // Source layer
+        paint: {
+          'fill-color': '#000000', // Black fill (invisible)
+          'fill-opacity': 0 // Fully transparent
+        }
+      });
+    });
+
+    const draw = new MapboxDraw({
+      displayControlsDefault: false, // Hide default controls
+      controls: { polygon: true, trash: true }, // Show polygon and trash
+      styles: [
+        {
+          'id': 'gl-draw-polygon-fill', // Polygon fill style
+          'type': 'fill',
+          'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+          'paint': {
+            'fill-color': '#FFAB91', // Orange fill
+            'fill-outline-color': '#FF8A65', // Orange outline
+            'fill-opacity': 0.5 // 50% opacity
           }
-          return polygon;
-        })
-      );
-    },
-    []
-  );
+        },
+        {
+          'id': 'gl-draw-polygon-stroke', // Polygon stroke style
+          'type': 'line',
+          'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+          'paint': {
+            'line-color': '#FF5722', // Deep orange stroke
+            'line-width': 3 // 3px width
+          }
+        },
+        {
+          'id': 'gl-draw-polygon-vertex', // Vertex style
+          'type': 'circle',
+          'filter': ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
+          'paint': {
+            'circle-radius': 5, // 5px radius
+            'circle-color': '#FFF', // White vertex
+            'circle-stroke-color': '#FF5722', // Orange border
+            'circle-stroke-width': 2 // 2px border
+          }
+        }
+      ]
+    });
 
-  // Handle polygon deletion
-  const handleDeletePolygon = useCallback((polygonId: string) => {
-    setRoofPolygons((prev) =>
-      prev.filter((polygon) => polygon.id !== polygonId)
-    );
-  }, []);
+    mapRef.current = map; // Store map instance
+    drawRef.current = draw; // Store draw instance
+    map.addControl(draw, 'top-right'); // Add draw controls
 
-  // Handle clear all
-  const handleClearAll = useCallback(() => {
-    setRoofPolygons([]);
-    setCurrentStep("drawing");
-  }, []);
+    map.on('draw.create', updateRoofArea); // Update area on create
+    map.on('draw.update', updateRoofArea); // Update area on update
+    map.on('draw.delete', updateRoofArea); // Update area on delete
 
-  // Handle export data
-  // const handleExportData = useCallback(() => {
-  //   const exportData = {
-  //     address: selectedAddress?.address || '',
-  //     coordinates: selectedAddress?.coordinates || [],
-  //     roofSections: roofPolygons.map(polygon => ({
-  //       label: polygon.label,
-  //       area: polygon.area,
-  //       coordinates: polygon.coordinates
-  //     })),
-  //     totalArea: roofPolygons.reduce((sum, roof) => sum + roof.area.squareFeet, 0),
-  //     calculatedAt: new Date().toISOString()
-  //   }
+    // Add labels for all drawn polygons
+    map.on('draw.create', () => {
+      const draw = drawRef.current;
+      const map = mapRef.current;
+      if (!draw || !map) return;
+      // Remove all previous labels
+      document.querySelectorAll('.roof-label').forEach(el => el.remove());
+      const features = draw.getAll().features;
+      features.forEach((feature, idx) => {
+        if (feature.geometry.type === 'Polygon') {
+          const centerCoord = centerOfMass(feature.geometry).geometry.coordinates;
+          const div = document.createElement('div');
+          div.className = 'roof-label';
+          if (idx === 0) div.innerText = 'Main Roof';
+          else if (idx === 1) div.innerText = 'Second Roof';
+          else if (idx === 2) div.innerText = 'Third Roof';
+          else div.innerText = `${idx + 1}th Roof`;
+          new mapboxgl.Marker(div)
+            .setLngLat(centerCoord as [number, number])
+            .addTo(map);
+        }
+      });
+    });
+    map.on('draw.delete', () => {
+      document.querySelectorAll('.roof-label').forEach(el => el.remove());
+      const draw = drawRef.current;
+      const map = mapRef.current;
+      if (!draw || !map) return;
+      const features = draw.getAll().features;
+      features.forEach((feature, idx) => {
+        if (feature.geometry.type === 'Polygon') {
+          const centerCoord = centerOfMass(feature.geometry).geometry.coordinates;
+          const div = document.createElement('div');
+          div.className = 'roof-label';
+          if (idx === 0) div.innerText = 'Main Roof';
+          else if (idx === 1) div.innerText = 'Second Roof';
+          else if (idx === 2) div.innerText = 'Third Roof';
+          else div.innerText = `${idx + 1}th Roof`;
+          new mapboxgl.Marker(div)
+            .setLngLat(centerCoord as [number, number])
+            .addTo(map);
+        }
+      });
+    });
+    map.on('draw.update', () => {
+      document.querySelectorAll('.roof-label').forEach(el => el.remove());
+      const draw = drawRef.current;
+      const map = mapRef.current;
+      if (!draw || !map) return;
+      const features = draw.getAll().features;
+      features.forEach((feature, idx) => {
+        if (feature.geometry.type === 'Polygon') {
+          const centerCoord = centerOfMass(feature.geometry).geometry.coordinates;
+          const div = document.createElement('div');
+          div.className = 'roof-label';
+          if (idx === 0) div.innerText = 'Main Roof';
+          else if (idx === 1) div.innerText = 'Second Roof';
+          else if (idx === 2) div.innerText = 'Third Roof';
+          else div.innerText = `${idx + 1}th Roof`;
+          new mapboxgl.Marker(div)
+            .setLngLat(centerCoord as [number, number])
+            .addTo(map);
+        }
+      });
+    });
 
-  //   const dataStr = JSON.stringify(exportData, null, 2)
-  //   const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
+    return () => {
+      map.remove(); // Clean up map on unmount
+    };
+  }, [updateRoofArea]);
 
-  //   const exportFileDefaultName = `roof-calculation-${new Date().toISOString().split('T')[0]}.json`
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.google || !addressInput.current) return; // Wait for Google Maps
 
-  //   const linkElement = document.createElement('a')
-  //   linkElement.setAttribute('href', dataUri)
-  //   linkElement.setAttribute('download', exportFileDefaultName)
-  //   linkElement.click()
-  // }, [selectedAddress, roofPolygons])
+    const map = mapRef.current;
+    const draw = drawRef.current;
+    if (!map || !draw) return;
 
-  // Handle print results
-  // const handlePrintResults = useCallback(() => {
-  //   window.print()
-  // }, [])
+    const autocomplete = new window.google.maps.places.Autocomplete(addressInput.current, {
+      types: ['address'], // Only addresses
+      componentRestrictions: { country: 'us' }, // Restrict to US
+      fields: ['geometry', 'formatted_address'] // Only need geometry and address
+    });
 
-  // Handle share results
-  //   const handleShareResults = useCallback(async () => {
-  //     const totalArea = roofPolygons.reduce((sum, roof) => sum + roof.area.squareFeet, 0)
-  //     const shareText = `Roof Area Calculation Results:
-  // Address: ${selectedAddress?.address || 'Unknown'}
-  // Total Roof Area: ${totalArea.toFixed(2)} sq ft
-  // Roof Sections: ${roofPolygons.length}
-  // Calculated on: ${new Date().toLocaleDateString()}`
+    const handlePlaceChange = () => {
+      setIsLoading(true); // Show loading
+      const place = autocomplete.getPlace(); // Get selected place
 
-  //     if (navigator.share) {
-  //       try {
-  //         await navigator.share({
-  //           title: 'Roof Area Calculator Results',
-  //           text: shareText,
-  //           url: window.location.href
-  //         })
-  //       } catch (err) {
-  //         console.log('Share cancelled or failed')
-  //       }
-  //     } else {
-  //       // Fallback to clipboard
-  //       try {
-  //         await navigator.clipboard.writeText(shareText)
-  //         alert('Results copied to clipboard!')
-  //       } catch (err) {
-  //         console.error('Failed to copy to clipboard:', err)
-  //       }
-  //     }
-  //   }, [selectedAddress, roofPolygons])
+      if (!place.geometry?.location) {
+        console.warn('Selected place has no geometry');
+        setIsLoading(false);
+        return;
+      }
 
-  // Handle start over
-  const handleStartOver = useCallback(() => {
-    setSelectedAddress(null);
-    setRoofPolygons([]);
-    setCurrentStep("address");
-    setError(null);
-  }, []);
+      const lat = place.geometry.location.lat(); // Get latitude
+      const lng = place.geometry.location.lng(); // Get longitude
+      const center: [number, number] = [lng, lat]; // Center as [lng, lat]
 
-  const totalArea = roofPolygons.reduce(
-    (sum, roof) => sum + roof.area.squareFeet,
-    0
-  );
-  console.log("roof polygon", roofPolygons);
+      draw.deleteAll(); // Remove previous drawings
+      setIsEditing(false); // Exit edit mode
+      if (labelRef.current) {
+        labelRef.current.remove(); // Remove label marker
+        labelRef.current = null;
+      }
+
+      const detectBuilding = () => {
+        if (!map.getSource('custom-buildings') || !map.isSourceLoaded('custom-buildings')) return; // Wait for source
+
+        const pt = turfPoint(center); // Turf point for center
+        const point = map.project(center); // Project to screen coords
+        const boxSize = 250; // Search box size in px
+
+        const features = map.queryRenderedFeatures([
+          [point.x - boxSize, point.y - boxSize],
+          [point.x + boxSize, point.y + boxSize]
+        ], {
+          layers: ['custom-buildings']
+        }) as PolygonFeature[]; // Query building polygons
+
+        let building = features.find(f => f.geometry?.type === 'Polygon' && booleanPointInPolygon(pt, f.geometry as any)); // Find containing building
+
+        if (!building && features.length > 0) {
+          let minDist = Infinity;
+          let nearest: PolygonFeature | null = null;
+          for (const f of features) {
+            if (f.geometry?.type === 'Polygon') {
+              const coords = f.geometry.coordinates[0];
+              const centroid = coords.reduce((acc, cur) => [acc[0] + cur[0], acc[1] + cur[1]], [0, 0]);
+              centroid[0] /= coords.length;
+              centroid[1] /= coords.length;
+              const d = distance(pt, turfPoint(centroid), { units: 'kilometers' });
+              if (d < minDist && d <= 0.15) {
+                minDist = d;
+                nearest = f;
+              }
+            }
+          }
+          if (nearest) building = nearest;
+        }
+
+        if (building) {
+          draw.add(building); // Add building polygon to draw
+          updateRoofArea(); // Update area
+
+          // Fit map to building bounds with 20px margin
+          if (building.geometry && building.geometry.type === 'Polygon') {
+            const coordinates = building.geometry.coordinates[0];
+            let minLng = coordinates[0][0], minLat = coordinates[0][1];
+            let maxLng = coordinates[0][0], maxLat = coordinates[0][1];
+            coordinates.forEach(([lng, lat]) => {
+              if (lng < minLng) minLng = lng;
+              if (lng > maxLng) maxLng = lng;
+              if (lat < minLat) minLat = lat;
+              if (lat > maxLat) maxLat = lat;
+            });
+            map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 50, duration: 800 });
+          }
+
+          // Remove all previous labels
+          if (labelRef.current) {
+            labelRef.current.remove();
+            labelRef.current = null;
+          }
+
+          // Add label for main roof
+          const centerCoord = centerOfMass(building.geometry).geometry.coordinates;
+          const div = document.createElement('div');
+          div.className = 'roof-label';
+          div.innerText = 'Main Roof';
+
+          labelRef.current = new mapboxgl.Marker(div)
+            .setLngLat(centerCoord as [number, number])
+            .addTo(map);
+
+          setIsLoading(false); // Hide loading
+          map.off('idle', detectBuilding); // Remove listeners
+          map.off('sourcedata', checkSource);
+        } else {
+          setIsLoading(false);
+          alert('No building with a roof found within 0.15 km of the searched address. Please try a different address.');
+        }
+      };
+
+      const checkSource = (e: any) => {
+        if (e.sourceId === 'custom-buildings' && e.isSourceLoaded) {
+          detectBuilding();
+        }
+      };
+
+      const setupDetection = () => {
+        map.jumpTo({ center, zoom: 19 }); // Move map to address
+        map.on('idle', detectBuilding); // Try detection on idle
+        map.on('sourcedata', checkSource); // Try detection on source load
+      };
+
+      if (map.loaded()) {
+        setupDetection(); // If map loaded, start detection
+      } else {
+        map.on('load', setupDetection); // Else wait for load
+      }
+    };
+
+    autocomplete.addListener('place_changed', handlePlaceChange); // Listen for address selection
+
+    return () => {
+      window.google?.maps.event.clearInstanceListeners(autocomplete); // Clean up listeners
+    };
+  }, [updateRoofArea]);
+
+  // Toggle edit mode for the drawn polygon
+  const handleEditToggle = () => {
+    const draw = drawRef.current;
+    if (!draw || !featureId) return;
+    if (isEditing) {
+      draw.changeMode('simple_select'); // Exit edit mode
+    } else {
+      draw.changeMode('direct_select', { featureId }); // Enter edit mode
+    }
+    setIsEditing(!isEditing); // Toggle state
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <HomeIcon className="h-8 w-8 text-blue-600 mr-3" />
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Roof Area Calculator
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Calculate roof areas for solar panel installations
-                </p>
-              </div>
-            </div>
+    <>
+      <Script
+        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}&libraries=places`}
+        strategy="beforeInteractive"
+      />
 
-            {selectedAddress && (
-              <Button
-                variant="outline"
-                onClick={handleStartOver}
-                className="hidden sm:flex"
-              >
-                Start Over
-              </Button>
-            )}
+      <style jsx global>{`
+        .roof-label {
+          background-color: white;
+          color: black;
+          padding: 4px 8px;
+          font-size: 12px;
+          border-radius: 20px;
+          border: 1px solid white;
+          white-space: nowrap;
+        }
+      `}</style>
+
+      <div className="flex flex-col items-center p-4 space-y-4">
+        <h1 className="text-2xl font-bold">LuxeIQ Roof Area Selector</h1>
+
+      
+
+        <input
+          ref={addressInput}
+          type="text"
+          placeholder="Enter a address"
+          className="w-full max-w-md p-2 border rounded"
+        />
+
+        <button
+          onClick={handleEditToggle}
+          disabled={!featureId}
+          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+        >
+          {isEditing ? 'Save Outline' : 'Edit Roof Outline'}
+        </button>
+
+        <div ref={mapContainer} className="w-full h-[70vh] rounded " />
+
+        {!!roofArea && (
+          <div className="text-lg">
+            Roof Area: <span className="font-bold">{roofArea} sq ft</span>
           </div>
-        </div>
-      </div>
-
-      {/* Progress Steps */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center py-4">
-            <div className="flex items-center space-x-4">
-              {/* Step 1: Address */}
-              <div
-                className={`flex items-center ${
-                  currentStep === "address"
-                    ? "text-blue-600"
-                    : selectedAddress
-                    ? "text-green-600"
-                    : "text-gray-400"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    currentStep === "address"
-                      ? "bg-blue-100 text-blue-600"
-                      : selectedAddress
-                      ? "bg-green-100 text-green-600"
-                      : "bg-gray-100 text-gray-400"
-                  }`}
-                >
-                  1
-                </div>
-                <span className="ml-2 text-sm font-medium">Select Address</span>
-              </div>
-
-              <div className="h-px w-8 bg-gray-300"></div>
-
-              {/* Step 2: Drawing */}
-              <div
-                className={`flex items-center ${
-                  currentStep === "drawing"
-                    ? "text-blue-600"
-                    : totalArea > 0
-                    ? "text-green-600"
-                    : "text-gray-400"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    currentStep === "drawing"
-                      ? "bg-blue-100 text-blue-600"
-                      : totalArea > 0
-                      ? "bg-green-100 text-green-600"
-                      : "bg-gray-100 text-gray-400"
-                  }`}
-                >
-                  2
-                </div>
-                <span className="ml-2 text-sm font-medium">Draw Roof</span>
-              </div>
-
-              <div className="h-px w-8 bg-gray-300"></div>
-
-              {/* Step 3: Results */}
-              <div
-                className={`flex items-center ${
-                  currentStep === "results" ? "text-blue-600" : "text-gray-400"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    currentStep === "results"
-                      ? "bg-blue-100 text-blue-600"
-                      : "bg-gray-100 text-gray-400"
-                  }`}
-                >
-                  3
-                </div>
-                <span className="ml-2 text-sm font-medium">View Results</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <Alert variant="destructive" title="Error" className="mb-6">
-            {error}
-          </Alert>
         )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Controls */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Address Search */}
-            {!selectedAddress && (
-              <Card className="p-6">
-                <div className="flex items-center mb-4">
-                  <MapIcon className="h-5 w-5 text-blue-600 mr-2" />
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Step 1: Find Your Address
-                  </h2>
-                </div>
-                <AddressSearch
-                  onAddressSelected={handleAddressSelected}
-                  isLoading={isLoading}
-                />
-              </Card>
-            )}
-
-            {/* Selected Address Display */}
-            {selectedAddress && (
-              <Card className="p-4 bg-blue-50 border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-blue-900">
-                      Selected Address
-                    </h3>
-                    <p className="text-sm text-blue-700">
-                      {selectedAddress.address}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleStartOver}
-                    className="text-blue-600 border-blue-300"
-                  >
-                    Change
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {/* Edit Controls */}
-            {selectedAddress && (
-              <EditControls
-                roofPolygons={roofPolygons}
-                onManualAreaUpdate={handleManualAreaUpdate}
-                onDeletePolygon={handleDeletePolygon}
-                onClearAll={handleClearAll}
-                // onExportData={handleExportData}
-                // onPrintResults={handlePrintResults}
-                // onShareResults={handleShareResults}
-                selectedAddress={selectedAddress.address}
-              />
-            )}
-          </div>
-
-          {/* Center Column - Map */}
-          <div className="lg:col-span-1">
-            {selectedAddress ? (
-              <div className="space-y-4">
-                <Card className="p-4">
-                  <div className="flex items-center mb-3">
-                    <MapIcon className="h-5 w-5 text-blue-600 mr-2" />
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Step 2: Draw Roof Outline
-                    </h2>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    The building should be automatically detected. Use the
-                    drawing tools to adjust or add additional roof sections.
-                  </p>
-                </Card>
-
-                <MapContainer
-                  selectedAddress={selectedAddress}
-                  onAreaCalculated={handleAreaCalculated}
-                  isLoading={isLoading}
-                  onLoadingChange={setIsLoading}
-                />
-              </div>
-            ) : (
-              <Card className="p-12 text-center">
-                <MapIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Map View
-                </h3>
-                <p className="text-gray-600">
-                  Enter an address to start calculating roof areas
-                </p>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Results */}
-          <div className="lg:col-span-1">
-            <div className="space-y-4">
-              <Card className="p-4">
-                <div className="flex items-center mb-3">
-                  <CalculatorIcon className="h-5 w-5 text-blue-600 mr-2" />
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Step 3: Calculation Results
-                  </h2>
-                </div>
-                {totalArea > 0 && (
-                  <p className="text-sm text-gray-600 mb-4">
-                    Your roof area calculations and solar potential estimates
-                  </p>
-                )}
-              </Card>
-
-              <RoofAreaDisplay
-                roofPolygons={roofPolygons}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Information Footer */}
-        <div className="mt-12">
-          <Card className="p-6 bg-blue-50 border-blue-200">
-            <div className="flex items-start">
-              <InformationCircleIcon className="h-6 w-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                  How to Use the Roof Calculator
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-blue-800">
-                  <div>
-                    <h4 className="font-medium mb-2">1. Search Address</h4>
-                    <p>
-                      Enter your complete address in the search box. Select from
-                      the dropdown suggestions for best results.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">2. Draw or Adjust</h4>
-                    <p>
-                      The system will try to detect your building automatically.
-                      Use drawing tools to refine or add roof sections.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">3. Review Results</h4>
-                    <p>
-                      View calculated areas, solar estimates, and export your
-                      results for future reference or sharing.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-700">
-                    <strong>Accuracy Note:</strong> This tool provides estimates
-                    based on satellite imagery. For precise measurements needed
-                    for solar installations or construction, please consult with
-                    professionals who can perform on-site assessments.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
       </div>
-    </div>
+    </>
   );
 }

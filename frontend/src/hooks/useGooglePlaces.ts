@@ -1,6 +1,6 @@
 // src/hooks/useGooglePlaces.ts
 // Custom hook for loading Google Places API dynamically
-
+'use client'
 import { useState, useEffect } from 'react'
 import { UseGooglePlacesReturn } from '@/types'
 
