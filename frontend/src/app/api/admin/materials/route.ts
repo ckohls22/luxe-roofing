@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
       materialImage = await uploadToCloudinary(materialImageFile);
     }
     let showcaseImage = "";
-    if (materialImageFile && materialImageFile.size > 0) {
-      materialImage = await uploadToCloudinary(materialImageFile);
+    if (showCase && showCase.size > 0) {
+      showcaseImage = await uploadToCloudinary(showCase);
     }
 
     console.log(materialImage, showcaseImage);
