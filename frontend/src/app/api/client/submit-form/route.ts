@@ -81,24 +81,22 @@ async function verifyCaptcha(token: string, ip: string): Promise<boolean> {
   }
 
   try {
+    // "/siteverify" API endpoint.
+    let formData = new FormData();
+    formData.append("secret", process.env.TURNSTILE_SECRET_KEY!);
+    formData.append("response", token);
+    formData.append("remoteip", ip);
     const idempotencyKey = crypto.randomUUID();
-    const response = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: JSON.stringify({
-          secret: SECRET_KEY,
-          response: token,
-          remoteip: ip,
-          idempotency_key: idempotencyKey,
-        }),
-      }
-    );
+    formData.append("idempotency_key", idempotencyKey);
+    console.log("Verifying captcha:", { token, ip, idempotencyKey });
 
-    const data = await response.json();
+     const url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+  const firstResult = await fetch(url, {
+    body: formData,
+    method: "POST",
+  });
+
+    const data = await firstResult.json();
     return data.success === true;
   } catch (error) {
     console.error("Captcha verification failed:", error);
@@ -154,7 +152,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Add debug logging
-    console.log("Received payload:", JSON.stringify(body, null, 2));
+    // console.log("Received payload:", JSON.stringify(body, null, 2));
 
     // Validate with the updated schema
     const validationResult = formSchema.safeParse(body);

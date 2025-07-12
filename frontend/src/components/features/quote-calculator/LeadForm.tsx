@@ -19,6 +19,7 @@ import * as z from "zod";
 import { AddressContext } from "./providers/SearchProvider";
 import { SearchAddress } from "@/types";
 import { RoofPolygon, RoofType } from "@/types";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 // Validation Schema only for form inputs
 const formSchema = z.object({
@@ -56,7 +57,7 @@ export default function LeadForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [countryCode, setCountryCode] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const captchaContainer = useRef<HTMLDivElement>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
   // Consume currentStep from provider
   const { selectedAddress, roofPolygons, roofType, currentStep } =
     useContext(AddressContext);
@@ -70,53 +71,6 @@ export default function LeadForm({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
-  // load cloudflare turnstile script
-  useEffect(() => {
-    if (document.getElementById("turnstile-script")) return;
-
-    const script = document.createElement("script");
-    script.id = "turnstile-script";
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-  }, []);
-
-  const renderTurnstile = () => {
-    if (window.turnstile && captchaContainer.current) {
-      captchaContainer.current.innerHTML = ""; // Reset container
-      window.turnstile.ready(() => {
-        window.turnstile.render(captchaContainer.current!, {
-          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
-          callback: (token: string) => {
-            setCaptchaToken(token);
-            setSubmitError(null);
-          },
-          "expired-callback": () => setCaptchaToken(null),
-        });
-      });
-    }
-  };
-
-  // Re-render captcha when switching to this step
-  useEffect(() => {
-    const onLoad = () => {
-      renderTurnstile();
-    };
-
-    if (currentStep === "lead-form") {
-      setCaptchaToken(null);
-      if (window.turnstile) {
-        renderTurnstile();
-      } else {
-        window.addEventListener("load", onLoad);
-      }
-    }
-
-    return () => {
-      window.removeEventListener("load", onLoad);
-    };
-  }, [currentStep]);
 
   // Auto-detect country code
   useEffect(() => {
@@ -131,11 +85,18 @@ export default function LeadForm({
     })();
   }, []);
 
+  // Add this effect to watch for step changes
+  useEffect(() => {
+    if (currentStep === "lead-form") {
+      // Force captcha re-render by updating its key
+      setCaptchaKey((prev) => prev + 1);
+    }
+  }, [currentStep]);
+
   const resetForm = () => {
     reset();
     setSubmitError(null);
     setCaptchaToken(null);
-    renderTurnstile();
   };
 
   const onSubmitForm = async (data: FormData) => {
@@ -192,6 +153,12 @@ export default function LeadForm({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Turnstile success handler
+  const handleTurnstileSuccess = (token: string) => {
+    setCaptchaToken(token);
+    setSubmitError(null);
   };
 
   return (
@@ -290,9 +257,17 @@ export default function LeadForm({
 
           {/* Captcha */}
           <div className="space-y-2">
-            {/* <Label>Verification *</Label> */}
-            <div ref={captchaContainer} />
-            {/* {!captchaToken && <p className="text-gray-500 text-sm">Please complete the captcha</p>} */}
+            <Label>Verification *</Label>
+            <Turnstile
+              key={captchaKey} // Add this key prop
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              onSuccess={handleTurnstileSuccess}
+              onError={() => {
+                setCaptchaToken(null);
+                setSubmitError("Captcha verification failed");
+              }}
+              onExpire={() => setCaptchaToken(null)}
+            />
           </div>
 
           {/* Submit Button */}
@@ -320,12 +295,4 @@ export default function LeadForm({
       </CardContent>
     </Card>
   );
-}
-
-declare global {
-  interface Window {
-    hcaptcha: any;
-    hcaptchaOnLoad?: () => void;
-    turnstile?: any;
-  }
 }
