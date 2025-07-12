@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   BarChart3,
   FileText,
@@ -12,14 +12,32 @@ import {
   Edit,
   Trash2,
   Search,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sidebar,
   SidebarContent,
@@ -29,10 +47,14 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
-import { Input } from "@/components/ui"
+} from "@/components/ui/sidebar";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Input } from "@/components/ui";
 
 // Sample data
 const monthlyLeadsData = [
@@ -42,7 +64,7 @@ const monthlyLeadsData = [
   { month: "Apr", leads: 61 },
   { month: "May", leads: 55 },
   { month: "Jun", leads: 67 },
-]
+];
 
 // Expanded sample data (simulating API response)
 const allLeadsData = [
@@ -154,7 +176,7 @@ const allLeadsData = [
     status: "approved",
     date: "2024-01-04",
   },
-]
+];
 
 const navigationItems = [
   {
@@ -177,7 +199,7 @@ const navigationItems = [
     icon: Building2,
     isActive: false,
   },
-]
+];
 
 function AppSidebar() {
   return (
@@ -194,7 +216,10 @@ function AppSidebar() {
         <SidebarMenu className="px-4 py-4">
           {navigationItems.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton isActive={item.isActive} className="w-full justify-start">
+              <SidebarMenuButton
+                isActive={item.isActive}
+                className="w-full justify-start"
+              >
                 <item.icon className="h-4 w-4" />
                 <span>{item.title}</span>
               </SidebarMenuButton>
@@ -203,15 +228,15 @@ function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
 
 export function AdminDashboard() {
-  const [activeNav, setActiveNav] = useState("Dashboard")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const itemsPerPage = 5
+  const [activeNav, setActiveNav] = useState("Dashboard");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const itemsPerPage = 5;
 
   // Filter leads based on search term
   const filteredLeads = allLeadsData.filter(
@@ -219,45 +244,57 @@ export function AdminDashboard() {
       lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.status.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      lead.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentLeads = filteredLeads.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLeads = filteredLeads.slice(startIndex, endIndex);
 
   // Reset to first page when search changes
   const handleSearch = (value: string) => {
-    setSearchTerm(value)
-    setCurrentPage(1)
-  }
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
 
   // Simulate API call structure (ready for future implementation)
   const fetchLeads = async (page: number, search: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     // Future API call would go here
     // const response = await fetch(`/api/leads?page=${page}&search=${search}&limit=${itemsPerPage}`)
     // const data = await response.json()
 
     // Simulate loading delay
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    setIsLoading(false)
-  }
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    setIsLoading(false);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Approved</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+            Approved
+          </Badge>
+        );
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+            Pending
+          </Badge>
+        );
       case "rejected":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Rejected</Badge>
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+            Rejected
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  }
+  };
 
   return (
     <SidebarProvider>
@@ -271,7 +308,10 @@ export function AdminDashboard() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
                     <AvatarFallback>AD</AvatarFallback>
@@ -292,7 +332,9 @@ export function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Monthly Leads Chart</CardTitle>
-                <CardDescription>Lead generation performance over the last 6 months</CardDescription>
+                <CardDescription>
+                  Lead generation performance over the last 6 months
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer
@@ -309,7 +351,11 @@ export function AdminDashboard() {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="leads" fill="var(--color-leads)" radius={4} />
+                      <Bar
+                        dataKey="leads"
+                        fill="var(--color-leads)"
+                        radius={4}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -320,33 +366,41 @@ export function AdminDashboard() {
             <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Leads
+                  </CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">318</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+12.5%</span> from last month
+                    <span className="text-green-600">+12.5%</span> from last
+                    month
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Users
+                  </CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">1,247</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+8.2%</span> from last month
+                    <span className="text-green-600">+8.2%</span> from last
+                    month
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Suppliers</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Suppliers
+                  </CardTitle>
                   <Building2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -364,7 +418,9 @@ export function AdminDashboard() {
                 <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                   <div>
                     <CardTitle>Leads Table</CardTitle>
-                    <CardDescription>Recent leads and their current status</CardDescription>
+                    <CardDescription>
+                      Recent leads and their current status
+                    </CardDescription>
                   </div>
                   <div className="flex w-full max-w-sm items-center space-x-2">
                     <div className="relative flex-1">
@@ -397,44 +453,57 @@ export function AdminDashboard() {
                       </TableHeader>
                       <TableBody>
                         {isLoading ? (
-                          Array.from({ length: itemsPerPage }).map((_, index) => (
-                            <TableRow key={index}>
-                              <TableCell>
-                                <div className="h-4 w-24 animate-pulse rounded bg-muted"></div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="h-4 w-32 animate-pulse rounded bg-muted"></div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="h-4 w-40 animate-pulse rounded bg-muted"></div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="h-4 w-20 animate-pulse rounded bg-muted"></div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="h-4 w-20 animate-pulse rounded bg-muted"></div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="h-4 w-8 animate-pulse rounded bg-muted"></div>
-                              </TableCell>
-                            </TableRow>
-                          ))
+                          Array.from({ length: itemsPerPage }).map(
+                            (_, index) => (
+                              <TableRow key={index}>
+                                <TableCell>
+                                  <div className="h-4 w-24 animate-pulse rounded bg-muted"></div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="h-4 w-32 animate-pulse rounded bg-muted"></div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="h-4 w-40 animate-pulse rounded bg-muted"></div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="h-4 w-20 animate-pulse rounded bg-muted"></div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="h-4 w-20 animate-pulse rounded bg-muted"></div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="h-4 w-8 animate-pulse rounded bg-muted"></div>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          )
                         ) : currentLeads.length > 0 ? (
                           currentLeads.map((lead) => (
                             <TableRow key={lead.id}>
-                              <TableCell className="font-medium">{lead.name}</TableCell>
+                              <TableCell className="font-medium">
+                                {lead.name}
+                              </TableCell>
                               <TableCell>{lead.email}</TableCell>
-                              <TableCell className="max-w-[200px] truncate">{lead.address}</TableCell>
-                              <TableCell className="font-semibold">{lead.quote}</TableCell>
-                              <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                              <TableCell className="max-w-[200px] truncate">
+                                {lead.address}
+                              </TableCell>
+                              <TableCell className="font-semibold">
+                                {lead.quote}
+                              </TableCell>
+                              <TableCell>
+                                {getStatusBadge(lead.status)}
+                              </TableCell>
                               <TableCell>{lead.date}</TableCell>
                               <TableCell className="text-right">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <Button
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0"
+                                    >
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
@@ -458,7 +527,10 @@ export function AdminDashboard() {
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            <TableCell
+                              colSpan={7}
+                              className="text-center py-8 text-muted-foreground"
+                            >
                               No leads found matching your search.
                             </TableCell>
                           </TableRow>
@@ -491,16 +563,27 @@ export function AdminDashboard() {
                                   <h3 className="font-medium">{lead.name}</h3>
                                   {getStatusBadge(lead.status)}
                                 </div>
-                                <p className="text-sm text-muted-foreground">{lead.email}</p>
-                                <p className="text-sm text-muted-foreground truncate">{lead.address}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {lead.email}
+                                </p>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {lead.address}
+                                </p>
                                 <div className="flex items-center justify-between">
-                                  <span className="font-semibold">{lead.quote}</span>
-                                  <span className="text-sm text-muted-foreground">{lead.date}</span>
+                                  <span className="font-semibold">
+                                    {lead.quote}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {lead.date}
+                                  </span>
                                 </div>
                               </div>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <Button
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                  >
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -536,49 +619,63 @@ export function AdminDashboard() {
                   {totalPages > 1 && (
                     <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                       <div className="text-sm text-muted-foreground">
-                        Showing {startIndex + 1} to {Math.min(endIndex, filteredLeads.length)} of {filteredLeads.length}{" "}
-                        results
+                        Showing {startIndex + 1} to{" "}
+                        {Math.min(endIndex, filteredLeads.length)} of{" "}
+                        {filteredLeads.length} results
                       </div>
                       <div className="flex items-center space-x-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(prev - 1, 1))
+                          }
                           disabled={currentPage === 1 || isLoading}
                         >
                           Previous
                         </Button>
                         <div className="flex items-center space-x-1">
-                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                            let pageNumber
-                            if (totalPages <= 5) {
-                              pageNumber = i + 1
-                            } else if (currentPage <= 3) {
-                              pageNumber = i + 1
-                            } else if (currentPage >= totalPages - 2) {
-                              pageNumber = totalPages - 4 + i
-                            } else {
-                              pageNumber = currentPage - 2 + i
-                            }
+                          {Array.from(
+                            { length: Math.min(5, totalPages) },
+                            (_, i) => {
+                              let pageNumber;
+                              if (totalPages <= 5) {
+                                pageNumber = i + 1;
+                              } else if (currentPage <= 3) {
+                                pageNumber = i + 1;
+                              } else if (currentPage >= totalPages - 2) {
+                                pageNumber = totalPages - 4 + i;
+                              } else {
+                                pageNumber = currentPage - 2 + i;
+                              }
 
-                            return (
-                              <Button
-                                key={pageNumber}
-                                variant={currentPage === pageNumber ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setCurrentPage(pageNumber)}
-                                disabled={isLoading}
-                                className="w-8 h-8 p-0"
-                              >
-                                {pageNumber}
-                              </Button>
-                            )
-                          })}
+                              return (
+                                <Button
+                                  key={pageNumber}
+                                  variant={
+                                    currentPage === pageNumber
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  size="sm"
+                                  onClick={() => setCurrentPage(pageNumber)}
+                                  disabled={isLoading}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  {pageNumber}
+                                </Button>
+                              );
+                            }
+                          )}
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              Math.min(prev + 1, totalPages)
+                            )
+                          }
                           disabled={currentPage === totalPages || isLoading}
                         >
                           Next
@@ -593,5 +690,5 @@ export function AdminDashboard() {
         </div>
       </div>
     </SidebarProvider>
-  )
+  );
 }

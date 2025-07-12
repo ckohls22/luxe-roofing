@@ -48,6 +48,7 @@ export function MaterialForm({
 }: MaterialFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedType, setSelectedType] = useState("");
+  console.log(selectedType);
   const [materialPreview, setMaterialPreview] = useState<string | null>(null); // For image preview
   const [showcasePreview, setShowcasePreview] = useState<string | null>(null); // For image preview
 
@@ -71,12 +72,12 @@ export function MaterialForm({
     try {
       const formData = new FormData();
       formData.append("supplierId", supplierId);
-      formData.append("type", data.type);
+      formData.append("type", selectedType);
       formData.append("warranty", data.warranty);
       formData.append("topFeatures", data.topFeatures);
       formData.append("materialImage", materialImage as File);
       formData.append("showCase", showCase as File);
-      console.log(materialImage, showCase);
+      console.log("Form Data:", formData);
 
       const material = await addMaterial(formData);
       setIsSubmitting(false);
