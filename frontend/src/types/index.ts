@@ -33,11 +33,7 @@ export interface RoofArea {
 export interface RoofPolygon {
   id: string;
   coordinates: number[][];
-  area: {
-    squareMeters: number;
-    squareFeet: number;
-    formatted: string;
-  };
+  area: RoofArea;
   label: string;
   centerPoint: [number, number];
   slope?: string;
@@ -51,6 +47,8 @@ export interface BuildingFeature extends GeoJSON.Feature<GeoJSON.Polygon> {
     [key: string]: any;
   };
 }
+
+
 
 // Google Places types
 export interface PlaceResult {
@@ -72,7 +70,7 @@ export interface GoogleMapsConfig {
 
 // Address search types
 export interface SearchAddress {
-  address: string
+  address: string;
   coordinates: [number, number];
   placeId: string;
 }
@@ -173,6 +171,18 @@ export interface AppConfig {
     maxZoomLevel: number;
   };
 }
+
+//lead form types
+export type SubmissionPayload = FormData & {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: SearchAddress;
+  roofPolygons: RoofPolygon[];
+  roofType: RoofType;
+  captchaToken: string;
+};
 
 // Utility types
 export type Coordinates = [number, number];

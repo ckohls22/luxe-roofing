@@ -1,25 +1,31 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { AddressContext } from './providers/SearchProvider';
-import { SearchAddress } from '@/types';
-import { RoofPolygon, RoofType } from '@/types';
+import React, { useState, useEffect, useContext, useRef } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { AddressContext } from "./providers/SearchProvider";
+import { SearchAddress } from "@/types";
+import { RoofPolygon, RoofType } from "@/types";
 
 // Validation Schema only for form inputs
 const formSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -28,7 +34,7 @@ type SubmissionPayload = FormData & {
   address: SearchAddress;
   roofPolygons: RoofPolygon[];
   roofType: RoofType;
-  phone: string;
+  // // phone: string;
   captchaToken: string;
 };
 
@@ -38,54 +44,65 @@ interface ContactFormProps {
   className?: string;
 }
 
-export default function LeadForm({ onSubmit, initialData, className = '' }: ContactFormProps) {
+export default function LeadForm({
+  onSubmit,
+  initialData,
+  className = "",
+}: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [countryCode, setCountryCode] = useState('');
+  const [countryCode, setCountryCode] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaContainer = useRef<HTMLDivElement>(null);
   // Consume currentStep from provider
-  const { selectedAddress, roofPolygons, roofType, currentStep } = useContext(AddressContext);
+  const { selectedAddress, roofPolygons, roofType, currentStep } =
+    useContext(AddressContext);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
+// load cloudflare turnstile script
+ useEffect(() => {
+  if (document.getElementById("turnstile-script")) return;
 
-  // Load hCaptcha script once
-  useEffect(() => {
-    if (document.getElementById('hcaptcha-script')) return;
-    const script = document.createElement('script');
-    script.id = 'hcaptcha-script';
-    script.src = 'https://js.hcaptcha.com/1/api.js?onload=hcaptchaOnLoad&render=explicit';
-    script.async = true;
-    script.defer = true;
-    window.hcaptchaOnLoad = () => renderCaptcha();
-    document.head.appendChild(script);
-    return () => {
-      window.hcaptchaOnLoad = () => {};
-      document.head.removeChild(script);
-    };
-  }, []);
+  const script = document.createElement("script");
+  script.id = "turnstile-script";
+  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+  script.async = true;
+  script.defer = true;
+  document.head.appendChild(script);
+}, []);
 
-  // Render or reset captcha
-  const renderCaptcha = () => {
-    if (window.hcaptcha && captchaContainer.current) {
-      captchaContainer.current.innerHTML = '';
-      window.hcaptcha.render(captchaContainer.current, {
-        sitekey: '7c009708-e3a2-4a52-ad28-91c4c25e798c',
-        callback: (token: string) => { setCaptchaToken(token); setSubmitError(null); },
-        'expired-callback': () => setCaptchaToken(null),
+const renderTurnstile = () => {
+  if (window.turnstile && captchaContainer.current) {
+    captchaContainer.current.innerHTML = ""; // Reset container
+    window.turnstile.ready(() => {
+      window.turnstile.render(captchaContainer.current!, {
+        sitekey: "YOUR_TURNSTILE_SITE_KEY",
+        callback: (token: string) => {
+          setCaptchaToken(token);
+          setSubmitError(null);
+        },
+        "expired-callback": () => setCaptchaToken(null),
       });
-    }
-  };
+    });
+  }
+};
 
   // Re-render captcha when switching to this step
   useEffect(() => {
-    if (currentStep === 'lead-form') {
+    if (currentStep === "lead-form") {
       setCaptchaToken(null);
-      renderCaptcha();
+      renderTurnstile();
     }
   }, [currentStep]);
 
@@ -93,11 +110,11 @@ export default function LeadForm({ onSubmit, initialData, className = '' }: Cont
   useEffect(() => {
     (async () => {
       try {
-        const resp = await fetch('https://ipapi.co/json/');
+        const resp = await fetch("https://ipapi.co/json/");
         const data = await resp.json();
-        setCountryCode(data.country_calling_code || '+1');
+        setCountryCode(data.country_calling_code || "+1");
       } catch {
-        setCountryCode('+1');
+        setCountryCode("+1");
       }
     })();
   }, []);
@@ -106,44 +123,84 @@ export default function LeadForm({ onSubmit, initialData, className = '' }: Cont
     reset();
     setSubmitError(null);
     setCaptchaToken(null);
-    renderCaptcha();
+    renderTurnstile();
   };
 
   const onSubmitForm = async (data: FormData) => {
+    console.log(roofPolygons)
     setSubmitError(null);
-    if (!selectedAddress) return setSubmitError('Please select an address.');
-    if (!captchaToken) return setSubmitError('Please complete the captcha verification.');
+    if (!selectedAddress) return setSubmitError("Please select an address.");
+    if (!captchaToken)
+      return setSubmitError("Please complete the captcha verification.");
 
     setIsSubmitting(true);
-    setSubmitStatus('idle');
+    setSubmitStatus("idle");
 
-    const formattedPhone = `${countryCode}${data.phone.replace(/^\+?1?/, '')}`;
     const payload: SubmissionPayload = {
-      ...data, address: selectedAddress, roofPolygons, roofType,
-      phone: formattedPhone, captchaToken,
+      ...data,
+      address: selectedAddress,
+      roofPolygons: roofPolygons,
+      roofType,
+      captchaToken,
     };
 
-    try {
-      const response = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.message || `Status ${response.status}`);
+    // Debug log
+    console.log("Submitting payload:", JSON.stringify(payload, null, 2));
 
-      setSubmitStatus('success'); resetForm(); onSubmit?.(payload);
-      const prev = JSON.parse(localStorage.getItem('roof_quote_history') || '[]');
-      localStorage.setItem('roof_quote_history', JSON.stringify([...prev, payload]));
+    try {
+      const response = await fetch("/api/client/submit-form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      // Add this debug log
+      const result = await response.json();
+      console.log("Server response:", result);
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || `Status ${response.status}`);
+      }
+
+      setSubmitStatus("success");
+      resetForm();
+      onSubmit?.(payload);
+
+      const prev = JSON.parse(
+        localStorage.getItem("roof_quote_history") || "[]"
+      );
+      localStorage.setItem(
+        "roof_quote_history",
+        JSON.stringify([...prev, payload])
+      );
     } catch (e: any) {
-      setSubmitStatus('error'); setSubmitError(e.message || 'Submission failed');
-    } finally { setIsSubmitting(false); }
+      console.error("Submission error:", e);
+      setSubmitStatus("error");
+      setSubmitError(e.message || "Submission failed");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Card className={`w-[450px] max-w-full mx-auto border-0 shadow-none ${className}`}>      
+    <Card
+      className={`w-[450px] max-w-full mx-auto border-0 shadow-none ${className}`}
+    >
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center mb-2">Get Your Free Quote</CardTitle>
-        <CardDescription className="text-center text-gray-600">Fill out the form below</CardDescription>
+        <CardTitle className="text-2xl font-bold text-center mb-2">
+          Get Your Free Quote
+        </CardTitle>
+        <CardDescription className="text-center text-gray-600">
+          Fill out the form below
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {submitError && <Alert className="border-red-500 bg-red-50 flex items-center gap-2"><AlertCircle className="h-5 w-5 text-red-500" /><AlertDescription>{submitError}</AlertDescription></Alert>}
+        {submitError && (
+          <Alert className="border-red-500 bg-red-50 flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-red-500" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
         <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6 p-4">
           {/* Name Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -151,21 +208,33 @@ export default function LeadForm({ onSubmit, initialData, className = '' }: Cont
               <Label htmlFor="firstName">First Name *</Label>
               <Input
                 id="firstName"
-                {...register('firstName')}
+                {...register("firstName")}
                 placeholder="John"
-                className={`h-12 rounded-full border ${errors.firstName ? 'border-red-500' : 'border-gray-500'}`}
+                className={`h-12 rounded-full border ${
+                  errors.firstName ? "border-red-500" : "border-gray-500"
+                }`}
               />
-              {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName.message}</p>}
+              {errors.firstName && (
+                <p className="text-red-500 text-sm">
+                  {errors.firstName.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name *</Label>
               <Input
                 id="lastName"
-                {...register('lastName')}
+                {...register("lastName")}
                 placeholder="Doe"
-                className={`h-12 rounded-full border ${errors.lastName ? 'border-red-500' : 'border-gray-500'}`}
+                className={`h-12 rounded-full border ${
+                  errors.lastName ? "border-red-500" : "border-gray-500"
+                }`}
               />
-              {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName.message}</p>}
+              {errors.lastName && (
+                <p className="text-red-500 text-sm">
+                  {errors.lastName.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -175,11 +244,15 @@ export default function LeadForm({ onSubmit, initialData, className = '' }: Cont
             <Input
               id="email"
               type="email"
-              {...register('email')}
+              {...register("email")}
               placeholder="john.doe@example.com"
-              className={`h-12 rounded-full border ${errors.email ? 'border-red-500' : 'border-gray-500'}`}
+              className={`h-12 rounded-full border ${
+                errors.email ? "border-red-500" : "border-gray-500"
+              }`}
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
           </div>
 
           {/* Phone */}
@@ -191,12 +264,16 @@ export default function LeadForm({ onSubmit, initialData, className = '' }: Cont
               </div>
               <Input
                 id="phone"
-                {...register('phone')}
+                {...register("phone")}
                 placeholder="1234567890"
-                className={`h-12 rounded-full rounded-l-none border ${errors.phone ? 'border-red-500' : 'border-gray-500'}`}
+                className={`h-12 rounded-full rounded-l-none border ${
+                  errors.phone ? "border-red-500" : "border-gray-500"
+                }`}
               />
             </div>
-            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone.message}</p>
+            )}
           </div>
 
           {/* Captcha */}
@@ -213,16 +290,30 @@ export default function LeadForm({ onSubmit, initialData, className = '' }: Cont
             className="w-full rounded-full p-7 bg-gradient-to-r from-orange-400 to-orange-600 disabled:opacity-50"
           >
             {isSubmitting ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
             ) : (
-              'Submit'
+              "Submit"
             )}
           </Button>
         </form>
-        {submitStatus === 'success' && <Alert className="border-green-500 bg-green-50 flex items-center gap-2 mt-4"><CheckCircle className="h-5 w-5 text-green-500" /><AlertDescription>Submitted successfully!</AlertDescription></Alert>}
+        {submitStatus === "success" && (
+          <Alert className="border-green-500 bg-green-50 flex items-center gap-2 mt-4">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            <AlertDescription>Submitted successfully!</AlertDescription>
+          </Alert>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-declare global { interface Window { hcaptcha: any; hcaptchaOnLoad?: () => void; } }
+declare global {
+  interface Window {
+    hcaptcha: any;
+    hcaptchaOnLoad?: () => void;
+    turnstile?: any;
+  }
+}
