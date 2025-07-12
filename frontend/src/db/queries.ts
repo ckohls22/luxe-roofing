@@ -350,7 +350,15 @@ export async function getAllForms(
     sortOrder === "asc" ? asc(forms[sortBy]) : desc(forms[sortBy]);
 
   const results = await db
-    .select()
+    .select({
+      id: forms.id,
+      firstName: forms.firstName,
+      lastName: forms.lastName,
+      email: forms.email,
+      phone: forms.phone,
+      roofType: forms.roofType,
+      createdAt: forms.createdAt,
+    })
     .from(forms)
     .orderBy(orderBy)
     .limit(limit)
