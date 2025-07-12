@@ -90,11 +90,11 @@ async function verifyCaptcha(token: string, ip: string): Promise<boolean> {
     formData.append("idempotency_key", idempotencyKey);
     console.log("Verifying captcha:", { token, ip, idempotencyKey });
 
-     const url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-  const firstResult = await fetch(url, {
-    body: formData,
-    method: "POST",
-  });
+    const url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+    const firstResult = await fetch(url, {
+      body: formData,
+      method: "POST",
+    });
 
     const data = await firstResult.json();
     return data.success === true;
@@ -211,18 +211,24 @@ export async function POST(request: NextRequest) {
           placeId: payload.address.placeId,
         },
       ],
-      roofPolygons: payload.roofPolygons,
+      roofPolygons: payload.roofPolygons.map((polygon) => {
+        return {
+          ...polygon,
+          id: String(polygon.id),
+        };
+      }),
     };
 
     // Insert into database
-    // const result = await createFormSubmission(submissionData);
-    const result = {
-      form: {
-        id: "mock-id", // Replace with actual ID from database
-        createdAt: new Date().toISOString(), // Replace with actual timestamp
-        ...submissionData.form,
-      },
-    };
+
+    const result = await createFormSubmission(submissionData);
+    // const result = {
+    //   form: {
+    //     id: "mock-id", // Replace with actual ID from database
+    //     createdAt: new Date().toISOString(), // Replace with actual timestamp
+    //     ...submissionData.form,
+    //   },
+    // };
 
     // Record successful submission for rate limiting
     const now = Date.now();

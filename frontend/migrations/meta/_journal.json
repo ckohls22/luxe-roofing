@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1751485038380,
-      "tag": "0000_smart_gamora",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1751569262505,
-      "tag": "0001_careless_human_fly",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1751658974204,
-      "tag": "0002_parched_jackal",
+      "when": 1752355012174,
+      "tag": "0000_mature_sharon_ventura",
       "breakpoints": true
     }
   ]
