@@ -70,40 +70,52 @@ export default function LeadForm({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
-// load cloudflare turnstile script
- useEffect(() => {
-  if (document.getElementById("turnstile-script")) return;
+  // load cloudflare turnstile script
+  useEffect(() => {
+    if (document.getElementById("turnstile-script")) return;
 
-  const script = document.createElement("script");
-  script.id = "turnstile-script";
-  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-  script.async = true;
-  script.defer = true;
-  document.head.appendChild(script);
-}, []);
+    const script = document.createElement("script");
+    script.id = "turnstile-script";
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  }, []);
 
-const renderTurnstile = () => {
-  if (window.turnstile && captchaContainer.current) {
-    captchaContainer.current.innerHTML = ""; // Reset container
-    window.turnstile.ready(() => {
-      window.turnstile.render(captchaContainer.current!, {
-        sitekey: "YOUR_TURNSTILE_SITE_KEY",
-        callback: (token: string) => {
-          setCaptchaToken(token);
-          setSubmitError(null);
-        },
-        "expired-callback": () => setCaptchaToken(null),
+  const renderTurnstile = () => {
+    if (window.turnstile && captchaContainer.current) {
+      captchaContainer.current.innerHTML = ""; // Reset container
+      window.turnstile.ready(() => {
+        window.turnstile.render(captchaContainer.current!, {
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
+          callback: (token: string) => {
+            setCaptchaToken(token);
+            setSubmitError(null);
+          },
+          "expired-callback": () => setCaptchaToken(null),
+        });
       });
-    });
-  }
-};
+    }
+  };
 
   // Re-render captcha when switching to this step
   useEffect(() => {
+    const onLoad = () => {
+      renderTurnstile();
+    };
+
     if (currentStep === "lead-form") {
       setCaptchaToken(null);
-      renderTurnstile();
+      if (window.turnstile) {
+        renderTurnstile();
+      } else {
+        window.addEventListener("load", onLoad);
+      }
     }
+
+    return () => {
+      window.removeEventListener("load", onLoad);
+    };
   }, [currentStep]);
 
   // Auto-detect country code
@@ -127,7 +139,7 @@ const renderTurnstile = () => {
   };
 
   const onSubmitForm = async (data: FormData) => {
-    console.log(roofPolygons)
+    console.log(roofPolygons);
     setSubmitError(null);
     if (!selectedAddress) return setSubmitError("Please select an address.");
     if (!captchaToken)

@@ -96,8 +96,6 @@ export const materials = pgTable("materials", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-
-
 // Relations
 export const adminRelations = relations(admin, ({ many }) => ({
   sessions: many(adminSessions),
@@ -132,67 +130,72 @@ export const materialRelations = relations(materials, ({ one }) => ({
   }), // each material belongs to one supplier
 }));
 
-
 // // lead form
 /* ------------------------------------------------------------------ */
 /*  ENUMS                                                             */
 /* ------------------------------------------------------------------ */
-export const roofTypeEnum = pgEnum('roof_type', [
-  'residential',
-  'industrial',
-  'commercial',
+export const roofTypeEnum = pgEnum("roof_type", [
+  "residential",
+  "industrial",
+  "commercial",
 ]);
 
 /* ------------------------------------------------------------------ */
 /*  TABLE: forms — MAIN TABLE for "Get a Quote" form submissions      */
 /* ------------------------------------------------------------------ */
-export const forms = pgTable('forms', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  firstName: varchar('first_name', { length: 100 }).notNull(),
-  lastName:  varchar('last_name',  { length: 100 }).notNull(),
-  email:     varchar('email',      { length: 320 }).notNull(),
-  phone:     varchar('phone',      { length: 20  }).notNull(),
-  roofType:  roofTypeEnum('roof_type').notNull(),
-  captchaToken: text('captcha_token'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+export const forms = pgTable("forms", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  roofType: roofTypeEnum("roof_type").notNull(),
+  captchaToken: text("captcha_token"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 /* ------------------------------------------------------------------ */
 /*  TABLE: addresses — user‑picked Google / Mapbox locations          */
 /* ------------------------------------------------------------------ */
-export const addresses = pgTable('addresses', {
-  id: serial('id').primaryKey(),
+export const addresses = pgTable("addresses", {
+  id: serial("id").primaryKey(),
   /** FK → forms.id */
-  formId: uuid('form_id')
+  formId: uuid("form_id")
     .references(() => forms.id)
     .notNull(),
   /** Full formatted string returned by Google Places */
-  formattedAddress: text('formatted_address').notNull(),
+  formattedAddress: text("formatted_address").notNull(),
   /** WGS‑84 latitude / longitude (6‑decimals ≈ 0.11 m) */
-  lat: numeric('lat', { precision: 10, scale: 6 }).notNull(),
-  lng: numeric('lng', { precision: 10, scale: 6 }).notNull(),
+  lat: numeric("lat", { precision: 10, scale: 6 }).notNull(),
+  lng: numeric("lng", { precision: 10, scale: 6 }).notNull(),
   /** Google Places ID (unique) */
-  placeId: varchar('place_id', { length: 128 }).notNull().unique(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  placeId: varchar("place_id", { length: 128 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 /* ------------------------------------------------------------------ */
 /*  TABLE: roof_polygons — stores array of RoofPolygon per form       */
 /* ------------------------------------------------------------------ */
-export const roofPolygons = pgTable('roof_polygons', {
-  id: uuid('id').defaultRandom().primaryKey(),
+export const roofPolygons = pgTable("roof_polygons", {
+  id: uuid("id").defaultRandom().primaryKey(),
   /** FK → forms.id */
-  formId: uuid('form_id')
+  formId: uuid("form_id")
     .references(() => forms.id)
     .notNull(),
   /** Array of RoofPolygon objects stored as JSONB */
-  polygons: jsonb('polygons').notNull(),
+  polygons: jsonb("polygons").notNull(),
   /** Pre-calculated totals for quick lookups */
-  totalAreaSqm: numeric('total_area_sqm', { precision: 12, scale: 2 }).notNull(),
-  totalAreaSqft: numeric('total_area_sqft', { precision: 12, scale: 2 }).notNull(),
+  totalAreaSqm: numeric("total_area_sqm", {
+    precision: 12,
+    scale: 2,
+  }).notNull(),
+  totalAreaSqft: numeric("total_area_sqft", {
+    precision: 12,
+    scale: 2,
+  }).notNull(),
   /** Number of polygons in the array */
-  polygonCount: integer('polygon_count').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  polygonCount: integer("polygon_count").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 /* ------------------------------------------------------------------ */
@@ -205,14 +208,14 @@ export const formsRelations = relations(forms, ({ many }) => ({
 
 export const addressesRelations = relations(addresses, ({ one }) => ({
   form: one(forms, {
-    fields:   [addresses.formId],
+    fields: [addresses.formId],
     references: [forms.id],
   }),
 }));
 
 export const roofPolygonsRelations = relations(roofPolygons, ({ one }) => ({
   form: one(forms, {
-    fields:     [roofPolygons.formId],
+    fields: [roofPolygons.formId],
     references: [forms.id],
   }),
 }));
@@ -224,17 +227,3 @@ export type Address = typeof addresses.$inferSelect;
 export type NewAddress = typeof addresses.$inferInsert;
 export type RoofPolygons = typeof roofPolygons.$inferSelect;
 export type NewRoofPolygons = typeof roofPolygons.$inferInsert;
-
-// Frontend RoofPolygon interface (matches your existing interface)
-export interface RoofPolygon {
-  id: string;
-  coordinates: number[][];
-  area: {
-    squareMeters: number;
-    squareFeet: number;
-    formatted: string;
-  };
-  label: string;
-  centerPoint: [number, number];
-  slope?: string;
-}

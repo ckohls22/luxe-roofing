@@ -11,14 +11,12 @@ import {
   type NewForm,
   type Address,
   type NewAddress,
-  type RoofPolygon,
- 
-  roofPolygons
+  roofPolygons,
 } from "./schema";
-import { eq, and, gt, sum, count, sql, desc,asc, like,or } from "drizzle-orm";
+import { eq, and, gt, sum, count, sql, desc, asc, like, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { Material, Supplier } from "@/types/supplierAndMaterialTypes";
-// import type { SearchAddress, SubmissionPayload, RoofPolygon } from '../types';
+import type { SearchAddress, SubmissionPayload, RoofPolygon } from "../types";
 
 // Admin authentication
 export async function authenticateAdmin(username: string, password: string) {
@@ -213,8 +211,7 @@ export const getMaterialsBySupplier = async (
     .where(eq(materials.supplierId, supplierId));
 };
 
-
-// lead form 
+// lead form
 /* ------------------------------------------------------------------ */
 /*  FORM SUBMISSION QUERIES                                           */
 /* ------------------------------------------------------------------ */
@@ -223,43 +220,46 @@ export const getMaterialsBySupplier = async (
  * Create a new form submission with addresses and roof polygons
  */
 export async function createFormSubmission(data: {
-  form: Omit<NewForm, 'id' | 'createdAt'>;
-  addresses: Omit<NewAddress, 'id' | 'formId' | 'createdAt'>[];
+  form: Omit<NewForm, "id" | "createdAt">;
+  addresses: Omit<NewAddress, "id" | "formId" | "createdAt">[];
   roofPolygons: RoofPolygon[];
 }) {
   return await db.transaction(async (tx) => {
     // Insert form
-    const [newForm] = await tx
-      .insert(forms)
-      .values(data.form)
-      .returning();
+    const [newForm] = await tx.insert(forms).values(data.form).returning();
 
     // Insert addresses
-    const newAddresses = data.addresses.length > 0 
-      ? await tx
-          .insert(addresses)
-          .values(
-            data.addresses.map((addr) => ({
-              ...addr,
-              formId: newForm.id,
-            }))
-          )
-          .returning()
-      : [];
+    const newAddresses =
+      data.addresses.length > 0
+        ? await tx
+            .insert(addresses)
+            .values(
+              data.addresses.map((addr) => ({
+                ...addr,
+                formId: newForm.id,
+              }))
+            )
+            .returning()
+        : [];
 
     // Insert roof polygons (as a single record containing array)
-    const newRoofPolygons = data.roofPolygons.length > 0
-      ? await tx
-          .insert(roofPolygons)
-          .values({
-            formId: newForm.id,
-            polygons: data.roofPolygons,
-            totalAreaSqm: data.roofPolygons.reduce((sum, p) => sum + p.area.squareMeters, 0).toString(),
-            totalAreaSqft: data.roofPolygons.reduce((sum, p) => sum + p.area.squareFeet, 0).toString(),
-            polygonCount: data.roofPolygons.length,
-          })
-          .returning()
-      : [];
+    const newRoofPolygons =
+      data.roofPolygons.length > 0
+        ? await tx
+            .insert(roofPolygons)
+            .values({
+              formId: newForm.id,
+              polygons: data.roofPolygons,
+              totalAreaSqm: data.roofPolygons
+                .reduce((sum, p) => sum + p.area.squareMeters, 0)
+                .toString(),
+              totalAreaSqft: data.roofPolygons
+                .reduce((sum, p) => sum + p.area.squareFeet, 0)
+                .toString(),
+              polygonCount: data.roofPolygons.length,
+            })
+            .returning()
+        : [];
 
     return {
       form: newForm,
@@ -272,12 +272,9 @@ export async function createFormSubmission(data: {
 /**
  * Create a simple form submission (form only)
  */
-export async function createForm(formData: Omit<NewForm, 'id' | 'createdAt'>) {
-  const [newForm] = await db
-    .insert(forms)
-    .values(formData)
-    .returning();
-  
+export async function createForm(formData: Omit<NewForm, "id" | "createdAt">) {
+  const [newForm] = await db.insert(forms).values(formData).returning();
+
   return newForm;
 }
 
@@ -286,7 +283,7 @@ export async function createForm(formData: Omit<NewForm, 'id' | 'createdAt'>) {
  */
 export async function addAddressesToForm(
   formId: string,
-  addressData: Omit<NewAddress, 'id' | 'formId' | 'createdAt'>[]
+  addressData: Omit<NewAddress, "id" | "formId" | "createdAt">[]
 ) {
   const newAddresses = await db
     .insert(addresses)
@@ -297,7 +294,7 @@ export async function addAddressesToForm(
       }))
     )
     .returning();
-  
+
   return newAddresses;
 }
 
@@ -313,12 +310,16 @@ export async function addRoofPolygonsToForm(
     .values({
       formId,
       polygons: polygonData,
-      totalAreaSqm: polygonData.reduce((sum, p) => sum + p.area.squareMeters, 0).toString(),
-      totalAreaSqft: polygonData.reduce((sum, p) => sum + p.area.squareFeet, 0).toString(),
+      totalAreaSqm: polygonData
+        .reduce((sum, p) => sum + p.area.squareMeters, 0)
+        .toString(),
+      totalAreaSqft: polygonData
+        .reduce((sum, p) => sum + p.area.squareFeet, 0)
+        .toString(),
       polygonCount: polygonData.length,
     })
     .returning();
-  
+
   return newPolygons;
 }
 
@@ -329,16 +330,24 @@ export async function addRoofPolygonsToForm(
 /**
  * Get all forms with basic info (paginated)
  */
-export async function getAllForms(options: {
-  page?: number;
-  limit?: number;
-  sortBy?: 'createdAt' | 'firstName' | 'lastName';
-  sortOrder?: 'asc' | 'desc';
-} = {}) {
-  const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+export async function getAllForms(
+  options: {
+    page?: number;
+    limit?: number;
+    sortBy?: "createdAt" | "firstName" | "lastName";
+    sortOrder?: "asc" | "desc";
+  } = {}
+) {
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = options;
   const offset = (page - 1) * limit;
 
-  const orderBy = sortOrder === 'asc' ? asc(forms[sortBy]) : desc(forms[sortBy]);
+  const orderBy =
+    sortOrder === "asc" ? asc(forms[sortBy]) : desc(forms[sortBy]);
 
   const results = await db
     .select()
@@ -348,9 +357,7 @@ export async function getAllForms(options: {
     .offset(offset);
 
   // Get total count for pagination
-  const [{ totalCount }] = await db
-    .select({ totalCount: count() })
-    .from(forms);
+  const [{ totalCount }] = await db.select({ totalCount: count() }).from(forms);
 
   return {
     forms: results,
@@ -410,7 +417,9 @@ export async function getFormsByEmail(email: string) {
 /**
  * Get forms by roof type
  */
-export async function getFormsByRoofType(roofType: 'residential' | 'industrial' | 'commercial') {
+export async function getFormsByRoofType(
+  roofType: "residential" | "industrial" | "commercial"
+) {
   const results = await db
     .select()
     .from(forms)
@@ -540,7 +549,7 @@ export async function getRoofPolygonByIds(formId: string, polygonId: string) {
   if (!result[0]) return null;
 
   const polygons = result[0].polygons as RoofPolygon[];
-  return polygons.find(p => p.id === polygonId) || null;
+  return polygons.find((p) => p.id === polygonId) || null;
 }
 
 /**
@@ -569,7 +578,7 @@ export async function getTotalRoofAreaByFormId(formId: string) {
  */
 export async function updateForm(
   formId: string,
-  updates: Partial<Omit<Form, 'id' | 'createdAt'>>
+  updates: Partial<Omit<Form, "id" | "createdAt">>
 ) {
   const [updatedForm] = await db
     .update(forms)
@@ -591,8 +600,12 @@ export async function updateRoofPolygons(
     .update(roofPolygons)
     .set({
       polygons: polygons,
-      totalAreaSqm: polygons.reduce((sum, p) => sum + p.area.squareMeters, 0).toString(),
-      totalAreaSqft: polygons.reduce((sum, p) => sum + p.area.squareFeet, 0).toString(),
+      totalAreaSqm: polygons
+        .reduce((sum, p) => sum + p.area.squareMeters, 0)
+        .toString(),
+      totalAreaSqft: polygons
+        .reduce((sum, p) => sum + p.area.squareFeet, 0)
+        .toString(),
       polygonCount: polygons.length,
     })
     .where(eq(roofPolygons.id, polygonsId))
@@ -612,10 +625,10 @@ export async function deleteForm(formId: string) {
   return await db.transaction(async (tx) => {
     // Delete roof polygons first
     await tx.delete(roofPolygons).where(eq(roofPolygons.formId, formId));
-    
+
     // Delete addresses
     await tx.delete(addresses).where(eq(addresses.formId, formId));
-    
+
     // Delete form
     const [deletedForm] = await tx
       .delete(forms)

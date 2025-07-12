@@ -1,15 +1,14 @@
 // app/api/submit-form/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { createFormSubmission } from '@/db/queries';
-import { RoofPolygon, RoofType, SearchAddress } from '@/types';
-
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { createFormSubmission } from "@/db/queries";
+import { RoofPolygon, RoofType, SearchAddress } from "@/types";
 
 // Define base schemas
 const searchAddressSchema = z.object({
-  address: z.string().min(1, 'Address is required'),
+  address: z.string().min(1, "Address is required"),
   coordinates: z.tuple([z.number(), z.number()]),
-  placeId: z.string().min(1, 'Place ID is required'),
+  placeId: z.string().min(1, "Place ID is required"),
 });
 
 const roofAreaSchema = z.object({
@@ -19,8 +18,6 @@ const roofAreaSchema = z.object({
 });
 
 // Define the main submission payload schema
-
-
 
 // Updated roof polygon schema with better coordinate handling
 const roofPolygonSchema = z.object({
@@ -32,18 +29,18 @@ const roofPolygonSchema = z.object({
   slope: z.string().optional(),
 });
 
-const roofTypeSchema = z.enum(['residential', 'industrial', 'commercial']);
+const roofTypeSchema = z.enum(["residential", "industrial", "commercial"]);
 
 // Updated main submission schema
 const submissionPayloadSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
   address: searchAddressSchema,
   roofPolygons: z.array(roofPolygonSchema),
-  roofType: z.enum(['residential', 'industrial', 'commercial']),
-  captchaToken: z.string().min(1, 'Captcha token is required'),
+  roofType: z.enum(["residential", "industrial", "commercial"]),
+  captchaToken: z.string().min(1, "Captcha token is required"),
 });
 
 const formSchema = z.object({
@@ -57,7 +54,7 @@ const formSchema = z.object({
     coordinates: z.tuple([z.number(), z.number()]),
     placeId: z.string(),
   }),
-  roofType: z.enum(['residential', 'commercial', 'industrial']),
+  roofType: z.enum(["residential", "commercial", "industrial"]),
   roofPolygons: z.array(
     z.object({
       id: z.union([z.string(), z.number()]),
@@ -75,30 +72,36 @@ const formSchema = z.object({
 });
 
 // hCaptcha verification function
-async function verifyCaptcha(token: string): Promise<boolean> {
-  const secret = process.env.HCAPTCHA_SECRET_KEY;
-  
+async function verifyCaptcha(token: string, ip: string): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+
   if (!secret) {
-    console.error('HCAPTCHA_SECRET_KEY is not configured');
+    console.error("TURNSTILE_SECRET_KEY is not configured");
     return false;
   }
 
   try {
-    const response = await fetch('https://hcaptcha.com/siteverify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        secret,
-        response: token,
-      }),
-    });
+    const idempotencyKey = crypto.randomUUID();
+    const response = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: JSON.stringify({
+          secret: SECRET_KEY,
+          response: token,
+          remoteip: ip,
+          idempotency_key: idempotencyKey,
+        }),
+      }
+    );
 
     const data = await response.json();
     return data.success === true;
   } catch (error) {
-    console.error('Captcha verification failed:', error);
+    console.error("Captcha verification failed:", error);
     return false;
   }
 }
@@ -116,9 +119,11 @@ function isRateLimited(ip: string): boolean {
   }
 
   const ipSubmissions = submissions.get(ip)!;
-  
+
   // Remove old submissions outside the window
-  const recentSubmissions = ipSubmissions.filter(time => now - time < windowMs);
+  const recentSubmissions = ipSubmissions.filter(
+    (time) => now - time < windowMs
+  );
   submissions.set(ip, recentSubmissions);
 
   return recentSubmissions.length >= maxRequests;
@@ -127,18 +132,19 @@ function isRateLimited(ip: string): boolean {
 export async function POST(request: NextRequest) {
   try {
     // Get client IP for rate limiting
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-               request.headers.get('x-real-ip') || 
-               request.headers.get('cf-connecting-ip') || // Cloudflare
-               request.headers.get('x-client-ip') ||
-               'unknown';
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      request.headers.get("cf-connecting-ip") || // Cloudflare
+      request.headers.get("x-client-ip") ||
+      "unknown";
 
     // Check rate limiting
     if (isRateLimited(ip)) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Too many submissions. Please try again later.' 
+        {
+          success: false,
+          message: "Too many submissions. Please try again later.",
         },
         { status: 429 }
       );
@@ -148,24 +154,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Add debug logging
-    console.log('Received payload:', JSON.stringify(body, null, 2));
-    
+    console.log("Received payload:", JSON.stringify(body, null, 2));
+
     // Validate with the updated schema
     const validationResult = formSchema.safeParse(body);
-    
+
     if (!validationResult.success) {
       // Detailed error logging
-      console.log('Full validation errors:', JSON.stringify(validationResult.error.format(), null, 2));
+      console.log(
+        "Full validation errors:",
+        JSON.stringify(validationResult.error.format(), null, 2)
+      );
       // console.log('Received data sample:', JSON.stringify({
       //   roofPolygons: body.roofPolygons?.slice(0, 1) // Show first polygon for debugging
       // }, null, 2));
-      
+
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Invalid form data', 
+        {
+          success: false,
+          message: "Invalid form data",
           errors: validationResult.error.flatten(),
-          receivedData: body // Include received data in development
+          receivedData: body, // Include received data in development
         },
         { status: 400 }
       );
@@ -174,13 +183,13 @@ export async function POST(request: NextRequest) {
     const payload = validationResult.data;
 
     // Verify captcha
-    const isCaptchaValid = await verifyCaptcha(payload.captchaToken);
-    
+    const isCaptchaValid = await verifyCaptcha(payload.captchaToken, ip);
+
     if (!isCaptchaValid) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Captcha verification failed. Please try again.' 
+        {
+          success: false,
+          message: "Captcha verification failed. Please try again.",
         },
         { status: 400 }
       );
@@ -196,12 +205,14 @@ export async function POST(request: NextRequest) {
         roofType: payload.roofType,
         captchaToken: payload.captchaToken,
       },
-      addresses: [{
-        formattedAddress: payload.address.address,
-        lat: payload.address.coordinates[0].toString(),
-        lng: payload.address.coordinates[1].toString(),
-        placeId: payload.address.placeId,
-      }],
+      addresses: [
+        {
+          formattedAddress: payload.address.address,
+          lat: payload.address.coordinates[0].toString(),
+          lng: payload.address.coordinates[1].toString(),
+          placeId: payload.address.placeId,
+        },
+      ],
       roofPolygons: payload.roofPolygons,
     };
 
@@ -209,12 +220,11 @@ export async function POST(request: NextRequest) {
     // const result = await createFormSubmission(submissionData);
     const result = {
       form: {
-        id: 'mock-id', // Replace with actual ID from database
+        id: "mock-id", // Replace with actual ID from database
         createdAt: new Date().toISOString(), // Replace with actual timestamp
         ...submissionData.form,
       },
-     
-    }
+    };
 
     // Record successful submission for rate limiting
     const now = Date.now();
@@ -229,34 +239,34 @@ export async function POST(request: NextRequest) {
     // Return success response
     return NextResponse.json({
       success: true,
-      message: 'Form submitted successfully',
+      message: "Form submitted successfully",
       data: {
         submissionId: result.form.id,
         createdAt: result.form.createdAt,
       },
     });
-
   } catch (error) {
-    console.error('Form submission error:', error);
-    
+    console.error("Form submission error:", error);
+
     // Check if it's a database error
     if (error instanceof Error) {
       // Handle specific database errors
-      if (error.message.includes('duplicate key')) {
+      if (error.message.includes("duplicate key")) {
         return NextResponse.json(
-          { 
-            success: false, 
-            message: 'This address has already been submitted. Please contact support if you need to update your submission.' 
+          {
+            success: false,
+            message:
+              "This address has already been submitted. Please contact support if you need to update your submission.",
           },
           { status: 409 }
         );
       }
-      
-      if (error.message.includes('connection')) {
+
+      if (error.message.includes("connection")) {
         return NextResponse.json(
-          { 
-            success: false, 
-            message: 'Database connection error. Please try again later.' 
+          {
+            success: false,
+            message: "Database connection error. Please try again later.",
           },
           { status: 503 }
         );
@@ -265,9 +275,9 @@ export async function POST(request: NextRequest) {
 
     // Generic error response
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'An unexpected error occurred. Please try again.' 
+      {
+        success: false,
+        message: "An unexpected error occurred. Please try again.",
       },
       { status: 500 }
     );
@@ -277,21 +287,21 @@ export async function POST(request: NextRequest) {
 // Handle unsupported methods
 export async function GET() {
   return NextResponse.json(
-    { success: false, message: 'Method not allowed' },
+    { success: false, message: "Method not allowed" },
     { status: 405 }
   );
 }
 
 export async function PUT() {
   return NextResponse.json(
-    { success: false, message: 'Method not allowed' },
+    { success: false, message: "Method not allowed" },
     { status: 405 }
   );
 }
 
 export async function DELETE() {
   return NextResponse.json(
-    { success: false, message: 'Method not allowed' },
+    { success: false, message: "Method not allowed" },
     { status: 405 }
   );
 }
