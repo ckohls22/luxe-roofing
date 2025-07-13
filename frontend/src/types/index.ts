@@ -41,6 +41,8 @@ export interface RoofPolygon {
 
 export type RoofType = 'residential' | 'industrial' | 'commercial';
 
+export type SlopeType = "Flat" | "Shallow" | "Medium" | "Steep";
+
 export interface BuildingFeature extends GeoJSON.Feature<GeoJSON.Polygon> {
   id: string | number;
   properties: {
