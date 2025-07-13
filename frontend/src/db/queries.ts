@@ -194,12 +194,45 @@ export const getAllSuppliers = async (): Promise<Supplier[]> => {
   return await db.select().from(suppliers);
 };
 
+export const getAllSuppliersWithMaterials = async (): Promise<Supplier[]> => {
+  return await db.query.suppliers.findMany({
+    with: {
+      materials: true,
+    },
+  });
+};
+
 export const getSupplierById = async (id: string): Promise<Supplier | null> => {
   const [supplier] = await db
     .select()
     .from(suppliers)
     .where(eq(suppliers.id, id));
   return supplier || null;
+};
+
+export const getSupplierByIdWithMaterials = async (id: string) => {
+  const supplierWithMaterials = await db
+    .select({
+      supplier: suppliers,
+      material: materials,
+    })
+    .from(suppliers)
+    .leftJoin(materials, eq(suppliers.id, materials.supplierId))
+    .where(eq(suppliers.id, id));
+
+  if (supplierWithMaterials.length === 0) return null;
+
+  const { supplier } = supplierWithMaterials[0];
+
+  // Group materials
+  const materialsList = supplierWithMaterials
+    .filter((row) => row.material !== null)
+    .map((row) => row.material);
+
+  return {
+    ...supplier,
+    materials: materialsList,
+  };
 };
 
 export const getMaterialsBySupplier = async (

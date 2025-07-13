@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupplier, getAllSuppliers } from "@/db/queries";
+import {
+  createSupplier,
+  getAllSuppliers,
+  getAllSuppliersWithMaterials,
+} from "@/db/queries";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function GET() {
   try {
-    const suppliers = await getAllSuppliers();
+    const suppliers = await getAllSuppliersWithMaterials();
     return NextResponse.json({ suppliers });
   } catch (error) {
     console.error("Error fetching suppliers:", error);

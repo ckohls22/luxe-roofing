@@ -119,7 +119,7 @@ export const passwordResetTokensRelations = relations(
   })
 );
 
-const suppliersRelations = relations(suppliers, ({ many }) => ({
+export const suppliersRelations = relations(suppliers, ({ many }) => ({
   materials: many(materials),
 }));
 // Define material -> supplier (many-to-one)

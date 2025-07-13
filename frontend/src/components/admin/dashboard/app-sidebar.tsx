@@ -47,8 +47,13 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Supplier",
-      url: "/admin/supplier",
+      title: "Suppliers",
+      url: "/admin/suppliers",
+      icon: IconListDetails,
+    },
+    {
+      title: "Add Supplier",
+      url: "/admin/add-supplier",
       icon: IconListDetails,
     },
     {
