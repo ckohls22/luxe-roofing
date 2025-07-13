@@ -13,15 +13,15 @@ export default function HomePage() {
       <div className="min-w-10/12 mt-22  p-5 box-border overflow-hidden bg-amber-200 flex flex-col items-center">
         <Image
           src={
-            "https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+            "/roof_head_image.png"
           }
-          width={400}
+          width={400} 
           height={350}
           alt="luxe roofing hero image "
-          className="object-contain w-full h-full rounded-4xl hidden"
+          className="object-contain w-3/4 md:w-1/2 lg:w-2/5 h-full rounded-4xl"
         />
 
-        <h1 className="text-center font-bold text-3xl mb-2">
+        <h1 className="text-center font-bold text-3xl mb-2 lg:text-6xl md:text-5xl">
           Instant Roof Quote in <br />
           60 Seconds!
         </h1>
