@@ -17,6 +17,7 @@ import { eq, and, gt, sum, count, sql, desc, asc, like, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { Material, Supplier } from "@/types/supplierAndMaterialTypes";
 import type { SearchAddress, SubmissionPayload, RoofPolygon } from "../types";
+import { createInsertSchema } from "drizzle-zod";
 
 // Admin authentication
 export async function authenticateAdmin(username: string, password: string) {
@@ -243,6 +244,45 @@ export const getMaterialsBySupplier = async (
     .from(materials)
     .where(eq(materials.supplierId, supplierId));
 };
+
+// update supplier by Id
+
+export const updateSupplierById = async (
+  id: string,
+  data: Partial<typeof suppliers.$inferInsert>
+) => {
+  const result = await db
+    .update(suppliers)
+    .set({
+      ...data,
+      updatedAt: new Date(), // keep updatedAt fresh
+    })
+    .where(eq(suppliers.id, id))
+    .returning();
+
+  return result[0] ?? null;
+};
+
+// Update Material by id
+export const updateMaterialById = async (
+  id: string,
+  data: Partial<typeof materials.$inferInsert>
+) => {
+  const result = await db
+    .update(materials)
+    .set({
+      ...data,
+      updatedAt: new Date(), // update the timestamp
+    })
+    .where(eq(materials.id, id))
+    .returning();
+
+  return result[0] ?? null;
+};
+
+// Input Validation for supplier and material
+export const supplierUpdateSchema = createInsertSchema(suppliers).partial();
+export const materialUpdateSchema = createInsertSchema(materials).partial();
 
 // lead form
 /* ------------------------------------------------------------------ */
