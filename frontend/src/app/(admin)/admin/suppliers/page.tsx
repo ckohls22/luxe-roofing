@@ -97,6 +97,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
 
 // Updated schema for supplier data
 export const supplierSchema = z.object({
@@ -242,8 +243,10 @@ const columns: ColumnDef<Supplier>[] = [
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>View Details</DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href={`/admin/suppliers/${row.original.id}`}>Edit</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem> View Details</DropdownMenuItem>
           <DropdownMenuItem>Contact</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>

@@ -221,6 +221,7 @@ export const roofPolygonsRelations = relations(roofPolygons, ({ one }) => ({
 }));
 
 // Type exports for use in your application
+export type MaterialForm = typeof materials.$inferInsert;
 export type Form = typeof forms.$inferSelect;
 export type NewForm = typeof forms.$inferInsert;
 export type Address = typeof addresses.$inferSelect;
