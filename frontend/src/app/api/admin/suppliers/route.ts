@@ -8,7 +8,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function GET() {
   try {
-    const suppliers = await getAllSuppliersWithMaterials();
+    const suppliers = await getAllSuppliers();
     return NextResponse.json({ suppliers });
   } catch (error) {
     console.error("Error fetching suppliers:", error);

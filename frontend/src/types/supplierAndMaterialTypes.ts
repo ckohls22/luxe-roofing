@@ -18,6 +18,7 @@ export interface Material {
   warranty?: string | null;
   topFeatures?: string | null;
   showCase?: string | null;
+  price?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }

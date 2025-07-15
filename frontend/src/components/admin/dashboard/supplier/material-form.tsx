@@ -22,6 +22,7 @@ interface MaterialFormData {
   topFeatures: string;
   showCase: File | undefined;
   materialImage: File | undefined;
+  price: string;
 }
 
 interface MaterialFormProps {
@@ -67,17 +68,17 @@ export function MaterialForm({
 
   const onSubmit = async (data: MaterialFormData) => {
     setIsSubmitting(true);
-    console.log(supplierId);
+    console.log(supplierId, "nahi aaya price:", data.price);
     // Simulate API call
     try {
       const formData = new FormData();
       formData.append("supplierId", supplierId);
       formData.append("type", selectedType);
       formData.append("warranty", data.warranty);
+      formData.append("price", data.price);
       formData.append("topFeatures", data.topFeatures);
       formData.append("materialImage", materialImage as File);
       formData.append("showCase", showCase as File);
-      console.log("Form Data:", formData);
 
       const material = await addMaterial(formData);
       setIsSubmitting(false);
@@ -121,6 +122,14 @@ export function MaterialForm({
             id="warranty"
             {...register("warranty")}
             placeholder="e.g., 5 years, Lifetime, 10-year limited"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="price">Price</Label>
+          <Input
+            id="price"
+            {...register("price")}
+            placeholder="e.g., 100, 500, 1000"
           />
         </div>
 
