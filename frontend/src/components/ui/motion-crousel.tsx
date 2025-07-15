@@ -18,6 +18,7 @@ export type CarouselContextType = {
   itemsCount: number;
   setItemsCount: (newItemsCount: number) => void;
   disableDrag: boolean;
+  currentVisibleItems: number;
 };
 
 const CarouselContext = createContext<CarouselContextType | undefined>(
@@ -47,6 +48,7 @@ function CarouselProvider({
 }: CarouselProviderProps) {
   const [index, setIndex] = useState<number>(initialIndex);
   const [itemsCount, setItemsCount] = useState<number>(0);
+  const [currentVisibleItems, setCurrentVisibleItems] = useState<number>(1);
 
   const handleSetIndex = (newIndex: number) => {
     setIndex(newIndex);
@@ -57,6 +59,22 @@ function CarouselProvider({
     setIndex(initialIndex);
   }, [initialIndex]);
 
+  // Update visible items count based on screen size and total items
+  useEffect(() => {
+    const updateVisibleItems = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        // Show 2 cards only if we have more than 1 card, otherwise show 1
+        setCurrentVisibleItems(itemsCount > 1 ? 2 : 1);
+      } else {
+        setCurrentVisibleItems(1);
+      }
+    };
+
+    updateVisibleItems();
+    window.addEventListener('resize', updateVisibleItems);
+    return () => window.removeEventListener('resize', updateVisibleItems);
+  }, [itemsCount]);
+
   return (
     <CarouselContext.Provider
       value={{
@@ -65,6 +83,7 @@ function CarouselProvider({
         itemsCount,
         setItemsCount,
         disableDrag,
+        currentVisibleItems,
       }}
     >
       {children}
@@ -124,7 +143,13 @@ function CarouselNavigation({
   classNameButton,
   alwaysShow,
 }: CarouselNavigationProps) {
-  const { index, setIndex, itemsCount } = useCarousel();
+  const { index, setIndex, itemsCount, currentVisibleItems } = useCarousel();
+  const maxIndex = Math.max(0, itemsCount - currentVisibleItems);
+
+  // Hide navigation if there's only one item or no items to navigate
+  if (itemsCount <= 1 || maxIndex === 0) {
+    return null;
+  }
 
   return (
     <div
@@ -171,9 +196,9 @@ function CarouselNavigation({
           classNameButton
         )}
         aria-label='Next slide'
-        disabled={index + 1 === itemsCount}
+        disabled={index >= maxIndex}
         onClick={() => {
-          if (index < itemsCount - 1) {
+          if (index < maxIndex) {
             setIndex(index + 1);
           }
         }}
@@ -196,7 +221,13 @@ function CarouselIndicator({
   className,
   classNameButton,
 }: CarouselIndicatorProps) {
-  const { index, itemsCount, setIndex } = useCarousel();
+  const { index, itemsCount, setIndex, currentVisibleItems } = useCarousel();
+  const totalSlides = Math.max(1, itemsCount - currentVisibleItems + 1);
+
+  // Hide indicators if there's only one slide
+  if (totalSlides <= 1) {
+    return null;
+  }
 
   return (
     <div
@@ -206,7 +237,7 @@ function CarouselIndicator({
       )}
     >
       <div className='flex space-x-2'>
-        {Array.from({ length: itemsCount }, (_, i) => (
+        {Array.from({ length: totalSlides }, (_, i) => (
           <button
             key={i}
             type='button'
@@ -237,72 +268,51 @@ function CarouselContent({
   className,
   transition,
 }: CarouselContentProps) {
-  const { index, setIndex, setItemsCount, disableDrag } = useCarousel();
-  const [visibleItemsCount, setVisibleItemsCount] = useState(1);
+  const { index, setIndex, setItemsCount, disableDrag, currentVisibleItems } = useCarousel();
   const dragX = useMotionValue(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemsLength = Children.count(children);
 
   useEffect(() => {
-    if (!containerRef.current) {
-      return;
-    }
-
-    const options = {
-      root: containerRef.current,
-      threshold: 0.5,
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      const visibleCount = entries.filter(
-        (entry) => entry.isIntersecting
-      ).length;
-      setVisibleItemsCount(visibleCount);
-    }, options);
-
-    const childNodes = containerRef.current.children;
-    Array.from(childNodes).forEach((child) => observer.observe(child));
-
-    return () => observer.disconnect();
-  }, [children, setItemsCount]);
-
-  useEffect(() => {
     if (!itemsLength) {
       return;
     }
-
     setItemsCount(itemsLength);
   }, [itemsLength, setItemsCount]);
 
   const onDragEnd = () => {
     const x = dragX.get();
+    const maxIndex = Math.max(0, itemsLength - currentVisibleItems);
 
-    if (x <= -10 && index < itemsLength - 1) {
+    if (x <= -10 && index < maxIndex) {
       setIndex(index + 1);
     } else if (x >= 10 && index > 0) {
       setIndex(index - 1);
     }
   };
 
+  // Disable drag if there's only one item or if dragging is disabled
+  const shouldDisableDrag = disableDrag || itemsLength <= 1;
+
   return (
     <motion.div
-      drag={disableDrag ? false : 'x'}
+      drag={shouldDisableDrag ? false : 'x'}
       dragConstraints={
-        disableDrag
+        shouldDisableDrag
           ? undefined
           : {
               left: 0,
               right: 0,
             }
       }
-      dragMomentum={disableDrag ? undefined : false}
+      dragMomentum={shouldDisableDrag ? undefined : false}
       style={{
-        x: disableDrag ? undefined : dragX,
+        x: shouldDisableDrag ? undefined : dragX,
       }}
       animate={{
-        translateX: `-${index * (100 / visibleItemsCount)}%`,
+        translateX: itemsLength <= 1 ? '0%' : `-${index * (100 / currentVisibleItems)}%`,
       }}
-      onDragEnd={disableDrag ? undefined : onDragEnd}
+      onDragEnd={shouldDisableDrag ? undefined : onDragEnd}
       transition={
         transition || {
           damping: 18,
@@ -313,7 +323,9 @@ function CarouselContent({
       }
       className={cn(
         'flex items-center',
-        !disableDrag && 'cursor-grab active:cursor-grabbing',
+        !shouldDisableDrag && 'cursor-grab active:cursor-grabbing',
+        // Center single item on large screens
+        itemsLength === 1 && 'justify-center',
         className
       )}
       ref={containerRef}
@@ -329,10 +341,18 @@ export type CarouselItemProps = {
 };
 
 function CarouselItem({ children, className }: CarouselItemProps) {
+  const { itemsCount, currentVisibleItems } = useCarousel();
+  
   return (
     <motion.div
       className={cn(
-        'w-full min-w-0 shrink-0 grow-0 overflow-hidden',
+        'min-w-0 shrink-0 grow-0 overflow-hidden',
+        // Dynamic width based on visible items and total items
+        itemsCount === 1 
+          ? 'w-auto' // Single item: let it size naturally
+          : currentVisibleItems === 1 
+            ? 'w-full' // Mobile: full width
+            : 'w-1/2', // Desktop with multiple items: half width
         className
       )}
     >

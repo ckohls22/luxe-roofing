@@ -6,6 +6,8 @@ import SearchProvider, {
 import RoofTypeSelector from "@/components/features/quote-calculator/RoofTypeSelector";
 import { SearchBox } from "@/components/features/quote-calculator/SearchBox";
 import Image from "next/image";
+import SupplierBox from "../../components/features/SupplierBox";
+
 
 export default function HomePage() {
   return (
@@ -37,8 +39,13 @@ export default function HomePage() {
             </div>
 
         <ConfigureRoofs />
-          
+        <SupplierBox />
+
         </SearchProvider>
+
+
+
+     
      
       {/* <SearchBox /> */}
     </>

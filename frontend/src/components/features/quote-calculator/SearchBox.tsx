@@ -130,7 +130,7 @@ export const SearchBox = () => {
     }
 
     // Auto-revert to search step when input is cleared while on edit-roof
-    if (value.trim() === "" && currentStep === 'edit-roof') {
+    if (value.trim() === "" && currentStep !== 'search') {
       setCurrentStep('search');
       setSelectedAddress(null);
       clearRoofPolygons();
@@ -248,7 +248,7 @@ export const SearchBox = () => {
     }
 
     // Auto-revert to search step when clearing while on edit-roof
-    if (currentStep === 'edit-roof') {
+    if (currentStep !== 'search') {
       setCurrentStep('search');
       setSelectedAddress(null);
       clearRoofPolygons();
