@@ -92,6 +92,7 @@ export const materials = pgTable("materials", {
   warranty: varchar("warranty", { length: 100 }),
   topFeatures: varchar("top_features", { length: 150 }),
   showCase: text("show_case"),
+  price: varchar("price", { length: 50 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

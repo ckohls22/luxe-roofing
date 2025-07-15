@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     const supplierId = formData.get("supplierId") as string;
     const type = formData.get("type") as string;
     const warranty = formData.get("warranty") as string;
+    const price = formData.get("price") as string;
     const topFeatures = formData.get("topFeatures") as string;
     const showCase = formData.get("showCase") as File;
     const materialImageFile = formData.get("materialImage") as File;
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
       topFeatures,
       showCase: showcaseImage,
       materialImage: materialImage || undefined,
+      price,
     };
 
     const newMaterial = await createMaterial(materialData);

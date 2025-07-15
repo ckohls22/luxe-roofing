@@ -23,6 +23,7 @@ export const useMaterials = () => {
   };
 
   const addMaterial = async (formData: FormData) => {
+    console.log("added Material:", formData);
     try {
       const response = await fetch("/api/admin/materials", {
         method: "POST",
