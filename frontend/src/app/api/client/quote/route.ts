@@ -9,6 +9,7 @@ import {
   suppliers,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { pushQuoteToHubSpot } from "@/lib/hubspot/hubspot";
 
 // ------------------------------------------------------------
 // Helper: calculate price range
@@ -114,6 +115,7 @@ export async function POST(req: NextRequest) {
         topFeatures: matRow.topFeatures,
         image: matRow.materialImage,
         basePricePerSqft: basePrice,
+        price: matRow.price,
       },
       pricing: {
         materialCost,
@@ -122,6 +124,12 @@ export async function POST(req: NextRequest) {
       },
     };
 
+    const hubspotIds = await pushQuoteToHubSpot(
+      quote.customer,
+      quote.material,
+      quote.roof.areaSqft
+    );
+    console.log(hubspotIds);
     return NextResponse.json(quote);
   } catch (err: any) {
     console.error(err);
