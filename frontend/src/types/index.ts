@@ -223,11 +223,11 @@ export interface Material {
   id: string;
   supplierId: string;
   materialImage: string | null;
+  price?:string| number | null;
   type: string | null;
   warranty: string | null;
   topFeatures: string | null;
   showCase: string | null;
-  price:string|null;
   createdAt?: Date;
   updatedAt?: Date;
 }

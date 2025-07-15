@@ -114,12 +114,17 @@ interface SupplierCardProps {
 }
 
 const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
-  const [selectedMaterial, setSelectedMaterial] = useState<Material>(supplier.materials[0]);
+  // Check if materials exist and set default material
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(() => {
+    return supplier.materials && supplier.materials.length > 0 
+      ? supplier.materials[0] 
+      : null;
+  });
   const [activeTab, setActiveTab] = useState<'details' | 'installation' | 'contact'>('details');
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const placeholderImageUrl = ""
+  const placeholderImageUrl = "https://image.com/image"
   const placeholderFeatureTags = ""
 
   const handleGetQuote = async () => {
@@ -132,12 +137,12 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
       }
 
       const quoteData = {
-        supplierId: supplier.id,
-        materialId: selectedMaterial.id,
+        supplierId: supplier.id || " ",
+        materialId: selectedMaterial?.id || " ",
         formId,
         supplierName: supplier.name,
-        materialType: selectedMaterial.type,
-        price: selectedMaterial.price
+        materialType: selectedMaterial?.type || "",
+        price: selectedMaterial?.price || ""
       };
 
       const { data, error } = await suppliersService.submitQuote(quoteData);
@@ -160,19 +165,40 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
     return features.split(',').map(feature => feature.trim());
   };
 
+  const createMarkup = (htmlContent: string) => {
+    return { __dangerouslySetInnerHTML: { __html: htmlContent } };
+  };
+
+  // Early return if no materials
+  if (!supplier.materials || supplier.materials.length === 0) {
+    return (
+      <Card className="w-full max-w-md bg-white shadow-lg overflow-hidden">
+        <CardContent className="p-4">
+          <div className="text-center text-gray-500">
+            <Package className="w-12 h-12 mx-auto mb-2" />
+            <p>No materials available for this supplier</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Update price display with null check
+  const displayPrice = selectedMaterial?.price || 'Price on request';
+
   return (
     <>
-      <Card className="w-full max-w-md  bg-white shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden border-0 hover:scale-101">
+      <Card className="w-full max-w-md bg-white shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden border-0 hover:scale-101">
         <CardContent className="p-0">
           {/* Header Section */}
-          <div className="p-5   relative overflow-hidden">
+          <div className="p-5 relative overflow-hidden">
             <div className="absolute inset-0"></div>
             <div className="relative z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="relative">
                     <ImageWithFallback
-                      src={supplier?.logoUrl || ""}
+                      src={supplier?.logoUrl || placeholderImageUrl}
                       alt={supplier.name}
                       className="w-14 h-14 rounded-xl object-cover border-2 border-white shadow-sm p-7"
                       type="logo"
@@ -188,7 +214,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-amber-400 bg-clip-text text-transparent">
-                    {selectedMaterial.price}
+                    {displayPrice}
                   </div>
                   <div className="text-xs text-gray-500 font-medium">per unit</div>
                 </div>
@@ -197,28 +223,28 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
           </div>
 
           {/* Showcase Image */}
-          <div className="relative h-52 bg-amber-100 border-2 border-amber-300 mx-4 rounded-lg overflow-hidden">
-            <ImageWithFallback
-              src={selectedMaterial.showCase || placeholderImageUrl}
-              alt={selectedMaterial.type || 
-              placeholderImageUrl
-              }
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-            {/* <div className="absolute top-4 left-4">
-              <Badge className="bg-gray-900 text-white border-0 shadow-md">
-                <Building2 className="w-3 h-3 mr-1" />
-                {selectedMaterial.type}
-              </Badge>
-            </div> */}
-            <div className="absolute top-4 right-4">
-              <Badge className="bg-white  text-black border shadow-md rounded-full">
-                <Award className="w-3 h-3 mr-1" />
-                {selectedMaterial.warranty}
-              </Badge>
+          {selectedMaterial && (
+            <div className="relative h-52 bg-amber-100 border-2 border-amber-300 mx-4 rounded-lg overflow-hidden">
+              <ImageWithFallback
+                src={selectedMaterial.showCase || placeholderImageUrl}
+                alt={selectedMaterial.type || 'Material showcase'}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              {/* <div className="absolute top-4 left-4">
+                <Badge className="bg-gray-900 text-white border-0 shadow-md">
+                  <Building2 className="w-3 h-3 mr-1" />
+                  {selectedMaterial.type}
+                </Badge>
+              </div> */}
+              <div className="absolute top-4 right-4">
+                <Badge className="bg-white  text-black border shadow-md rounded-full">
+                  <Award className="w-3 h-3 mr-1" />
+                  {selectedMaterial.warranty}
+                </Badge>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Material Selection */}
           <div className="p-5">
@@ -228,18 +254,18 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
                   key={material.id}
                   onClick={() => setSelectedMaterial(material)}
                   className={`relative w-16 h-16 rounded-xl border overflow-hidden transition-all duration-200 ${
-                    selectedMaterial.id === material.id 
+                    selectedMaterial?.id === material.id 
                       ? 'border-amber-400' 
                       : 'border-gray-200 hover:border-amber-200 hover:scale-103'
                   }`}
                 >
                   <ImageWithFallback
                     src={material.materialImage || placeholderImageUrl}
-                    alt={material.type || placeholderImageUrl}
+                    alt={material.type || 'Material image'}
                     className="w-full h-full object-cover"
                   />
-                  {selectedMaterial.id === material.id && (
-                    <div className="absolute inset-0 bg-amber-100 flex items-center justify-center">
+                  {selectedMaterial?.id === material.id && (
+                    <div className="absolute inset-0 bg-amber-500/20 flex items-center justify-center">
                       <CheckCircle className="w-4 h-4 text-amber-600" />
                     </div>
                   )}
@@ -248,27 +274,32 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
             </div>
 
             {/* Material Info */}
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-bold text-black text-lg">{selectedMaterial.type}</span>
-                <span className="text-sm text-gray-600  px-3 py-1 rounded-full">
-                  Warranty: {selectedMaterial.warranty}
-                </span>
+            {selectedMaterial && (
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-bold text-black text-lg">
+                    {selectedMaterial.type || 'Unnamed Material'}
+                  </span>
+                  <span className="text-sm text-gray-600 px-3 py-1 rounded-full">
+                    Warranty: {selectedMaterial.warranty || 'N/A'}
+                  </span>
+                </div>
+                
+                {/* Features Tags */}
+                <div className="flex flex-wrap gap-2">
+                  {getFeatureTags(selectedMaterial.topFeatures || placeholderFeatureTags)
+                    .map((feature, index) => (
+                      <Badge 
+                        key={index}
+                        className="bg-amber-50 border-amber-200 text-gray-600 hover:bg-amber-100 cursor-pointer transition-all duration-300"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        {feature}
+                      </Badge>
+                    ))}
+                </div>
               </div>
-              
-              {/* Features Tags */}
-              <div className="flex flex-wrap gap-2">
-                {getFeatureTags(selectedMaterial.topFeatures || placeholderFeatureTags).map((feature, index) => (
-                  <Badge 
-                    key={index}
-                    className="bg-amber-50 border-amber-200 text-gray-600 hover:bg-amber-100 cursor-pointer transition-all duration-300"
-                  >
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    {feature}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Additional Details Tabs */}
             <div className="mb-5">
@@ -298,17 +329,15 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
                   <div className="space-y-3">
                     <p className="text-sm text-gray-700 leading-relaxed">{supplier.description}</p>
                     <div className="text-xs text-gray-500 bg-white/50 p-2 rounded-lg">
-                      <span className="font-medium">Material ID:</span> {selectedMaterial.id.slice(0, 8)}...
+                      <span className="font-medium">Material ID:</span> {selectedMaterial?.id.slice(0, 8)}...
                     </div>
                   </div>
                 )}
                 {activeTab === 'installation' && (
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 text-amber-700 mb-2">
-                      <Building2 className="w-4 h-4" />
-                      <span className="font-medium text-sm">Installation Services</span>
+                  <div className="space-y-4 overflow-y-auto max-h-[400px] custom-scrollbar">
+                    <div className="prose prose-sm prose-amber">
+                      <div {...createMarkup(supplier.installation || "")} />
                     </div>
-                    <p className="text-sm text-gray-700 leading-relaxed">{supplier.installation}</p>
                   </div>
                 )}
                 {activeTab === 'contact' && (
@@ -363,7 +392,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
             <div className="text-center">
               <div className="text-6xl mb-4">🎉</div>
               <p className="text-gray-700 mb-3 leading-relaxed">
-                We've sent a detailed quote for <span className="font-bold text-amber-800">{selectedMaterial.type}</span> from{' '}
+                We've sent a detailed quote for <span className="font-bold text-amber-800">{selectedMaterial?.type}</span> from{' '}
                 <span className="font-bold text-amber-800">{supplier.name}</span> to your email address.
               </p>
               <p className="text-sm text-gray-600 leading-relaxed">
@@ -383,15 +412,15 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Material:</span>
-                  <span className="font-medium text-amber-800">{selectedMaterial.type}</span>
+                  <span className="font-medium text-amber-800">{selectedMaterial?.type}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Price:</span>
-                  <span className="font-bold text-amber-800">{selectedMaterial.price}</span>
+                  <span className="font-bold text-amber-800">{selectedMaterial?.price}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Warranty:</span>
-                  <span className="font-medium text-amber-800">{selectedMaterial.warranty}</span>
+                  <span className="font-medium text-amber-800">{selectedMaterial?.warranty}</span>
                 </div>
               </div>
             </div>
@@ -426,7 +455,12 @@ const SupplierBox: React.FC = () => {
         }
 
         if (data?.suppliers) {
-          setSuppliers(data.suppliers);
+          // Filter out suppliers with no materials
+          const validSuppliers = data.suppliers.filter(
+            supplier => supplier.materials && supplier.materials.length > 0
+          );
+          setSuppliers(validSuppliers);
+          console.log('Valid suppliers:', validSuppliers);
         }
       } catch (err) {
         setError('Failed to load suppliers. Please try again later.');
@@ -467,13 +501,14 @@ const SupplierBox: React.FC = () => {
     );
   }
 
+  // Update the empty state check to be more specific
   if (!suppliers.length) {
     return (
       <div className="max-w-7xl mx-auto p-4 md:p-6">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
-          <div className="text-amber-600 mb-2">No Suppliers Available</div>
+          <div className="text-amber-600 mb-2">No Available Suppliers</div>
           <div className="text-amber-500 text-sm">
-            Please check back later for available suppliers.
+            There are currently no suppliers with available materials.
           </div>
         </div>
       </div>

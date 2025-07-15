@@ -11,7 +11,7 @@ export interface SubmitQuoteRequest {
   formId: string;
   supplierName: string;
   materialType: string | null;
-  price: string | null;
+  price: string | number | null | undefined;
 }
 
 export const suppliersService = {
