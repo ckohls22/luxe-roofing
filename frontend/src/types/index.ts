@@ -4,6 +4,7 @@
 
 import { RefObject } from "react";
 import { Map as mapboxMap } from "mapbox-gl";
+// import { Material } from "./supplierAndMaterialTypes";
 
 // Mapbox related types
 export interface MapboxConfig {
@@ -201,6 +202,34 @@ export interface MapRef {
   draw: MapboxDraw | null;
   flyTo: (coordinates: Coordinates, zoom?: number) => void;
   fitBounds: (bounds: BoundingBox, options?: any) => void;
+}
+
+// supplier
+export interface Supplier {
+  id: string;
+  logoUrl?: string | null;
+  name: string;
+  description?: string | null;
+  installation?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  materials:Material[]
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// material
+export interface Material {
+  id: string;
+  supplierId: string;
+  materialImage: string | null;
+  type: string | null;
+  warranty: string | null;
+  topFeatures: string | null;
+  showCase: string | null;
+  price:string|null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Export utility type helpers
