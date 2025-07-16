@@ -194,7 +194,7 @@ export const RoofAreaDisplay: React.FC<RoofAreaDisplayProps> = ({
       return (
         <CarouselItem key={roof.id || index} className="p-4 flex justify-center">
           <Card
-            className={`p-4 border rounded-xl shadow-sm transition-opacity duration-200 gap-2 max-w-[300px] min-w-[250px] w-full ${
+            className={`p-4 border rounded-xl shadow-sm transition-opacity duration-200 gap-2 max-w-[300px] min-w-[280px] w-full ${
               isDisabled ? "opacity-50 grayscale" : "bg-white"
             } ${isEditing ? "ring-2 ring-amber-400" : ""}`}
             style={{

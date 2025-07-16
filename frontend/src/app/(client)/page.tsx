@@ -7,11 +7,13 @@ import RoofTypeSelector from "@/components/features/quote-calculator/RoofTypeSel
 import { SearchBox } from "@/components/features/quote-calculator/SearchBox";
 import Image from "next/image";
 import SupplierBox from "../../components/features/SupplierBox";
+import  FeaturesSection  from "@/components/ui/feature-section";
 
 
 export default function HomePage() {
   return (
     <>
+    
       <div className="min-w-10/12 mt-22  p-5 box-border overflow-hidden bg-amber-200 flex flex-col items-center">
         <Image
           src={
@@ -39,14 +41,12 @@ export default function HomePage() {
             </div>
 
         <ConfigureRoofs />
-        <SupplierBox />
+       
 
         </SearchProvider>
 
+        <FeaturesSection />
 
-
-     
-     
       {/* <SearchBox /> */}
     </>
   );

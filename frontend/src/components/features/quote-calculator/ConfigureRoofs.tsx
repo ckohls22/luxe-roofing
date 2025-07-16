@@ -88,12 +88,27 @@ export function ConfigureRoofs() {
     return null;
   }
 
+  if ( currentStep == "show-result") {
+    return (
+      <div className="flex justify-center items-center mt-6">
+        <div className="w-full lg:w-9/12 md:w-3/4  ">
+          <h2 className="text-3xl font-bold mb-4 text-center">Our Premium Suppliers</h2>
+          <p className="text-lg mb-4 text-center">Discover exceptional materials from trusted partners</p>
+         
+          <div className="w-full flex items-center mt-4 p-2">
+            <SupplierBox />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Show map and navigation only in edit-roof step
   if (currentStep === "edit-roof") {
     return (
       <>
         <div className="w-full flex justify-center mt-6">
-          <div className=" w-full lg:w-7/12 md:w-3/4 bg-white border border-black rounded-lg shadow-lg">
+          <div className=" w-full lg:w-7/12 md:w-3/4 bg-white border  rounded-lg shadow-lg">
             <div className="p-7 w-full">
               <h2 className="text-2xl font-bold">Select Your Roof</h2>
               <div className="flex gap-2 my-4 bg-amber-50 border border-amber-300 p-2 rounded-xl">
@@ -102,7 +117,7 @@ export function ConfigureRoofs() {
                   {selectedAddress?.address || "No Address Found"}
                 </p>
               </div>
-              <div className="flex items-center justify-center rounded-2xl shadow-white sm:w-full h-[500px] p-2 overflow-hidden box-border bg-amber-300 mt-7 z-10">
+              <div className="flex items-center justify-center rounded-xl shadow-white sm:w-full h-[450px] p-1 overflow-hidden box-border bg-amber-300 mt-7 z-10">
                 <MapContainer
                   selectedAddress={selectedAddress}
                   onAreaCalculated={handleAreaCalculatedWithLoading}
@@ -171,36 +186,5 @@ export function ConfigureRoofs() {
       </div>
     );
   }
-  if (currentStep == "show-result") {
-    return (
-      <div className="flex justify-center items-center mt-6">
-        <div className="w-full lg:w-7/12 md:w-3/4 bg-white border border-black rounded-lg shadow-lg p-7">
-          <Button
-            variant={"outline"}
-            className="flex-1 rounded-full text-md p-7 border-gray-500 shadow-none "
-            onClick={() => setCurrentStep("edit-roof")}
-          >
-            <ArrowLeft size={18} className="ml-2" /> Back
-          </Button>
-          <h2 className="text-2xl font-bold mb-4">Results</h2>
-          <p className="text-lg mb-4">Here are the results of your submission:</p>
-          <p className="text-md mb-4">
-            Address: {selectedAddress?.address || "No Address Found"}
-          </p>
-          <div className="flex items-center justify-center rounded-2xl shadow-white sm:w-full h-[500px] p-2 overflow-hidden box-border bg-amber-300 mt-7 z-10">
-            <MapContainer
-              selectedAddress={selectedAddress}
-              onAreaCalculated={handleAreaCalculatedWithLoading}
-              isLoading={isLoading}
-              onLoadingChange={handleLoadingChange}
-              roofPolygons={roofPolygons}
-            />
-          </div>
-          <div className="bg-amber-200 relative w-full flex items-center mt-4">
-            <SupplierBox />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  
 }

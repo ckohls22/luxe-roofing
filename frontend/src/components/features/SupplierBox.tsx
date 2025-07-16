@@ -1,384 +1,248 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Phone, Mail, CheckCircle, Package, Award, Sparkles, Building2, User, Clock } from 'lucide-react';
-import { toast } from 'sonner';
-import { suppliersService } from '@/lib/services/suppliers';
-// import type { Material} from '@/types/supplierAndMaterialTypes';
-import type { Supplier , Material} from '@/types';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Phone,
+  Mail,
+  CheckCircle,
+  Package,
+  Award,
+  Sparkles,
+  Building2,
+  User,
+  Clock,
+  Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { suppliersService } from "@/lib/services/suppliers";
+import type { Supplier, Material } from "@/types";
+import Image from "next/image";
+import { set, success } from "zod/v4";
+
+// Constants
+const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/placeholder";
+const TABS = [
+  { key: "details", label: "Details", icon: Package },
+  { key: "installation", label: "Installation", icon: Building2 },
+  { key: "contact", label: "Contact", icon: Phone },
+] as const;
 
 // Loading Card Component
 const LoadingCard: React.FC = () => (
-  <Card className="w-full max-w-md  bg-white shadow-lg overflow-hidden">
-    <CardContent className="p-0">
-      <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-amber-200 rounded-full animate-pulse"></div>
-            <div>
-              <div className="h-5 bg-amber-200 rounded animate-pulse w-32 mb-2"></div>
-              <div className="h-3 bg-amber-100 rounded animate-pulse w-24"></div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="h-8 bg-orange-200 rounded animate-pulse w-16 mb-1"></div>
-            <div className="h-3 bg-orange-100 rounded animate-pulse w-12"></div>
+  <Card className="w-full bg-white shadow-lg animate-pulse">
+    <CardContent className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 bg-gray-200 rounded-xl" />
+          <div>
+            <div className="h-5 bg-gray-200 rounded w-32 mb-2" />
+            <div className="h-3 bg-gray-200 rounded w-24" />
           </div>
         </div>
+        <div className="h-8 bg-gray-200 rounded w-20" />
       </div>
-      <div className="h-48 bg-gradient-to-r from-amber-100 to-yellow-100 animate-pulse"></div>
-      <div className="p-4 space-y-4">
-        <div className="flex space-x-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="w-16 h-16 bg-amber-200 rounded-lg animate-pulse"></div>
-          ))}
-        </div>
-        <div className="space-y-2">
-          <div className="h-4 bg-amber-200 rounded animate-pulse w-3/4"></div>
-          <div className="h-4 bg-amber-100 rounded animate-pulse w-1/2"></div>
-        </div>
-        <div className="h-20 bg-gradient-to-r from-amber-100 to-yellow-100 rounded-lg animate-pulse"></div>
-        <div className="h-12 bg-gradient-to-r from-orange-300 to-amber-300 rounded-lg animate-pulse"></div>
+
+      <div className="h-48 bg-gray-200 rounded-lg mb-4" />
+
+      <div className="flex space-x-2 mb-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="w-16 h-16 bg-gray-200 rounded-lg" />
+        ))}
       </div>
+
+      <div className="h-20 bg-gray-200 rounded-lg mb-4" />
+      <div className="h-12 bg-gray-200 rounded-full" />
     </CardContent>
   </Card>
 );
 
 // Placeholder Image Component
-const PlaceholderImage: React.FC<{ className?: string; type?: string }> = ({ className, type = "material" }) => (
-  <div className={`${className}  flex items-center justify-center`}>
+const PlaceholderImage: React.FC<{ className?: string; type?: string }> = ({
+  className = "",
+  type = "material",
+}) => (
+  <div className={`${className} bg-amber-100 flex items-center justify-center`}>
     <div className="text-center">
       {type === "logo" ? (
         <User className="w-8 h-8 text-amber-600 mx-auto mb-2" />
       ) : (
-        <Package className="w-12 h-12 text-amber-600 mx-auto mb-2" />
+        <Package className="w-8 h-8 text-amber-600 mx-auto mb-2" />
       )}
-      {/* <div className="text-xs text-amber-700 font-medium">
-        {type === "logo" ? "Logo" : "Material"}
-      </div> */}
+      <div className="text-xs text-amber-700">
+        {type === "logo" ? "Logo" : "Image"}
+      </div>
     </div>
   </div>
 );
 
 // Image Component with Fallback
-const ImageWithFallback: React.FC<{ 
-  src: string; 
-  alt: string; 
-  className?: string; 
+const ImageWithFallback: React.FC<{
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  className?: string;
   type?: string;
-  onLoad?: () => void;
-  onError?: () => void;
-}> = ({ src, alt, className, type, onLoad, onError }) => {
+}> = ({
+  src,
+  alt,
+  width = 400,
+  height = 300,
+  className = "",
+  type = "material",
+}) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
-  const handleImageLoad = () => {
-    setImageLoading(false);
-    onLoad?.();
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
-    setImageLoading(false);
-    onError?.();
-  };
-
-  if (imageError) {
+  if (imageError || !src || src === PLACEHOLDER_IMAGE_URL) {
     return <PlaceholderImage className={className} type={type} />;
   }
 
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       {imageLoading && (
-        <div className={`${className} bg-gradient-to-br from-amber-100 to-orange-100 animate-pulse absolute inset-0 flex items-center justify-center`}>
-          <Clock className="w-6 h-6 text-amber-600 animate-spin" />
+        <div className="absolute inset-0 bg-amber-100 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-amber-600 animate-spin" />
         </div>
       )}
-      <img
+      <Image
         src={src}
         alt={alt}
-        className={`${className} ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-        onLoad={handleImageLoad}
-        onError={handleImageError}
+        width={width}
+        height={height}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${
+          imageLoading ? "opacity-0" : "opacity-100"
+        }`}
+        onLoad={() => setImageLoading(false)}
+        onError={() => setImageError(true)}
       />
     </div>
   );
 };
 
-interface SupplierCardProps {
-  supplier: Supplier;
-}
-
-const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
-  // Check if materials exist and set default material
-  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(() => {
-    return supplier.materials && supplier.materials.length > 0 
-      ? supplier.materials[0] 
-      : null;
-  });
-  const [activeTab, setActiveTab] = useState<'details' | 'installation' | 'contact'>('details');
-  const [showQuoteDialog, setShowQuoteDialog] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const placeholderImageUrl = "https://image.com/image"
-  const placeholderFeatureTags = ""
-
-  const handleGetQuote = async () => {
-    setIsSubmitting(true);
-    try {
-      const formId = localStorage.getItem('formId');
-      if (!formId) {
-        toast.error('Please complete the roof calculation first');
-        return;
-      }
-
-      const quoteData = {
-        supplierId: supplier.id || " ",
-        materialId: selectedMaterial?.id || " ",
-        formId,
-        supplierName: supplier.name,
-        materialType: selectedMaterial?.type || "",
-        price: selectedMaterial?.price || ""
-      };
-
-      const { data, error } = await suppliersService.submitQuote(quoteData);
-      
-      if (error) {
-        toast.error(error);
-        return;
-      }
-
-      if (data?.success) {
-        setShowQuoteDialog(true);
-        toast.success('Quote request sent successfully!');
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const getFeatureTags = (features: string) => {
-    return features.split(',').map(feature => feature.trim());
-  };
-
-  const createMarkup = (htmlContent: string) => {
-    return { __dangerouslySetInnerHTML: { __html: htmlContent } };
-  };
-
-  // Early return if no materials
-  if (!supplier.materials || supplier.materials.length === 0) {
-    return (
-      <Card className="w-full max-w-md bg-white shadow-lg overflow-hidden">
-        <CardContent className="p-4">
-          <div className="text-center text-gray-500">
-            <Package className="w-12 h-12 mx-auto mb-2" />
-            <p>No materials available for this supplier</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Update price display with null check
-  const displayPrice = selectedMaterial?.price || 'Price on request';
+// Feature Tags Component
+const FeatureTags: React.FC<{ features: string }> = ({ features }) => {
+  const tags = features?.split(" ").filter(Boolean).slice(0, 6) || [];
 
   return (
-    <>
-      <Card className="w-full max-w-md bg-white shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden border-0 hover:scale-101">
-        <CardContent className="p-0">
-          {/* Header Section */}
-          <div className="p-5 relative overflow-hidden">
-            <div className="absolute inset-0"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <ImageWithFallback
-                      src={supplier?.logoUrl || placeholderImageUrl}
-                      alt={supplier.name}
-                      className="w-14 h-14 rounded-xl object-cover border-2 border-white shadow-sm p-7"
-                      type="logo"
-                    />
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex items-center justify-center">
-                      <Sparkles className="w-2 h-2 text-white" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-800 leading-tight">{supplier.name}</h3>
-                    <p className='text-gray-700 text-sm mt-1'>leading roof supplier</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-amber-400 bg-clip-text text-transparent">
-                    {displayPrice}
-                  </div>
-                  <div className="text-xs text-gray-500 font-medium">per unit</div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="flex flex-wrap gap-2">
+      {tags.map((feature, index) => (
+        <Badge
+          key={index}
+          variant="secondary"
+          className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 transition-colors"
+        >
+          {feature}
+        </Badge>
+      ))}
+    </div>
+  );
+};
 
-          {/* Showcase Image */}
+// Material Selector Component
+const MaterialSelector: React.FC<{
+  materials: Material[];
+  selectedMaterial: Material | null;
+  onSelect: (material: Material) => void;
+}> = ({ materials, selectedMaterial, onSelect }) => (
+  <div className="flex space-x-3 overflow-x-auto pb-2">
+    {materials.map((material) => (
+      <button
+        key={material.id}
+        onClick={() => onSelect(material)}
+        className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden transition-all duration-200 hover:scale-105 ${
+          selectedMaterial?.id === material.id
+            ? "border-amber-500 ring-2 ring-amber-200"
+            : "border-gray-200 hover:border-amber-300"
+        }`}
+      >
+        <ImageWithFallback
+          src={material.materialImage || PLACEHOLDER_IMAGE_URL}
+          alt={material.type || "Material"}
+          width={64}
+          height={64}
+          className="w-full h-full"
+        />
+      </button>
+    ))}
+  </div>
+);
+
+// Tab Content Component
+const TabContent: React.FC<{
+  activeTab: string;
+  supplier: Supplier;
+  selectedMaterial: Material | null;
+}> = ({ activeTab, supplier, selectedMaterial }) => {
+  const createMarkup = (htmlContent: string) => ({
+    dangerouslySetInnerHTML: { __html: htmlContent },
+  });
+
+  return (
+    <div className="min-h-[100px] p-4 bg-amber-50 rounded-lg border border-amber-200">
+      {activeTab === "details" && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600 leading-relaxed">
+            {supplier.description || "No description available"}
+          </p>
           {selectedMaterial && (
-            <div className="relative h-52 bg-amber-100 border-2 border-amber-300 mx-4 rounded-lg overflow-hidden">
-              <ImageWithFallback
-                src={selectedMaterial.showCase || placeholderImageUrl}
-                alt={selectedMaterial.type || 'Material showcase'}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-              {/* <div className="absolute top-4 left-4">
-                <Badge className="bg-gray-900 text-white border-0 shadow-md">
-                  <Building2 className="w-3 h-3 mr-1" />
-                  {selectedMaterial.type}
-                </Badge>
-              </div> */}
-              <div className="absolute top-4 right-4">
-                <Badge className="bg-white  text-black border shadow-md rounded-full">
-                  <Award className="w-3 h-3 mr-1" />
-                  {selectedMaterial.warranty}
-                </Badge>
-              </div>
+            <div className="text-xs text-amber-700  p-2 rounded">
+              <span className="font-medium">Material:</span>{" "}
+              {selectedMaterial.type}
             </div>
           )}
+        </div>
+      )}
 
-          {/* Material Selection */}
-          <div className="p-5">
-            <div className="flex space-x-3 mb-5">
-              {supplier.materials.map((material) => (
-                <button
-                  key={material.id}
-                  onClick={() => setSelectedMaterial(material)}
-                  className={`relative w-16 h-16 rounded-xl border overflow-hidden transition-all duration-200 ${
-                    selectedMaterial?.id === material.id 
-                      ? 'border-amber-400' 
-                      : 'border-gray-200 hover:border-amber-200 hover:scale-103'
-                  }`}
-                >
-                  <ImageWithFallback
-                    src={material.materialImage || placeholderImageUrl}
-                    alt={material.type || 'Material image'}
-                    className="w-full h-full object-cover"
-                  />
-                  {selectedMaterial?.id === material.id && (
-                    <div className="absolute inset-0 bg-amber-500/20 flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-amber-600" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
+      {activeTab === "installation" && (
+        <div className="prose prose-sm max-w-none">
+          {supplier.installation ? (
+            <div {...createMarkup(supplier.installation)} />
+          ) : (
+            <p className="text-gray-500">
+              No installation information available
+            </p>
+          )}
+        </div>
+      )}
 
-            {/* Material Info */}
-            {selectedMaterial && (
-              <div className="mb-5">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-bold text-black text-lg">
-                    {selectedMaterial.type || 'Unnamed Material'}
-                  </span>
-                  <span className="text-sm text-gray-600 px-3 py-1 rounded-full">
-                    Warranty: {selectedMaterial.warranty || 'N/A'}
-                  </span>
-                </div>
-                
-                {/* Features Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {getFeatureTags(selectedMaterial.topFeatures || placeholderFeatureTags)
-                    .map((feature, index) => (
-                      <Badge 
-                        key={index}
-                        className="bg-amber-50 border-amber-200 text-gray-600 hover:bg-amber-100 cursor-pointer transition-all duration-300"
-                      >
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        {feature}
-                      </Badge>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* Additional Details Tabs */}
-            <div className="mb-5">
-              <div className="flex space-x-1 mb-4  p-1 ">
-                {[
-                  { key: 'details', label: 'Details', icon: Package },
-                  { key: 'installation', label: 'Installation', icon: Building2 },
-                  { key: 'contact', label: 'Contact', icon: Phone }
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key as any)}
-                    className={`flex-1 py-3 px-4 rounded-full text-sm font-medium  flex items-center justify-center space-x-2 ${
-                      activeTab === tab.key
-                        ? 'bg-gray-900 text-white shadow-sm'
-                        : 'text-gray-700  hover:bg-amber-100'
-                    }`}
-                  >
-                    <tab.icon className="w-4 h-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="min-h-[80px] p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-100">
-                {activeTab === 'details' && (
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-700 leading-relaxed">{supplier.description}</p>
-                    <div className="text-xs text-gray-500 bg-white/50 p-2 rounded-lg">
-                      <span className="font-medium">Material ID:</span> {selectedMaterial?.id.slice(0, 8)}...
-                    </div>
-                  </div>
-                )}
-                {activeTab === 'installation' && (
-                  <div className="space-y-4 overflow-y-auto max-h-[400px] custom-scrollbar">
-                    <div className="prose prose-sm prose-amber">
-                      <div {...createMarkup(supplier.installation || "")} />
-                    </div>
-                  </div>
-                )}
-                {activeTab === 'contact' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-2 bg-white/50 rounded-lg">
-                      <Phone className="w-4 h-4 text-amber-600" />
-                      <span className="text-sm text-gray-700 font-medium">{supplier.phone}</span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-2 bg-white/50 rounded-lg">
-                      <Mail className="w-4 h-4 text-amber-600" />
-                      <span className="text-sm text-gray-700 font-medium">{supplier.email}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Get Quote Button */}
-            <Button 
-              onClick={handleGetQuote}
-              disabled={isSubmitting}
-              className="w-full bg-orange-600 text-white font-bold py-6 rounded-full  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isSubmitting ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <Clock className="w-5 h-5 animate-spin" />
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  <Sparkles className="w-5 h-5" />
-                  <span>Get a Quote</span>
-                </div>
-              )}
-            </Button>
+      {activeTab === "contact" && (
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3 p-2  rounded">
+            <Phone className="w-4 h-4 text-amber-600" />
+            <span className="text-sm">
+              {supplier.phone || "No phone available"}
+            </span>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center space-x-3 p-2  rounded">
+            <Mail className="w-4 h-4 text-amber-600" />
+            <span className="text-sm">
+              {supplier.email || "No email available"}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
-      {/* Quote Success Dialog */}
-      <Dialog open={showQuoteDialog} onOpenChange={setShowQuoteDialog}>
+// Quote Success Dialog
+const QuoteDialog: React.FC<{
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  supplier: Supplier;
+  selectedMaterial: Material | null;
+}> = ({ open, onOpenChange, supplier, selectedMaterial }) => (
+    <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md bg-gradient-to-br from-amber-50 to-orange-50 border-0">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-3 text-amber-800">
@@ -392,7 +256,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
             <div className="text-center">
               <div className="text-6xl mb-4">🎉</div>
               <p className="text-gray-700 mb-3 leading-relaxed">
-                We've sent a detailed quote for <span className="font-bold text-amber-800">{selectedMaterial?.type}</span> from{' '}
+                We've sent a detailed quote for <span className="font-bold text-amber-800">{selectedMaterial?.type || 'N/A'}</span> from{' '}
                 <span className="font-bold text-amber-800">{supplier.name}</span> to your email address.
               </p>
               <p className="text-sm text-gray-600 leading-relaxed">
@@ -412,33 +276,250 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Material:</span>
-                  <span className="font-medium text-amber-800">{selectedMaterial?.type}</span>
+                  <span className="font-medium text-amber-800">{selectedMaterial?.type || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Price:</span>
-                  <span className="font-bold text-amber-800">{selectedMaterial?.price}</span>
+                  <span className="font-bold text-amber-800">{selectedMaterial?.price || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Warranty:</span>
-                  <span className="font-medium text-amber-800">{selectedMaterial?.warranty}</span>
+                  <span className="font-medium text-amber-800">{selectedMaterial?.warranty || 'N/A'}</span>
                 </div>
               </div>
             </div>
             
             <Button 
-              onClick={() => setShowQuoteDialog(false)}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 rounded-xl transition-all duration-300 shadow-lg"
+              onClick={() => onOpenChange(false)}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-600  text-white font-bold py-3 rounded-lg transition-all duration-300 shadow-lg"
             >
               <CheckCircle className="w-5 h-5 mr-2" />
-              Perfect! Close
+              Perfect!
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+    
+);
+
+// Main Supplier Card Component
+interface SupplierCardProps {
+  supplier: Supplier;
+}
+
+const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
+    supplier.materials?.[0] || null
+  );
+  const [activeTab, setActiveTab] = useState<
+    "details" | "installation" | "contact"
+  >("details");
+  const [showQuoteDialog, setShowQuoteDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleGetQuote = async () => {
+    if (!selectedMaterial) return;
+
+    setIsSubmitting(true);
+    try {
+      const formId = localStorage.getItem("formId");
+      if (!formId) {
+        toast.error("Please complete the roof calculation first");
+        return;
+      }
+
+      const quoteData = {
+        supplierId: supplier.id,
+        materialId: selectedMaterial.id,
+        formId,
+      };
+
+      // const { data, error } = await suppliersService.submitQuote(quoteData);
+      const data = {success:true}
+      const error = false;
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
+
+      if (data?.success) {
+        setShowQuoteDialog(true);
+        toast.success("Quote request sent successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to send quote request");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Early return if no materials
+  if (!supplier.materials?.length) {
+    return (
+      <Card className="w-full max-w-2xl white shadow-lg">
+        <CardContent className="p-6 text-center">
+          <Package className="w-12 h-12 mx-auto mb-4 text-amber-400" />
+          <p className="text-gray-600">
+            No materials available for this supplier
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <Card className="w-full max-w-2xl bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
+        <CardContent className="p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-amber-200">
+                <ImageWithFallback
+                  src={supplier.logoUrl || PLACEHOLDER_IMAGE_URL}
+                  alt={supplier.name}
+                  width={64}
+                  height={64}
+                  className="w-full h-full"
+                  type="logo"
+                />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-gray-900">
+                  {supplier.name}
+                </h3>
+                <p className="text-sm text-amber-800">Roofing Supplier</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xl font-bold text-amber-700">
+                {selectedMaterial?.price || "Price on request"}
+              </div>
+              <div className="text-xs text-gray-500">per unit</div>
+            </div>
+          </div>
+
+          {/* Showcase Image - Full Width */}
+          {selectedMaterial && (
+            <div className="mb-6">
+              <div className="relative h-64 w-full rounded-lg overflow-hidden border border-amber-200">
+                <ImageWithFallback
+                  src={selectedMaterial.showCase || PLACEHOLDER_IMAGE_URL}
+                  alt={selectedMaterial.type || "Material showcase"}
+                  width={600}
+                  height={256}
+                  className="w-full h-full"
+                />
+                {selectedMaterial.warranty && (
+                  <div className="absolute top-3 right-3">
+                    <Badge className="bg-white text-amber-800 shadow-sm">
+                      <Award className="w-3 h-3 mr-1" />
+                      {selectedMaterial.warranty}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Material Info */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-lg text-gray-900 mb-3">
+              {selectedMaterial?.type || "Material"}
+            </h4>
+            <FeatureTags features={selectedMaterial?.topFeatures || ""} />
+          </div>
+
+          {/* Material Selection */}
+          <div className="mb-6">
+            <h5 className="font-medium text-gray-900 mb-3">
+              Available Materials
+            </h5>
+            <MaterialSelector
+              materials={supplier.materials}
+              selectedMaterial={selectedMaterial}
+              onSelect={setSelectedMaterial}
+            />
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-6">
+            <div className="flex space-x-3 mb-4 p-1">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`flex-1 py-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center space-x-2 hover:cursor-pointer ${
+                    activeTab === tab.key
+                      ? "bg-gray-800 text-white shadow-sm"
+                      : "text-gray-900 hover:bg-amber-100"
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <TabContent
+              activeTab={activeTab}
+              supplier={supplier}
+              selectedMaterial={selectedMaterial}
+            />
+          </div>
+
+          {/* Quote Button */}
+            <div className="flex gap-3 w-full relative items-center justify-center">
+            <Button
+              onClick={handleGetQuote}
+              disabled={isSubmitting || !selectedMaterial}
+              className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 text-white font-semibold py-6 rounded-full disabled:opacity-50 max-w-[200px]"
+            >
+              {isSubmitting ? (
+              <div className="flex items-center justify-center space-x-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Sending...</span>
+              </div>
+              ) : (
+              <div className="flex items-center justify-center space-x-2 ">
+                <Sparkles className="w-4 h-4" />
+                <span>Get Quote</span>
+              </div>
+              )}
+            </Button>
+            <Button
+              onClick={handleGetQuote}
+              disabled={isSubmitting || !selectedMaterial}
+              className="flex-1 bg-white hover:bg-gray-100  text-black font-semibold py-6 rounded-full border border-gray-300 disabled:opacity-50 max-w-[200px]"
+            >
+              {isSubmitting ? (
+              <div className="flex items-center justify-center space-x-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Sending...</span>
+              </div>
+              ) : (
+              <div className="flex items-center justify-center space-x-2">
+                {/* <Sparkles className="w-4 h-4" /> */}
+                <span>Talk to a Pro</span>
+              </div>
+              )}
+            </Button>
+            </div>
+        </CardContent>
+      </Card>
+
+      <QuoteDialog
+        open={showQuoteDialog}
+        onOpenChange={setShowQuoteDialog}
+        supplier={supplier}
+        selectedMaterial={selectedMaterial}
+      />
     </>
   );
 };
 
+// Main Container Component
 const SupplierBox: React.FC = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
@@ -448,22 +529,20 @@ const SupplierBox: React.FC = () => {
     const fetchSuppliers = async () => {
       try {
         const { data, error } = await suppliersService.getSuppliers();
-        
+
         if (error) {
           setError(error);
           return;
         }
 
         if (data?.suppliers) {
-          // Filter out suppliers with no materials
           const validSuppliers = data.suppliers.filter(
-            supplier => supplier.materials && supplier.materials.length > 0
+            (supplier) => supplier.materials?.length > 0
           );
           setSuppliers(validSuppliers);
-          console.log('Valid suppliers:', validSuppliers);
         }
       } catch (err) {
-        setError('Failed to load suppliers. Please try again later.');
+        setError("Failed to load suppliers. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -474,8 +553,8 @@ const SupplierBox: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="w-full max-w-4xl mx-auto p-4">
+        <div className="space-y-6">
           {[1, 2, 3].map((i) => (
             <LoadingCard key={i} />
           ))}
@@ -486,13 +565,16 @@ const SupplierBox: React.FC = () => {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
+      <div className="w-full max-w-4xl mx-auto p-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <div className="text-red-600 mb-2">Error loading suppliers</div>
-          <div className="text-red-500 text-sm">{error}</div>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 bg-red-100 text-red-600 hover:bg-red-200"
+          <div className="text-red-600 font-semibold mb-2">
+            Error Loading Suppliers
+          </div>
+          <div className="text-red-500 text-sm mb-4">{error}</div>
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            className="text-red-600 border-red-200 hover:bg-red-50"
           >
             Try Again
           </Button>
@@ -501,13 +583,14 @@ const SupplierBox: React.FC = () => {
     );
   }
 
-  // Update the empty state check to be more specific
   if (!suppliers.length) {
     return (
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
-          <div className="text-amber-600 mb-2">No Available Suppliers</div>
-          <div className="text-amber-500 text-sm">
+      <div className="w-full max-w-4xl mx-auto p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <div className="text-yellow-600 font-semibold mb-2">
+            No Suppliers Available
+          </div>
+          <div className="text-yellow-500 text-sm">
             There are currently no suppliers with available materials.
           </div>
         </div>
@@ -516,8 +599,8 @@ const SupplierBox: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="flex flex-col items-center w-full  mx-auto p-4">
+      <div className="space-y-6">
         {suppliers.map((supplier) => (
           <SupplierCard key={supplier.id} supplier={supplier} />
         ))}

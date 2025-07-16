@@ -9,9 +9,7 @@ export interface SubmitQuoteRequest {
   supplierId: string;
   materialId: string | null;
   formId: string;
-  supplierName: string;
-  materialType: string | null;
-  price: string | number | null | undefined;
+
 }
 
 export const suppliersService = {
@@ -20,4 +18,5 @@ export const suppliersService = {
 
   submitQuote: (data: SubmitQuoteRequest) =>
     apiClient.post<{ success: boolean }>('/quotes', data),
+
 };
