@@ -57,7 +57,7 @@ import { z } from "zod";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Drawer,
@@ -100,7 +100,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 
 // Updated schema for supplier data
-export const supplierSchema = z.object({
+const supplierSchema = z.object({
   id: z.string(),
   logoUrl: z.string(),
   name: z.string(),

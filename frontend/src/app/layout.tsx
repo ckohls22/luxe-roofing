@@ -9,6 +9,7 @@ const poppins = Poppins({
   display: "swap",
 });
 
+// Define metadata object according to Next.js 13+ standards
 export const metadata: Metadata = {
   title: {
     default: "LuxeIQ - Advanced Roof Area Calculator",
@@ -16,6 +17,10 @@ export const metadata: Metadata = {
   },
   description:
     "Professional roof area calculation tool using satellite imagery and advanced mapping technology.",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0066cc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0066cc" },
+  ],
   keywords: ["roof calculator", "area measurement", "construction", "roofing"],
   authors: [{ name: "LuxeIQ Team" }],
   robots: "index, follow",
@@ -26,14 +31,11 @@ export const metadata: Metadata = {
     description:
       "Professional roof area calculation tool using satellite imagery.",
   },
+  viewport: "width=device-width, initial-scale=1",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
-
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
-
-export const themeColor = "#0066cc";
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -46,7 +48,6 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={poppins.variable}>
-  
       <body className="min-h-screen bg-gradient-to-br  antialiased font-sans">
         <div className="flex flex-col min-h-screen">
           <main id="main-content" className="flex-1">
