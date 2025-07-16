@@ -15,6 +15,13 @@
       "when": 1752608872645,
       "tag": "0001_organic_slipstream",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752698339878,
+      "tag": "0002_misty_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

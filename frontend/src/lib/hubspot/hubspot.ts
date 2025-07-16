@@ -1,118 +1,105 @@
-// lib/hubspot.ts
-import { Client } from "@hubspot/api-client";
-
-const hubspot = new Client({ accessToken: process.env.HUBSPOT_ACCESS_TOKEN! });
-
-// ---------- 1. Upsert Contact ----------
-export async function upsertContact(payload: {
-  email: string;
+interface HubSpotContact {
   firstName: string;
   lastName: string;
-  phone?: string;
-}) {
-  // Search by email
-  const search = await hubspot.crm.contacts.basicApi
-    .getById(payload.email, ["id"], false, "email")
-    .catch(() => null);
-
-  if (search) return search.id;
-
-  // Create new contact
-  const { id } = await hubspot.crm.contacts.basicApi.create({
-    properties: {
-      email: payload.email,
-      firstname: payload.firstName,
-      lastname: payload.lastName,
-      phone: payload.phone ?? "",
-    },
-  });
-  return id;
+  email: string;
+  phone: string;
+  address?: string;
 }
 
-// ---------- 2. Create Deal ----------
-export async function createDeal(contactId: string, amount: number) {
-  const { id } = await hubspot.crm.deals.basicApi.create({
-    properties: {
-      dealname: `Roofing Quote – ${new Date().toISOString().slice(0, 10)}`,
-      pipeline: "default",
-      dealstage: "appointmentscheduled",
-      amount: String(amount),
-    },
-  });
-
-  // Associate deal ↔ contact
-  await hubspot.crm.associations.v4.basicApi.create(
-    "deals",
-    id,
-    "contacts",
-    contactId,
-    [{ associationCategory: "HUBSPOT_DEFINED", associationTypeId: 3 }]
-  );
-  return id;
-}
-
-// ---------- 3. Create Quote ----------
-export async function createQuote(dealId: string) {
-  const { id } = await hubspot.crm.quotes.basicApi.create({
-    properties: {
-      hs_title: `Quote #${Date.now()}`,
-      hs_status: "DRAFT", // HubSpot will generate the public URL
-      hs_expiration_date: new Date(Date.now() + 30 * 24 * 3600e3).toISOString(),
-    },
-  });
-
-  // Associate quote ↔ deal
-  await hubspot.crm.associations.v4.basicApi.create(
-    "quotes",
-    id,
-    "deals",
-    dealId,
-    [{ associationCategory: "HUBSPOT_DEFINED", associationTypeId: 187 }]
-  );
-  return id;
-}
-
-// ---------- 4. Create Line Item ----------
-export async function createLineItem(
-  quoteId: string,
-  name: string,
-  qty: number,
-  price: number
+export async function createOrUpdateHubSpotContact(
+  contactData: HubSpotContact
 ) {
-  const { id } = await hubspot.crm.lineItems.basicApi.create({
-    properties: {
-      name,
-      quantity: String(qty),
-      price: String(price),
-    },
-  });
+  const HUBSPOT_API_KEY = process.env.HUBSPOT_ACCESS_TOKEN;
 
-  // Associate line item ↔ quote
-  await hubspot.crm.associations.v4.basicApi.create(
-    "line_items",
-    id,
-    "quotes",
-    quoteId,
-    [{ associationCategory: "HUBSPOT_DEFINED", associationTypeId: 19 }]
-  );
-  return id;
-}
+  if (!HUBSPOT_API_KEY) {
+    throw new Error("HubSpot API key not configured");
+  }
 
-// ---------- 5. Convenience wrapper ----------
-export async function pushQuoteToHubSpot(
-  customer: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    phone?: string;
-  },
-  material: { name: string; price: number },
-  areaSqft: number
-) {
-  const contactId = await upsertContact(customer);
-  const amount = Math.round(areaSqft * material.price * 1.4); // rough total
-  const dealId = await createDeal(contactId, amount);
-  const quoteId = await createQuote(dealId);
-  await createLineItem(quoteId, material.name, 1, material.price);
-  return { contactId, dealId, quoteId };
+  try {
+    // First, search for existing contact by email
+    const searchUrl = `https://api.hubapi.com/crm/v3/objects/contacts/search`;
+    const searchResponse = await fetch(searchUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${HUBSPOT_API_KEY}`,
+      },
+      body: JSON.stringify({
+        filterGroups: [
+          {
+            filters: [
+              {
+                propertyName: "email",
+                operator: "EQ",
+                value: contactData.email,
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    const searchResult = await searchResponse.json();
+
+    // Prepare contact properties
+    const properties = {
+      firstname: contactData.firstName,
+      lastname: contactData.lastName,
+      email: contactData.email,
+      phone: contactData.phone,
+      ...(contactData.address && { address: contactData.address }),
+    };
+
+    if (searchResult.results && searchResult.results.length > 0) {
+      // Update existing contact
+      const contactId = searchResult.results[0].id;
+      const updateUrl = `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`;
+
+      const updateResponse = await fetch(updateUrl, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${HUBSPOT_API_KEY}`,
+        },
+        body: JSON.stringify({ properties }),
+      });
+
+      if (!updateResponse.ok) {
+        const errorText = await updateResponse.text();
+        throw new Error(
+          `HubSpot update error: ${updateResponse.status} - ${errorText}`
+        );
+      }
+
+      const result = await updateResponse.json();
+      console.log("Successfully updated HubSpot contact:", result.id);
+      return { action: "updated", contact: result };
+    } else {
+      // Create new contact
+      const createUrl = `https://api.hubapi.com/crm/v3/objects/contacts`;
+
+      const createResponse = await fetch(createUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${HUBSPOT_API_KEY}`,
+        },
+        body: JSON.stringify({ properties }),
+      });
+
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text();
+        throw new Error(
+          `HubSpot create error: ${createResponse.status} - ${errorText}`
+        );
+      }
+
+      const result = await createResponse.json();
+      console.log("Successfully created HubSpot contact:", result.id);
+      return { action: "created", contact: result };
+    }
+  } catch (error) {
+    console.error("Error with HubSpot contact:", error);
+    throw error;
+  }
 }

@@ -107,7 +107,10 @@ const supplierFormSchema = z.object({
 const materialFormSchema = z.object({
   type: z.string().min(1, "Type is required"),
   warranty: z.string().min(1, "Warranty is required"),
-  topFeatures: z.string().min(1, "Top features is required"),
+  topFeatures: z
+    .string()
+    .min(1, "Top features is required")
+    .max(150, "Must be 150 characters or less"),
   materialImage: z.string().optional(),
   showCase: z.string().optional(),
   materialImageFile: z.instanceof(File).optional(),
@@ -121,12 +124,14 @@ type MaterialFormData = z.infer<typeof materialFormSchema>;
 
 // Image Upload Component
 function ImageUpload({
+  isEditing,
   value,
   onChange,
   onFileChange,
   label,
   accept = "image/*",
 }: {
+  isEditing: boolean;
   value?: string;
   onChange?: (value: string) => void;
   onFileChange?: (file: File | null) => void;
@@ -197,20 +202,11 @@ function ImageUpload({
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
+            disabled={isEditing}
           >
             <IconUpload className="size-4" />
             Upload Image
           </Button>
-          {value && (
-            <Input
-              placeholder="Or enter image URL"
-              value={value}
-              onChange={(e) => {
-                onChange?.(e.target.value);
-                setPreview(e.target.value);
-              }}
-            />
-          )}
         </div>
       </div>
     </div>
@@ -340,7 +336,7 @@ function SupplierEditForm({
           <div>
             <CardTitle className="text-2xl">{supplier.name}</CardTitle>
             <p className="text-muted-foreground mt-1">
-              Supplier ID: {supplier.id}
+              Supplier ID: {supplier.id.split("-")[0].toUpperCase()}
             </p>
           </div>
         </div>
@@ -403,11 +399,12 @@ function SupplierEditForm({
                   <FormItem>
                     <FormControl>
                       <ImageUpload
+                        isEditing={!isEditing}
                         value={field.value}
                         onChange={field.onChange}
-                        onFileChange={(file) =>
-                          form.setValue("logoFile", file || undefined)
-                        }
+                        onFileChange={(file) => {
+                          form.setValue("logoFile", file || undefined);
+                        }}
                         label="Logo"
                       />
                     </FormControl>
@@ -622,6 +619,7 @@ function MaterialEditDialog({
                   <FormItem>
                     <FormControl>
                       <ImageUpload
+                        isEditing={false}
                         value={field.value}
                         onChange={field.onChange}
                         onFileChange={(file) =>
@@ -641,6 +639,7 @@ function MaterialEditDialog({
                   <FormItem>
                     <FormControl>
                       <ImageUpload
+                        isEditing={false}
                         value={field.value}
                         onChange={field.onChange}
                         onFileChange={(file) =>

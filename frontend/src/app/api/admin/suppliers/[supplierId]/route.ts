@@ -1,13 +1,16 @@
-import { getSupplierByIdWithMaterials, supplierUpdateSchema, updateSupplierById } from "@/db/queries";
+import {
+  getSupplierByIdWithMaterials,
+  supplierUpdateSchema,
+  updateSupplierById,
+} from "@/db/queries";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { NextRequest, NextResponse } from "next/server";
-
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ supplierId: string }> }
 ) {
-  const {supplierId} = await params;
+  const { supplierId } = await params;
   try {
     const supplier = await getSupplierByIdWithMaterials(supplierId);
     return NextResponse.json({ supplier });
@@ -20,13 +23,11 @@ export async function GET(
   }
 }
 
-
-
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ supplierId: string }> }
 ) {
-  const {supplierId} = await params;
+  const { supplierId } = await params;
   try {
     const formData = await request.formData();
 
@@ -36,7 +37,7 @@ export async function PATCH(
     const phone = formData.get("phone") as string;
     const email = formData.get("email") as string;
 
-    const logoFile = formData.get("logoUrl") as File;
+    const logoFile = formData.get("logoFile") as File;
     let logoUrl = "";
     if (logoFile && logoFile.size > 0) {
       logoUrl = await uploadToCloudinary(logoFile);
