@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createFormSubmission } from "@/db/queries";
 import { RoofPolygon, RoofType, SearchAddress } from "@/types";
+import { createOrUpdateHubSpotContact } from "@/lib/hubspot/hubspot";
 
 // Define base schemas
 const searchAddressSchema = z.object({
@@ -229,6 +230,27 @@ export async function POST(request: NextRequest) {
     //     ...submissionData.form,
     //   },
     // };
+
+    // Send to HubSpot (don't fail the entire request if this fails)
+    let hubspotResult = null;
+    try {
+      hubspotResult = await createOrUpdateHubSpotContact({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        email: payload.email,
+        phone: payload.phone,
+        address: payload.address.address,
+      });
+
+      console.log(
+        `HubSpot contact ${hubspotResult.action}:`,
+        hubspotResult.contact.id
+      );
+    } catch (hubspotError) {
+      console.error("HubSpot integration failed:", hubspotError);
+      // Log the error but don't fail the entire request
+      // You might want to implement a retry mechanism or queue here
+    }
 
     // Record successful submission for rate limiting
     const now = Date.now();

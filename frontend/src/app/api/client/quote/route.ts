@@ -1,138 +1,150 @@
-// /app/api/quote/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/drizzle"; // your drizzle instance
+import { z } from "zod";
 import {
-  forms,
-  addresses,
-  roofPolygons,
-  materials,
-  suppliers,
-} from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { pushQuoteToHubSpot } from "@/lib/hubspot/hubspot";
+  createQuoteWithNumber,
+  getQuotesWithFilters,
+  getQuoteStats,
+} from "@/db/quotesQueries";
+import { calculateQuotePrice, validateSlope } from "@/utils/price-calculator";
 
-// ------------------------------------------------------------
-// Helper: calculate price range
-// ------------------------------------------------------------
-function calculatePriceRange(
-  areaSqft: number,
-  basePricePerSqft: number,
-  wasteFactor = 1.15, // 15 % waste
-  laborFactor = 1.4 // 40 % labor
-) {
-  const materialCost = areaSqft * basePricePerSqft * wasteFactor;
-  const totalCost = materialCost * laborFactor;
-  return {
-    materialCost: +materialCost.toFixed(2),
-    totalCost: +totalCost.toFixed(2),
-  };
+const createQuoteSchema = z.object({
+  formId: z.string().uuid(),
+  materialId: z.string().uuid(),
+  supplierId: z.string().uuid(),
+  roofArea: z.number().positive(),
+  slope: z.enum(["flat", "shallow", "medium", "steep"]),
+  materialCostPerUnit: z.number().positive(),
+  status: z
+    .enum(["draft", "sent", "viewed", "accepted", "rejected", "expired"])
+    .optional(),
+});
+
+const getQuotesSchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val) : 1)),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val) : 10)),
+  status: z
+    .enum(["draft", "sent", "viewed", "accepted", "rejected", "expired"])
+    .optional(),
+  supplierId: z.string().uuid().optional(),
+  materialId: z.string().uuid().optional(),
+  formId: z.string().uuid().optional(),
+  minCost: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseFloat(val) : undefined)),
+  maxCost: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseFloat(val) : undefined)),
+});
+
+// GET /api/quotes
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const queryParams = Object.fromEntries(searchParams);
+
+    // Special endpoint for stats
+    if (queryParams.stats === "true") {
+      const stats = await getQuoteStats();
+      return NextResponse.json({
+        success: true,
+        data: stats,
+      });
+    }
+
+    const validatedParams = getQuotesSchema.parse(queryParams);
+    const quotes = await getQuotesWithFilters(validatedParams);
+
+    return NextResponse.json({
+      success: true,
+      data: quotes.data,
+      pagination: quotes.pagination,
+    });
+  } catch (error) {
+    console.error("Error fetching quotes:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid query parameters",
+          details: error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal server error",
+      },
+      { status: 500 }
+    );
+  }
 }
 
-// ------------------------------------------------------------
-// POST handler
-// ------------------------------------------------------------
-export async function POST(req: NextRequest) {
+// POST /api/quotes
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    const { formId, supplierId, materialId } = body;
+    const body = await request.json();
+    const validatedData = createQuoteSchema.parse(body);
 
-    // 1. Form
-    const [formRow] = await db
-      .select()
-      .from(forms)
-      .where(eq(forms.id, formId))
-      .limit(1);
-    if (!formRow)
-      return NextResponse.json({ error: "Form not found" }, { status: 404 });
+    // Calculate the material cost based on slope formula
+    const calculatedPrice = calculateQuotePrice({
+      roofArea: validatedData.roofArea,
+      slope: validatedData.slope,
+      materialCostPerUnit: validatedData.materialCostPerUnit,
+    });
 
-    // 2. Address
-    const [addrRow] = await db
-      .select()
-      .from(addresses)
-      .where(eq(addresses.formId, formId))
-      .limit(1);
+    const quote = await createQuoteWithNumber({
+      formId: validatedData.formId,
+      materialId: validatedData.materialId,
+      supplierId: validatedData.supplierId,
+      materialCost: calculatedPrice.toString(),
+      status: validatedData.status || "draft",
+    });
 
-    // 3. Roof polygons
-    const [roofRow] = await db
-      .select()
-      .from(roofPolygons)
-      .where(eq(roofPolygons.formId, formId))
-      .limit(1);
-    if (!roofRow)
-      return NextResponse.json({ error: "Roof data missing" }, { status: 400 });
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          ...quote,
+          calculatedPrice,
+          roofArea: validatedData.roofArea,
+          slope: validatedData.slope,
+          materialCostPerUnit: validatedData.materialCostPerUnit,
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating quote:", error);
 
-    // 4. Material & Supplier
-    const [matRow] = await db
-      .select()
-      .from(materials)
-      .where(eq(materials.id, materialId))
-      .limit(1);
-    if (!matRow)
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Material not found" },
-        { status: 404 }
+        {
+          success: false,
+          error: "Invalid request data",
+          details: error.errors,
+        },
+        { status: 400 }
       );
+    }
 
-    const [supRow] = await db
-      .select()
-      .from(suppliers)
-      .where(eq(suppliers.id, supplierId))
-      .limit(1);
-
-    // 5. Price calculation
-    const basePrice = parseFloat(matRow.price || "0");
-    const { materialCost, totalCost } = calculatePriceRange(
-      +roofRow.totalAreaSqft,
-      basePrice
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal server error",
+      },
+      { status: 500 }
     );
-
-    // 6. Compose quote
-    const quote = {
-      customer: {
-        firstName: formRow.firstName,
-        lastName: formRow.lastName,
-        email: formRow.email,
-        phone: formRow.phone,
-      },
-      address: addrRow?.formattedAddress,
-      roof: {
-        type: formRow.roofType,
-        areaSqft: +roofRow.totalAreaSqft,
-        areaSqm: +roofRow.totalAreaSqm,
-        polygons: roofRow.polygons,
-      },
-      supplier: {
-        id: supRow?.id,
-        name: supRow?.name,
-        logoUrl: supRow?.logoUrl,
-        phone: supRow?.phone,
-        email: supRow?.email,
-      },
-      material: {
-        id: matRow.id,
-        type: matRow.type,
-        warranty: matRow.warranty,
-        topFeatures: matRow.topFeatures,
-        image: matRow.materialImage,
-        basePricePerSqft: basePrice,
-        price: matRow.price,
-      },
-      pricing: {
-        materialCost,
-        estimatedTotal: totalCost,
-        currency: "USD",
-      },
-    };
-
-    const hubspotIds = await pushQuoteToHubSpot(
-      quote.customer,
-      quote.material,
-      quote.roof.areaSqft
-    );
-    console.log(hubspotIds);
-    return NextResponse.json(quote);
-  } catch (err: any) {
-    console.error(err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

@@ -9,7 +9,6 @@ import {
   serial,
   numeric,
   jsonb,
-  decimal,
   integer,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
@@ -23,6 +22,15 @@ export const auditActionEnum = pgEnum("audit_action", [
   "logout",
   "password_change",
   "profile_update",
+]);
+
+export const quoteStatusEnum = pgEnum("quote_status", [
+  "draft",
+  "sent",
+  "viewed",
+  "accepted",
+  "rejected",
+  "expired",
 ]);
 
 // Admin table (single admin)
@@ -122,13 +130,15 @@ export const passwordResetTokensRelations = relations(
 
 export const suppliersRelations = relations(suppliers, ({ many }) => ({
   materials: many(materials),
+  quotes: many(quotes),
 }));
 // Define material -> supplier (many-to-one)
-export const materialRelations = relations(materials, ({ one }) => ({
+export const materialRelations = relations(materials, ({ one, many }) => ({
   supplier: one(suppliers, {
     fields: [materials.supplierId],
     references: [suppliers.id],
   }), // each material belongs to one supplier
+  quotes: many(quotes),
 }));
 
 // // lead form
@@ -200,6 +210,38 @@ export const roofPolygons = pgTable("roof_polygons", {
 });
 
 /* ------------------------------------------------------------------ */
+/*  TABLE: quotes — stores quotes created by users                    */
+/* ------------------------------------------------------------------ */
+
+export const quotes = pgTable("quotes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  // Foreign keys
+  formId: uuid("form_id")
+    .references(() => forms.id, { onDelete: "cascade" })
+    .notNull(),
+  materialId: uuid("material_id")
+    .references(() => materials.id, { onDelete: "cascade" })
+    .notNull(),
+  supplierId: uuid("supplier_id")
+    .references(() => suppliers.id, { onDelete: "cascade" })
+    .notNull(),
+
+  // Quote details
+  status: quoteStatusEnum("status").default("draft").notNull(),
+
+  // Pricing information
+  materialCost: numeric("material_cost", { precision: 12, scale: 2 }),
+
+  // Metadata
+  quoteNumber: varchar("quote_number", { length: 50 }).unique(), // e.g., "QTE-2024-001"
+
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/* ------------------------------------------------------------------ */
 /*  RELATIONS — keeps TS INTELLISENSE happy                            */
 /* ------------------------------------------------------------------ */
 export const formsRelations = relations(forms, ({ many }) => ({
@@ -221,6 +263,21 @@ export const roofPolygonsRelations = relations(roofPolygons, ({ one }) => ({
   }),
 }));
 
+export const quotesRelations = relations(quotes, ({ one }) => ({
+  form: one(forms, {
+    fields: [quotes.formId],
+    references: [forms.id],
+  }),
+  material: one(materials, {
+    fields: [quotes.materialId],
+    references: [materials.id],
+  }),
+  supplier: one(suppliers, {
+    fields: [quotes.supplierId],
+    references: [suppliers.id],
+  }),
+}));
+
 // Type exports for use in your application
 export type MaterialForm = typeof materials.$inferInsert;
 export type Form = typeof forms.$inferSelect;
@@ -229,3 +286,13 @@ export type Address = typeof addresses.$inferSelect;
 export type NewAddress = typeof addresses.$inferInsert;
 export type RoofPolygons = typeof roofPolygons.$inferSelect;
 export type NewRoofPolygons = typeof roofPolygons.$inferInsert;
+
+export type Quote = typeof quotes.$inferSelect;
+export type NewQuote = typeof quotes.$inferInsert;
+export type UpdateQuote = Partial<NewQuote>;
+
+/* ------------------------------------------------------------------ */
+/*  ZOD SCHEMAS (for validation)                                      */
+/* ------------------------------------------------------------------ */
+export const insertQuoteSchema = createInsertSchema(quotes);
+export const selectQuoteSchema = createSelectSchema(quotes);
