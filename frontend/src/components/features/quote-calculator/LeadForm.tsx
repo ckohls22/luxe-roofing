@@ -151,12 +151,15 @@ export default function LeadForm({
         "roof_quote_history",
         JSON.stringify([...prev, payload])
       );
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Submission error:", e);
       setSubmitStatus("error");
-      setSubmitError(e.message || "Submission failed");
-    } finally {
-      setIsSubmitting(false);
+
+      if (e instanceof Error) {
+        setSubmitError(e.message);
+      } else {
+        setSubmitError("Submission failed");
+      }
     }
   };
 

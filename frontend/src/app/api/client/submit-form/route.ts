@@ -12,11 +12,11 @@ import { createOrUpdateHubSpotContact } from "@/lib/hubspot/hubspot";
 //   placeId: z.string().min(1, "Place ID is required"),
 // });
 
-const roofAreaSchema = z.object({
-  squareMeters: z.number(),
-  squareFeet: z.number(),
-  formatted: z.string(),
-});
+// const roofAreaSchema = z.object({
+//   squareMeters: z.number(),
+//   squareFeet: z.number(),
+//   formatted: z.string(),
+// });
 
 // Define the main submission payload schema
 

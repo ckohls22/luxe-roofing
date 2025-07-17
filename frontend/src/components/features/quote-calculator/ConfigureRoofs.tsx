@@ -8,6 +8,8 @@ import { RoofAreaDisplay } from "./RoofAreaDisplay";
 import { Button } from "@/components/ui";
 import LeadForm from "./LeadForm";
 import SupplierBox from "../SupplierBox";
+import { RoofPolygon } from "@/types/index";
+// import { RoofPolygons } from "@/db/schema";
 
 export function ConfigureRoofs() {
   const {
@@ -19,15 +21,15 @@ export function ConfigureRoofs() {
     roofPolygons,
     handleLabelChange,
     handleSlopeChange,
-    nextStep,
     previousStep,
-    canProceedToNextStep,
     setCurrentStep,
   } = useContext(AddressContext);
 
+  
+
   // Handle area calculation
   const handleAreaCalculatedWithLoading = useCallback(
-    (polygons: any[]) => {
+    (polygons: RoofPolygon[]) => {
       try {
         handleAreaCalculated(polygons);
       } catch (error) {

@@ -339,11 +339,11 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
         return;
       }
 
-      const quoteData = {
-        supplierId: supplier.id,
-        materialId: selectedMaterial.id,
-        formId,
-      };
+      // const quoteData = {
+      //   supplierId: supplier.id,
+      //   materialId: selectedMaterial.id,
+      //   formId,
+      // };
 
       // const { data, error } = await suppliersService.submitQuote(quoteData);
       const data = { success: true };
@@ -359,7 +359,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
         toast.success("Quote request sent successfully!");
       }
     } catch (error) {
-      toast.error("Failed to send quote request");
+      toast.error("Failed to send quote request" + error);
     } finally {
       setIsSubmitting(false);
     }
@@ -460,7 +460,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
+                  onClick={() => setActiveTab(tab.key)}
                   className={`flex-1 py-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center space-x-2 hover:cursor-pointer ${
                     activeTab === tab.key
                       ? "bg-gray-800 text-white shadow-sm"
@@ -553,7 +553,7 @@ const SupplierBox: React.FC = () => {
           setSuppliers(validSuppliers);
         }
       } catch (err) {
-        setError("Failed to load suppliers. Please try again later.");
+        setError("Failed to load suppliers. Please try again later." + err );
       } finally {
         setLoading(false);
       }

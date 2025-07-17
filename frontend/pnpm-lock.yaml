@@ -240,6 +240,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.10
+      '@types/geojson':
+        specifier: ^7946.0.16
+        version: 7946.0.16
       '@types/google.maps':
         specifier: ^3.58.1
         version: 3.58.1
