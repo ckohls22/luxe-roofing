@@ -1,10 +1,9 @@
 // src/types/index.ts
 // Centralized type definitions for the entire application
 
-
 import { RefObject } from "react";
-import { Map as mapboxMap, Expression , FitBoundsOptions } from "mapbox-gl";
-import type { FeatureCollection } from "geojson"
+import { Map as mapboxMap, Expression, FitBoundsOptions } from "mapbox-gl";
+import type { FeatureCollection } from "geojson";
 // import { Material } from "./supplierAndMaterialTypes";
 
 // Mapbox related types
@@ -23,8 +22,6 @@ export interface DrawingStyles {
   paint: Record<string, unknown>;
 }
 
-
-
 // Roof calculation types
 export interface RoofArea {
   squareMeters: number;
@@ -41,7 +38,7 @@ export interface RoofPolygon {
   slope?: string;
 }
 
-export type RoofType = 'residential' | 'industrial' | 'commercial';
+export type RoofType = "residential" | "industrial" | "commercial";
 
 export type SlopeType = "Flat" | "Shallow" | "Medium" | "Steep";
 
@@ -51,8 +48,6 @@ export interface BuildingFeature extends GeoJSON.Feature<GeoJSON.Polygon> {
     [key: string]: unknown;
   };
 }
-
-
 
 // Google Places types
 export interface PlaceResult {
@@ -212,7 +207,8 @@ export interface DrawModeChangeEvent {
   mode: string;
 }
 
-export type DrawEventHandler =  | ((event: DrawCreateEvent) => void)
+export type DrawEventHandler =
+  | ((event: DrawCreateEvent) => void)
   | ((event: DrawUpdateEvent) => void)
   | ((event: DrawDeleteEvent) => void)
   | ((event: DrawModeChangeEvent) => void);
@@ -235,7 +231,7 @@ export interface Supplier {
   installation?: string | null;
   phone?: string | null;
   email?: string | null;
-  materials:Material[]
+  materials: Material[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -245,7 +241,7 @@ export interface Material {
   id: string;
   supplierId: string;
   materialImage: string | null;
-  price?:string| number | null;
+  price?: string | number | null;
   type: string | null;
   warranty: string | null;
   topFeatures: string | null;

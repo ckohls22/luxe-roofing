@@ -215,7 +215,7 @@ function useSupplierDetail(id: string) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  async function fetchSupplier() {
+  const fetchSupplier = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -236,13 +236,13 @@ function useSupplierDetail(id: string) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]); // Add `id` as a dependency since it is used inside the function
 
   React.useEffect(() => {
     if (id) {
       fetchSupplier();
     }
-  }, [id, fetchSupplier]);
+  }, [id, fetchSupplier]); // Now `fetchSupplier` is stable and won't cause unnecessary re-renders
 
   return { supplier, loading, error, refetch: fetchSupplier };
 }

@@ -359,7 +359,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
         toast.success("Quote request sent successfully!");
       }
     } catch (error) {
-      toast.error("Failed to send quote request" + error);
+      console.log(error);
+      toast.error("Failed to send quote request");
     } finally {
       setIsSubmitting(false);
     }
@@ -553,7 +554,7 @@ const SupplierBox: React.FC = () => {
           setSuppliers(validSuppliers);
         }
       } catch (err) {
-        setError("Failed to load suppliers. Please try again later." + err );
+        setError("Failed to load suppliers. Please try again later." + err);
       } finally {
         setLoading(false);
       }

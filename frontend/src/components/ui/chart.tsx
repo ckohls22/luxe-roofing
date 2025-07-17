@@ -112,8 +112,7 @@ interface TooltipPayload {
   value: number;
   name: string;
   dataKey: string;
-  payload: {
-    [key: string]: any;
+  payload: Record<string, unknown> & {
     fill?: string;
   };
   color: string;
@@ -139,7 +138,7 @@ interface ChartTooltipContentProps {
     name: string,
     props: TooltipPayload,
     index: number,
-    payload: any
+    payload: Record<string, unknown>
   ) => React.ReactNode;
   color?: string;
   nameKey?: string;
@@ -285,16 +284,16 @@ function ChartTooltipContent({
 
 const ChartLegend = RechartsPrimitive.Legend;
 
+interface LegendPayloadItem extends Record<string, unknown> {
+  value: string;
+  dataKey: string;
+  color: string;
+  payload: Record<string, unknown>;
+}
+
 interface ChartLegendContentProps extends React.ComponentProps<"div"> {
   hideIcon?: boolean;
-  payload?: Array<{
-    value: string;
-    dataKey: string;
-    color: string;
-    payload: {
-      [key: string]: any;
-    };
-  }>;
+  payload?: LegendPayloadItem[];
   verticalAlign?: "top" | "middle" | "bottom";
   nameKey?: string;
 }
@@ -352,7 +351,7 @@ function ChartLegendContent({
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
-  payload: Record<string, any>,
+  payload: Record<string, unknown> | TooltipPayload | LegendPayloadItem,
   key: string
 ) {
   if (!payload) return undefined;
@@ -364,14 +363,19 @@ function getPayloadConfigFromPayload(
 
   let configLabelKey: string = key;
 
-  if (key in payload && typeof payload[key] === "string") {
-    configLabelKey = payload[key];
-  } else if (
-    payloadPayload &&
-    key in payloadPayload &&
-    typeof payloadPayload[key] === "string"
-  ) {
-    configLabelKey = payloadPayload[key];
+  // Safe property access with type checking
+  if (key in payload) {
+    const payloadValue = (payload as Record<string, unknown>)[key];
+    if (typeof payloadValue === "string") {
+      configLabelKey = payloadValue;
+    }
+  } else if (payloadPayload && key in payloadPayload) {
+    const payloadPayloadValue = (payloadPayload as Record<string, unknown>)[
+      key
+    ];
+    if (typeof payloadPayloadValue === "string") {
+      configLabelKey = payloadPayloadValue;
+    }
   }
 
   return configLabelKey in config ? config[configLabelKey] : config[key];

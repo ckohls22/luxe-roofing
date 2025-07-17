@@ -26,7 +26,7 @@ export default function Page() {
     setCurrentStep("materials");
   };
 
-  const handleMaterialAdded = (material: any) => {
+  const handleMaterialAdded = (material: Material) => {
     setMaterials((prev) => [...prev, material]);
   };
 

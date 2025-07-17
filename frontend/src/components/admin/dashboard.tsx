@@ -241,7 +241,8 @@ function AppSidebar() {
 export function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  // const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 5;
 
   // Filter leads based on search term
@@ -269,8 +270,10 @@ export function AdminDashboard() {
   // const fetchLeads = async (page: number, search: string) => {
   //   setIsLoading(true);
   //   // Future API call would go here
-  //   // const response = await fetch(`/api/leads?page=${page}&search=${search}&limit=${itemsPerPage}`)
-  //   // const data = await response.json()
+  //   const response = await fetch(
+  //     `/api/leads?page=${page}&search=${search}&limit=${itemsPerPage}`
+  //   );
+  //   const data = await response.json();
 
   //   // Simulate loading delay
   //   await new Promise((resolve) => setTimeout(resolve, 300));

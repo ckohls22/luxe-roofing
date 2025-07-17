@@ -1,14 +1,10 @@
 // File: app/api/admin/auth/logout/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { deactivateSession } from "@/db/queries";
-import { jwtVerify } from "jose";
+
 import { cookies } from "next/headers";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-secret-key"
-);
-
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const cookieStore = cookies();
     const token = (await cookieStore).get("admin-token")?.value;

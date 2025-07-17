@@ -16,6 +16,7 @@ import {
 import { Loader2, Plus } from "lucide-react";
 import { useMaterials } from "@/hooks/useMaterials";
 import Image from "next/image";
+import { Material } from "@/types";
 
 interface MaterialFormData {
   type: string;
@@ -28,7 +29,7 @@ interface MaterialFormData {
 
 interface MaterialFormProps {
   supplierId: string;
-  onMaterialAdded: (material: MaterialFormData) => void;
+  onMaterialAdded: (material: Material) => void;
 }
 
 const materialTypes = [

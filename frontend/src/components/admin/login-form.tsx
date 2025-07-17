@@ -8,16 +8,13 @@ import { Input } from "@/components/ui";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 
-import { z } from "zod";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import Image from "next/image";
 
-const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = {
+  username: string;
+  password: string;
+};
 
 export function LoginForm({
   className,
