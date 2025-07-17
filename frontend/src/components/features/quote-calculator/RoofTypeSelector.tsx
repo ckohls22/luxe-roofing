@@ -3,7 +3,7 @@
 
 import { useContext } from "react";
 import { House, Factory } from "lucide-react";
-import { Button } from "@/components/ui/button"; // adjust import if needed
+import { Button } from "@/components/ui"; // adjust import if needed
 import { AddressContext } from "./providers/SearchProvider";
 
 type RoofType = "residential" | "industrial" | "commercial";
