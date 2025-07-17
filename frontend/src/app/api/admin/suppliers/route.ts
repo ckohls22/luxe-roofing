@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  createSupplier,
-  getAllSuppliers,
-  getAllSuppliersWithMaterials,
-} from "@/db/queries";
+import { createSupplier, getAllSuppliers } from "@/db/queries";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function GET() {

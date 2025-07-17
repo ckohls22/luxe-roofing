@@ -242,7 +242,7 @@ function useSupplierDetail(id: string) {
     if (id) {
       fetchSupplier();
     }
-  }, [id]);
+  }, [id, fetchSupplier]);
 
   return { supplier, loading, error, refetch: fetchSupplier };
 }

@@ -241,7 +241,7 @@ function AppSidebar() {
 export function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 5;
 
   // Filter leads based on search term

@@ -10,6 +10,7 @@ import { RichTextEditor } from "@/components/admin/dashboard/supplier/rich-text-
 import { Loader2 } from "lucide-react";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import Image from "next/image";
+import { Supplier } from "@/types";
 
 interface SupplierFormData {
   name: string;
@@ -21,7 +22,7 @@ interface SupplierFormData {
 }
 
 interface SupplierFormProps {
-  onSupplierCreated: (supplier: any) => void;
+  onSupplierCreated: (supplier: Supplier) => void;
 }
 
 export function SupplierForm({ onSupplierCreated }: SupplierFormProps) {
@@ -51,7 +52,8 @@ export function SupplierForm({ onSupplierCreated }: SupplierFormProps) {
       formData.append("email", data.email);
       formData.append("logo", data.logo as File);
 
-      const supplier = await addSupplier(formData);
+      const supplier: Supplier = await addSupplier(formData);
+      console.log(supplier);
       setIsSubmitting(false);
       onSupplierCreated(supplier);
     } catch (error) {

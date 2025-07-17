@@ -12,15 +12,16 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui";
 import { ArrowLeft } from "lucide-react";
+import { Material, Supplier } from "@/types";
 
 export default function Page() {
   const [currentStep, setCurrentStep] = useState<"supplier" | "materials">(
     "supplier"
   );
-  const [createdSupplier, setCreatedSupplier] = useState<any>(null);
-  const [materials, setMaterials] = useState<any[]>([]);
+  const [createdSupplier, setCreatedSupplier] = useState<Supplier | null>(null);
+  const [materials, setMaterials] = useState<Material[]>([]);
 
-  const handleSupplierCreated = (supplier: any) => {
+  const handleSupplierCreated = (supplier: Supplier) => {
     setCreatedSupplier(supplier);
     setCurrentStep("materials");
   };

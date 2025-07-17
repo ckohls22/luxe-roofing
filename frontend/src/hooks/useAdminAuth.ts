@@ -57,7 +57,7 @@ export function useAdminAuth() {
         };
       }
     } catch (error) {
-      const errorMessage = "An unexpected error occurred";
+      const errorMessage = "An unexpected error occurred" + error;
       toast.error(errorMessage);
       return { success: false, message: errorMessage };
     } finally {
@@ -74,6 +74,7 @@ export function useAdminAuth() {
       toast.success("Logged out successfully");
       router.push("/admin/login");
     } catch (error) {
+      console.log(error);
       toast.error("Error during logout");
     }
   };

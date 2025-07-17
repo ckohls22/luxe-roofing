@@ -8,7 +8,6 @@ import { Input } from "@/components/ui";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 
-import { useState } from "react";
 import { z } from "zod";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import Image from "next/image";
@@ -28,7 +27,7 @@ export function LoginForm({
     register,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormData>();
   const { login } = useAdminAuth();
   // const [serverError, setServerError] = useState<string | null>(null);

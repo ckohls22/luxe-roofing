@@ -24,12 +24,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify and decode token
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    // const { payload } = await jwtVerify(token, JWT_SECRET);
 
     // Get client metadata
 
-    const forwarded = request.headers.get("x-forwarded-for");
-    const realIp = request.headers.get("x-real-ip");
+    // const forwarded = request.headers.get("x-forwarded-for");
+    // const realIp = request.headers.get("x-real-ip");
 
     // Deactivate session in database
     await deactivateSession(token);
