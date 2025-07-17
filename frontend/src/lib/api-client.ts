@@ -1,4 +1,4 @@
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 interface ApiResponse<T> {
   data?: T;
@@ -8,16 +8,18 @@ interface ApiResponse<T> {
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = "/api";
 
 async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-    throw new ApiError(response.status, error.message || 'An error occurred');
+    const error = await response
+      .json()
+      .catch(() => ({ message: "An error occurred" }));
+    throw new ApiError(response.status, error.message || "An error occurred");
   }
 
   const data = await response.json();
@@ -33,7 +35,7 @@ export async function fetchApi<T>(
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
     });
@@ -44,31 +46,32 @@ export async function fetchApi<T>(
       toast.error(error.message);
       return { error: error.message };
     }
-    
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
     toast.error(message);
     return { error: message };
   }
 }
 
 export const apiClient = {
-  get: <T>(endpoint: string, options?: RequestInit) => 
-    fetchApi<T>(endpoint, { ...options, method: 'GET' }),
-  
+  get: <T>(endpoint: string, options?: RequestInit) =>
+    fetchApi<T>(endpoint, { ...options, method: "GET" }),
+
   post: <T>(endpoint: string, data: unknown, options?: RequestInit) =>
     fetchApi<T>(endpoint, {
       ...options,
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     }),
 
   put: <T>(endpoint: string, data: unknown, options?: RequestInit) =>
     fetchApi<T>(endpoint, {
       ...options,
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 
   delete: <T>(endpoint: string, options?: RequestInit) =>
-    fetchApi<T>(endpoint, { ...options, method: 'DELETE' }),
+    fetchApi<T>(endpoint, { ...options, method: "DELETE" }),
 };
