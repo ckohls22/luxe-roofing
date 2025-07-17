@@ -130,7 +130,7 @@ export const detectBuildingAtLocation = async (
         // Fit map to building when found
         try {
           fitMapToBuilding(map, nearestBuilding);
-        } catch (e) {
+        } catch (_) {
           // console.warn("[Mapbox] fitMapToBuilding error:", e);
         }
       } else {

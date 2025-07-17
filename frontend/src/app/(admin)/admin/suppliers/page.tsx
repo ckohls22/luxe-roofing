@@ -33,8 +33,6 @@ import {
   IconPlus,
   IconMail,
   IconPhone,
-  IconUser,
-  IconBuilding,
 } from "@tabler/icons-react";
 import {
   ColumnDef,

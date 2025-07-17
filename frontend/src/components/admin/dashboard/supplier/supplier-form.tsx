@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/dashboard/supplier/rich-text-editor";
 import { Loader2 } from "lucide-react";
 import { useSuppliers } from "@/hooks/useSuppliers";
+import Image from "next/image";
 
 interface SupplierFormData {
   name: string;
@@ -28,14 +29,13 @@ export function SupplierForm({ onSupplierCreated }: SupplierFormProps) {
   const [installationContent, setInstallationContent] = useState("");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  const { addSupplier, loading } = useSuppliers();
+  const { addSupplier } = useSuppliers();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm<SupplierFormData>();
 
   const onSubmit = async (data: SupplierFormData) => {
@@ -127,10 +127,12 @@ export function SupplierForm({ onSupplierCreated }: SupplierFormProps) {
             />
 
             {logoPreview && (
-              <img
+              <Image
                 src={logoPreview}
                 alt="Logo Preview"
                 className="w-32 h-32 object-contain rounded border ml-2"
+                height={128}
+                width={128}
               />
             )}
           </div>

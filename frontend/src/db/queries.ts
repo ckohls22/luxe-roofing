@@ -9,14 +9,13 @@ import {
   forms,
   type Form,
   type NewForm,
-  type Address,
   type NewAddress,
   roofPolygons,
 } from "./schema";
-import { eq, and, gt, sum, count, sql, desc, asc, like, or } from "drizzle-orm";
+import { eq, and, gt, count, sql, desc, asc, like, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { Material, Supplier } from "@/types/supplierAndMaterialTypes";
-import type { SearchAddress, SubmissionPayload, RoofPolygon } from "../types";
+import type { RoofPolygon } from "../types";
 import { createInsertSchema } from "drizzle-zod";
 
 // Admin authentication

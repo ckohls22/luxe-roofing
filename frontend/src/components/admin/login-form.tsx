@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 
 import { Card, CardContent } from "@/components/ui/Card";
 
-
 import { Input } from "@/components/ui";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
@@ -12,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import Image from "next/image";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -30,8 +30,8 @@ export function LoginForm({
     setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>();
-  const { login, isLoading } = useAdminAuth();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { login } = useAdminAuth();
+  // const [serverError, setServerError] = useState<string | null>(null);
 
   const onSubmit = async (data: LoginFormData) => {
     const result = await login(data);
@@ -103,10 +103,11 @@ export function LoginForm({
             </div>
           </form>
           <div className="relative hidden bg-muted md:block">
-            <img
+            <Image
               src="https://kzmjph1dquxpe4mg1ufs.lite.vusercontent.net/placeholder.svg"
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              fill
             />
           </div>
         </CardContent>

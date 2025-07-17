@@ -1,14 +1,13 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
-import { useContext, useEffect, useState, useCallback } from "react";
+import { useContext, useEffect, useCallback } from "react";
 import { AddressContext } from "./providers/SearchProvider";
 import { MapContainer } from "./MapContainer";
 import { RoofAreaDisplay } from "./RoofAreaDisplay";
 import { Button } from "@/components/ui";
 import LeadForm from "./LeadForm";
 import SupplierBox from "../SupplierBox";
-import { on } from "events";
 
 export function ConfigureRoofs() {
   const {
@@ -16,8 +15,6 @@ export function ConfigureRoofs() {
     currentStep,
     isLoading,
     setIsLoading,
-    showLeadForm,
-    setShowLeadForm,
     handleAreaCalculated,
     roofPolygons,
     handleLabelChange,
@@ -49,11 +46,11 @@ export function ConfigureRoofs() {
   );
 
   // Handle next step
-  const handleNextStep = useCallback(() => {
-    if (canProceedToNextStep()) {
-      nextStep();
-    }
-  }, [canProceedToNextStep, nextStep]);
+  // const handleNextStep = useCallback(() => {
+  //   if (canProceedToNextStep()) {
+  //     nextStep();
+  //   }
+  // }, [canProceedToNextStep, nextStep]);
 
   // Handle back to search
   const handleBackToSearch = useCallback(() => {
@@ -66,20 +63,24 @@ export function ConfigureRoofs() {
       (currentStep === "edit-roof" || currentStep === "lead-form") &&
       !selectedAddress
     ) {
-      console.log("changing back to search step")
+      console.log("changing back to search step");
       setCurrentStep("search");
     }
   }, [currentStep, selectedAddress, setCurrentStep]);
 
-   const handleLeadSubmit = (): void => {
-      // Send data to backend or process form submission('show-result')
-      // Move to the results page after successful submission
-      setCurrentStep("show-result");
-      console.log("Form submitted" + currentStep);
-    };
+  const handleLeadSubmit = (): void => {
+    // Send data to backend or process form submission('show-result')
+    // Move to the results page after successful submission
+    setCurrentStep("show-result");
+    console.log("Form submitted" + currentStep);
+  };
 
   // Only render for edit-roof or lead-form steps
-  if (currentStep !== "edit-roof" && currentStep !== "lead-form" && currentStep !== "show-result") {
+  if (
+    currentStep !== "edit-roof" &&
+    currentStep !== "lead-form" &&
+    currentStep !== "show-result"
+  ) {
     return null;
   }
 
@@ -88,13 +89,17 @@ export function ConfigureRoofs() {
     return null;
   }
 
-  if ( currentStep == "show-result") {
+  if (currentStep == "show-result") {
     return (
       <div className="flex justify-center items-center mt-6">
         <div className="w-full lg:w-9/12 md:w-3/4  ">
-          <h2 className="text-3xl font-bold mb-4 text-center">Our Premium Suppliers</h2>
-          <p className="text-lg mb-4 text-center">Discover exceptional materials from trusted partners</p>
-         
+          <h2 className="text-3xl font-bold mb-4 text-center">
+            Our Premium Suppliers
+          </h2>
+          <p className="text-lg mb-4 text-center">
+            Discover exceptional materials from trusted partners
+          </p>
+
           <div className="w-full flex items-center mt-4 p-2">
             <SupplierBox />
           </div>
@@ -186,5 +191,4 @@ export function ConfigureRoofs() {
       </div>
     );
   }
-  
 }

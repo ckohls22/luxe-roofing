@@ -117,32 +117,32 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   }
 
   // Unified handler for Enter key, blur, and search button
-  const handleInputConfirm = () => {
-    if (!inputValue.trim()) {
-      setSearchError("Please enter an address to search.");
-      return;
-    }
-    if (autocompleteRef.current) {
-      const place = autocompleteRef.current.getPlace?.();
-      console.log("handleInputConfirm triggered autocomplete", place);
-      if (place?.geometry?.location) {
-        const address: SearchAddress = {
-          address: place.formatted_address || "",
-          coordinates: [
-            place.geometry.location.lng(),
-            place.geometry.location.lat(),
-          ],
-          placeId: place.place_id || "",
-        };
+  // const handleInputConfirm = () => {
+  //   if (!inputValue.trim()) {
+  //     setSearchError("Please enter an address to search.");
+  //     return;
+  //   }
+  //   if (autocompleteRef.current) {
+  //     const place = autocompleteRef.current.getPlace?.();
+  //     console.log("handleInputConfirm triggered autocomplete", place);
+  //     if (place?.geometry?.location) {
+  //       const address: SearchAddress = {
+  //         address: place.formatted_address || "",
+  //         coordinates: [
+  //           place.geometry.location.lng(),
+  //           place.geometry.location.lat(),
+  //         ],
+  //         placeId: place.place_id || "",
+  //       };
 
-        onAddressSelected(address);
-        console.log("address selected from input confirm", address);
-        setSearchError(null);
-        return;
-      }
-    }
-    setSearchError("Please select a valid address from the dropdown.");
-  };
+  //       onAddressSelected(address);
+  //       console.log("address selected from input confirm", address);
+  //       setSearchError(null);
+  //       return;
+  //     }
+  //   }
+  //   setSearchError("Please select a valid address from the dropdown.");
+  // };
 
   // Handle search button click
   async function handleSearch(

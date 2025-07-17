@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
   Select,
   SelectContent,
@@ -13,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Upload } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { useMaterials } from "@/hooks/useMaterials";
+import Image from "next/image";
 
 interface MaterialFormData {
   type: string;
@@ -27,7 +28,7 @@ interface MaterialFormData {
 
 interface MaterialFormProps {
   supplierId: string;
-  onMaterialAdded: (material: any) => void;
+  onMaterialAdded: (material: MaterialFormData) => void;
 }
 
 const materialTypes = [
@@ -43,10 +44,7 @@ const materialTypes = [
   "Other",
 ];
 
-export function MaterialForm({
-  supplierId,
-  onMaterialAdded,
-}: MaterialFormProps) {
+export function MaterialForm({ supplierId }: MaterialFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   console.log(selectedType);
@@ -59,12 +57,7 @@ export function MaterialForm({
   const [showCase, setShowCase] = useState<File | undefined>(undefined);
   const { addMaterial } = useMaterials(); // Assuming useSuppliers hook has addMaterial function
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<MaterialFormData>();
+  const { register, handleSubmit, reset } = useForm<MaterialFormData>();
 
   const onSubmit = async (data: MaterialFormData) => {
     setIsSubmitting(true);
@@ -80,7 +73,7 @@ export function MaterialForm({
       formData.append("materialImage", materialImage as File);
       formData.append("showCase", showCase as File);
 
-      const material = await addMaterial(formData);
+      await addMaterial(formData);
       setIsSubmitting(false);
     } catch (error) {
       console.error("Error creating material:", error);
@@ -170,10 +163,12 @@ export function MaterialForm({
             />
 
             {materialPreview && (
-              <img
+              <Image
                 src={materialPreview}
                 alt="Material Preview"
                 className="w-16 h-16 object-cover rounded"
+                height={64}
+                width={64}
               />
             )}
           </div>
@@ -201,10 +196,12 @@ export function MaterialForm({
           placeholder="Detailed description of the material, its applications, and benefits"
         />
         {showcasePreview && (
-          <img
+          <Image
             src={showcasePreview}
             alt="Showcase Preview"
             className="w-16 h-16 object-cover rounded mt-2"
+            height={64}
+            width={64}
           />
         )}
       </div>

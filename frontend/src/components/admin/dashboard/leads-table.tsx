@@ -10,7 +10,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -40,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/label";
+
 import {
   Select,
   SelectContent,
@@ -167,7 +166,7 @@ const columns: ColumnDef<FormData>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => (
+    cell: ({}) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

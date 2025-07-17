@@ -5,7 +5,7 @@ import {
   getQuotesWithFilters,
   getQuoteStats,
 } from "@/db/quotesQueries";
-import { calculateQuotePrice, validateSlope } from "@/utils/price-calculator";
+import { calculateQuotePrice } from "@/utils/price-calculator";
 
 const createQuoteSchema = z.object({
   formId: z.string().uuid(),

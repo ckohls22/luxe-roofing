@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Card,
   CardContent,
@@ -20,7 +20,6 @@ import { AddressContext } from "./providers/SearchProvider";
 import { SearchAddress } from "@/types";
 import { RoofPolygon, RoofType } from "@/types";
 import { Turnstile } from "@marsidev/react-turnstile";
-import next from "next";
 
 // Validation Schema only for form inputs
 const formSchema = z.object({
@@ -47,7 +46,6 @@ interface ContactFormProps {
 }
 
 export default function LeadForm({
-
   onSubmit,
   initialData,
   className = "",
@@ -93,13 +91,11 @@ export default function LeadForm({
       // Force captcha re-render by updating its key
       setCaptchaKey((prev) => prev + 1);
     }
-    if(currentStep !== "lead-form") {
+    if (currentStep !== "lead-form") {
       // Reset form when leaving lead-form step
-      console.log(currentStep)
+      console.log(currentStep);
     }
   }, [currentStep]);
-
-
 
   const resetForm = () => {
     reset();
@@ -142,13 +138,12 @@ export default function LeadForm({
       if (!response.ok || !result.success) {
         throw new Error(result.message || `Status ${response.status}`);
       }
-      
+
       setSubmitStatus("success");
       resetForm();
       onSubmit?.(payload);
       nextStep();
 
-      
       const prev = JSON.parse(
         localStorage.getItem("roof_quote_history") || "[]"
       );
@@ -156,8 +151,6 @@ export default function LeadForm({
         "roof_quote_history",
         JSON.stringify([...prev, payload])
       );
-      
-
     } catch (e: any) {
       console.error("Submission error:", e);
       setSubmitStatus("error");

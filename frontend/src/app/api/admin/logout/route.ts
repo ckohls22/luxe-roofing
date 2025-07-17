@@ -25,13 +25,11 @@ export async function POST(request: NextRequest) {
 
     // Verify and decode token
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    const adminId = payload.adminId as number;
 
     // Get client metadata
-    const userAgent = request.headers.get("user-agent") || undefined;
+
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
-    const ipAddress = forwarded?.split(",")[0] || realIp || "unknown";
 
     // Deactivate session in database
     await deactivateSession(token);

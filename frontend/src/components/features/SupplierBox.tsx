@@ -19,14 +19,12 @@ import {
   Sparkles,
   Building2,
   User,
-  Clock,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { suppliersService } from "@/lib/services/suppliers";
 import type { Supplier, Material } from "@/types";
 import Image from "next/image";
-import { set, success } from "zod/v4";
 
 // Constants
 const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/placeholder";
@@ -242,64 +240,77 @@ const QuoteDialog: React.FC<{
   supplier: Supplier;
   selectedMaterial: Material | null;
 }> = ({ open, onOpenChange, supplier, selectedMaterial }) => (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md bg-gradient-to-br from-amber-50 to-orange-50 border-0">
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-3 text-amber-800">
-              <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl">Quote Sent Successfully!</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <p className="text-gray-700 mb-3 leading-relaxed">
-                We've sent a detailed quote for <span className="font-bold text-amber-800">{selectedMaterial?.type || 'N/A'}</span> from{' '}
-                <span className="font-bold text-amber-800">{supplier.name}</span> to your email address.
-              </p>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                You'll receive it within a few minutes. Please check your spam folder if you don't see it in your inbox.
-              </p>
-            </div>
-            
-            <div className="bg-gradient-to-r from-amber-100 to-orange-100 p-4 rounded-xl border border-amber-200">
-              <h4 className="font-bold text-amber-800 mb-3 flex items-center">
-                <Package className="w-4 h-4 mr-2" />
-                Quote Details:
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-amber-700">Supplier:</span>
-                  <span className="font-medium text-amber-800">{supplier.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700">Material:</span>
-                  <span className="font-medium text-amber-800">{selectedMaterial?.type || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700">Price:</span>
-                  <span className="font-bold text-amber-800">{selectedMaterial?.price || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700">Warranty:</span>
-                  <span className="font-medium text-amber-800">{selectedMaterial?.warranty || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-            
-            <Button 
-              onClick={() => onOpenChange(false)}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-600  text-white font-bold py-3 rounded-lg transition-all duration-300 shadow-lg"
-            >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              Perfect!
-            </Button>
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="sm:max-w-md bg-gradient-to-br from-amber-50 to-orange-50 border-0">
+      <DialogHeader>
+        <DialogTitle className="flex items-center space-x-3 text-amber-800">
+          <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+            <CheckCircle className="w-6 h-6 text-white" />
           </div>
-        </DialogContent>
-      </Dialog>
-    
+          <span className="text-xl">Quote Sent Successfully!</span>
+        </DialogTitle>
+      </DialogHeader>
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🎉</div>
+          <p className="text-gray-700 mb-3 leading-relaxed">
+            We&apos;ve sent a detailed quote for{" "}
+            <span className="font-bold text-amber-800">
+              {selectedMaterial?.type || "N/A"}
+            </span>{" "}
+            from{" "}
+            <span className="font-bold text-amber-800">{supplier.name}</span> to
+            your email address.
+          </p>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            You&apos;ll receive it within a few minutes. Please check your spam
+            folder if you don&apos;t see it in your inbox.
+          </p>
+        </div>
+
+        <div className="bg-gradient-to-r from-amber-100 to-orange-100 p-4 rounded-xl border border-amber-200">
+          <h4 className="font-bold text-amber-800 mb-3 flex items-center">
+            <Package className="w-4 h-4 mr-2" />
+            Quote Details:
+          </h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-amber-700">Supplier:</span>
+              <span className="font-medium text-amber-800">
+                {supplier.name}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-amber-700">Material:</span>
+              <span className="font-medium text-amber-800">
+                {selectedMaterial?.type || "N/A"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-amber-700">Price:</span>
+              <span className="font-bold text-amber-800">
+                {selectedMaterial?.price || "N/A"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-amber-700">Warranty:</span>
+              <span className="font-medium text-amber-800">
+                {selectedMaterial?.warranty || "N/A"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <Button
+          onClick={() => onOpenChange(false)}
+          className="w-full bg-gradient-to-r from-amber-500 to-orange-600  text-white font-bold py-3 rounded-lg transition-all duration-300 shadow-lg"
+        >
+          <CheckCircle className="w-5 h-5 mr-2" />
+          Perfect!
+        </Button>
+      </div>
+    </DialogContent>
+  </Dialog>
 );
 
 // Main Supplier Card Component
@@ -335,7 +346,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
       };
 
       // const { data, error } = await suppliersService.submitQuote(quoteData);
-      const data = {success:true}
+      const data = { success: true };
       const error = false;
 
       if (error) {
@@ -470,22 +481,22 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
           </div>
 
           {/* Quote Button */}
-            <div className="flex gap-3 w-full relative items-center justify-center">
+          <div className="flex gap-3 w-full relative items-center justify-center">
             <Button
               onClick={handleGetQuote}
               disabled={isSubmitting || !selectedMaterial}
               className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 text-white font-semibold py-6 rounded-full disabled:opacity-50 max-w-[200px]"
             >
               {isSubmitting ? (
-              <div className="flex items-center justify-center space-x-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Sending...</span>
-              </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Sending...</span>
+                </div>
               ) : (
-              <div className="flex items-center justify-center space-x-2 ">
-                <Sparkles className="w-4 h-4" />
-                <span>Get Quote</span>
-              </div>
+                <div className="flex items-center justify-center space-x-2 ">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Get Quote</span>
+                </div>
               )}
             </Button>
             <Button
@@ -494,18 +505,18 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
               className="flex-1 bg-white hover:bg-gray-100  text-black font-semibold py-6 rounded-full border border-gray-300 disabled:opacity-50 max-w-[200px]"
             >
               {isSubmitting ? (
-              <div className="flex items-center justify-center space-x-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Sending...</span>
-              </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Sending...</span>
+                </div>
               ) : (
-              <div className="flex items-center justify-center space-x-2">
-                {/* <Sparkles className="w-4 h-4" /> */}
-                <span>Talk to a Pro</span>
-              </div>
+                <div className="flex items-center justify-center space-x-2">
+                  {/* <Sparkles className="w-4 h-4" /> */}
+                  <span>Talk to a Pro</span>
+                </div>
               )}
             </Button>
-            </div>
+          </div>
         </CardContent>
       </Card>
 

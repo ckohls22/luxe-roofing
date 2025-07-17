@@ -239,7 +239,6 @@ function AppSidebar() {
 }
 
 export function AdminDashboard() {
-  const [activeNav, setActiveNav] = useState("Dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -267,16 +266,16 @@ export function AdminDashboard() {
   };
 
   // Simulate API call structure (ready for future implementation)
-  const fetchLeads = async (page: number, search: string) => {
-    setIsLoading(true);
-    // Future API call would go here
-    // const response = await fetch(`/api/leads?page=${page}&search=${search}&limit=${itemsPerPage}`)
-    // const data = await response.json()
+  // const fetchLeads = async (page: number, search: string) => {
+  //   setIsLoading(true);
+  //   // Future API call would go here
+  //   // const response = await fetch(`/api/leads?page=${page}&search=${search}&limit=${itemsPerPage}`)
+  //   // const data = await response.json()
 
-    // Simulate loading delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    setIsLoading(false);
-  };
+  //   // Simulate loading delay
+  //   await new Promise((resolve) => setTimeout(resolve, 300));
+  //   setIsLoading(false);
+  // };
 
   const getStatusBadge = (status: string) => {
     switch (status) {

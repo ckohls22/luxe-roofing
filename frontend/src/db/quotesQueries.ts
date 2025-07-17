@@ -1,16 +1,6 @@
 import { db } from "@/db/drizzle"; // your database instance
 import { quotes, forms, materials, suppliers } from "@/db/schema";
-import {
-  eq,
-  desc,
-  asc,
-  and,
-  or,
-  sql,
-  count,
-  isNull,
-  isNotNull,
-} from "drizzle-orm";
+import { eq, desc, and, or, sql, count, isNull, isNotNull } from "drizzle-orm";
 import type { Quote, NewQuote, UpdateQuote } from "./schema";
 
 /* ------------------------------------------------------------------ */

@@ -1,19 +1,13 @@
 // src/components/features/roof-calculator/MapContainer.tsx
 // Main map container component with drawing capabilities
 
-import React, {
-  useRef,
-  useEffect,
-  useState,
-  useImperativeHandle,
-  forwardRef,
-} from "react";
+import React, { useRef, useEffect, useState } from "react";
 import mapboxgl, { Map as MapboxMap } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import centerOfMass from "@turf/center-of-mass";
 import area from "@turf/area";
 import { useMapbox } from "@/hooks";
-import { MapContainerProps, RoofPolygon, BuildingFeature } from "@/types";
+import { MapContainerProps, RoofPolygon } from "@/types";
 import {
   createDrawInstance,
   createDrawEventHandlers,
@@ -35,7 +29,6 @@ export function MapContainer({
   selectedAddress,
   isLoading,
   onLoadingChange,
-  roofPolygons,
 }: MapContainerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<MapboxDraw | null>(null);

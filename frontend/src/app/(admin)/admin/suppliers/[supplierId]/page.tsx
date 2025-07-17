@@ -2,17 +2,14 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconArrowLeft,
-  IconCamera,
   IconDeviceFloppy,
   IconDotsVertical,
   IconEdit,
   IconLoader,
-  IconMail,
-  IconPhone,
   IconPlus,
   IconTrash,
   IconUpload,
@@ -126,7 +123,6 @@ type MaterialFormData = z.infer<typeof materialFormSchema>;
 function ImageUpload({
   isEditing,
   value,
-  onChange,
   onFileChange,
   label,
   accept = "image/*",
