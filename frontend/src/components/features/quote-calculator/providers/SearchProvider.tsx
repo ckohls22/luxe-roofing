@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { createContext, useState, useCallback } from "react";
 import { SearchAddress, RoofPolygon } from "@/types";
 
@@ -120,12 +120,12 @@ export default function AddressProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   // Step sequence definition
-  const stepSequence: AppStep[] = [
-    "search",
-    "edit-roof",
-    "lead-form",
-    "show-result",
-  ];
+  const stepSequence = useMemo<AppStep[]>(() => [
+  "search",
+  "edit-roof",
+  "lead-form",
+  "show-result",
+], []);
 
   // Step Management Functions
   const nextStep = useCallback(() => {

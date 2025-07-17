@@ -99,7 +99,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   // Clear search
   const handleClear = () => {
     setInputValue("");
-    // @ts-ignore
+   
     onAddressSelected(null); // Clear selected address
     autocompleteRef.current?.set("place_id", ""); // Clear Google Places selection
     setSearchError(null);
@@ -244,6 +244,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
             disabled={!googleLoaded || isLoading}
             onFocus={() => handleSearchBoxFocus(true)}
             onBlur={() => handleSearchBoxFocus(false)}
+            
           />
 
           {/* Clear button */}
@@ -286,6 +287,9 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
           </div>
         )}
       </div>
+      {searchError && (
+        <div>{searchError}</div>
+      )}
 
       {/* Search instructions */}
       <div className="flex  space-x-0 text-sm gap-1 text-gray-600">

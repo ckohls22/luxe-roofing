@@ -94,7 +94,7 @@ export const detectBuildingAtLocation = async (
       const containingBuilding = features.find(
         (feature) =>
           feature.geometry?.type === "Polygon" &&
-          booleanPointInPolygon(point, feature.geometry as any)
+          booleanPointInPolygon(point, feature.geometry)
       );
       if (containingBuilding) {
         // console.log("[Mapbox] Found containing building:", containingBuilding);
@@ -130,8 +130,8 @@ export const detectBuildingAtLocation = async (
         // Fit map to building when found
         try {
           fitMapToBuilding(map, nearestBuilding);
-        } catch (_) {
-          // console.warn("[Mapbox] fitMapToBuilding error:", e);
+        } catch (e) {
+          console.warn("[Mapbox] fitMapToBuilding error:", e);
         }
       } else {
         // console.log("[Mapbox] No nearby building found within max distance");

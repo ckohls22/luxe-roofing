@@ -75,7 +75,7 @@ export const createDrawEventHandlers = (
   "draw.create": onUpdate,
   "draw.update": onUpdate,
   "draw.delete": onDelete,
-  "draw.modechange": (e: any) => {
+  "draw.modechange": (e: {mode:string}) => {
     // Handle mode changes for better UX
     console.log("Draw mode changed to:", e.mode);
   },

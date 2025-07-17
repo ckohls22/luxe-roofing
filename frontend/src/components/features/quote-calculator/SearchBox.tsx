@@ -36,7 +36,7 @@ export const SearchBox = () => {
 
   // Sync input with selected address
   useEffect(() => {
-    if (selectedAddress?.address && inputValue !== selectedAddress.address) {
+    if (selectedAddress?.address ) {
       setInputValue(selectedAddress.address);
     }
   }, [selectedAddress]);
@@ -47,6 +47,14 @@ export const SearchBox = () => {
       setSearchError(null);
     }
   }, [error]);
+
+   // Cleanup function for autocomplete
+  const cleanupAutocomplete = useCallback(() => {
+    if (autocompleteRef.current) {
+      google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      autocompleteRef.current = null;
+    }
+  }, []);
 
   // Initialize Google Places Autocomplete
   useEffect(() => {
@@ -107,15 +115,9 @@ export const SearchBox = () => {
     }
 
     return cleanupAutocomplete;
-  }, [googleLoaded, handleAddressSelected, setError]);
+  }, [googleLoaded, handleAddressSelected, setError, cleanupAutocomplete]);
 
-  // Cleanup function for autocomplete
-  const cleanupAutocomplete = useCallback(() => {
-    if (autocompleteRef.current) {
-      google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      autocompleteRef.current = null;
-    }
-  }, []);
+ 
 
   // Handle input changes
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +140,7 @@ export const SearchBox = () => {
   }, [selectedAddress, setError, currentStep, setCurrentStep, setSelectedAddress, clearRoofPolygons]);
 
   // Handle search button click
-  const handleSearch = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSearch = useCallback(async (e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     
     if (!inputRef.current || !googleLoaded) {
@@ -267,12 +269,16 @@ export const SearchBox = () => {
   }, [onSearchBoxFocus]);
 
   // Handle key press events
-  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+  const handleKeyPress = useCallback(
+  (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
       e.preventDefault();
-      handleSearch(e as any);
+      handleSearch(e);
     }
-  }, [handleSearch]);
+  },
+  [handleSearch]
+);
+
 
   // Show global error if Google Places fails to load
   if (googleError) {

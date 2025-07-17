@@ -3,7 +3,8 @@
 
 
 import { RefObject } from "react";
-import { Map as mapboxMap } from "mapbox-gl";
+import { Map as mapboxMap, Expression , FitBoundsOptions } from "mapbox-gl";
+import type { FeatureCollection } from "geojson"
 // import { Material } from "./supplierAndMaterialTypes";
 
 // Mapbox related types
@@ -18,8 +19,8 @@ export interface MapboxConfig {
 export interface DrawingStyles {
   id: string;
   type: "fill" | "line" | "circle";
-  filter: any[];
-  paint: Record<string, any>;
+  filter: Expression;
+  paint: Record<string, unknown>;
 }
 
 
@@ -47,7 +48,7 @@ export type SlopeType = "Flat" | "Shallow" | "Medium" | "Steep";
 export interface BuildingFeature extends GeoJSON.Feature<GeoJSON.Polygon> {
   id: string | number;
   properties: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -115,7 +116,7 @@ export interface MapContainerProps {
 }
 
 export interface AddressSearchProps {
-  onAddressSelected: (address: SearchAddress) => void;
+  onAddressSelected: (address: SearchAddress | null) => void;
   onSearchBoxFocus: (isFocused: boolean) => void;
   isLoading: boolean;
 }
@@ -151,7 +152,7 @@ export interface UseRoofCalculationReturn {
 export interface AppError {
   code: string;
   message: string;
-  details?: any;
+  details?: string;
 }
 
 export interface ApiResponse<T> {
@@ -193,7 +194,28 @@ export type BoundingBox = [Coordinates, Coordinates];
 
 // Event handler types
 export type MapEventHandler = (event: mapboxgl.MapboxEvent) => void;
-export type DrawEventHandler = (event: any) => void;
+
+export interface DrawCreateEvent {
+  features: FeatureCollection["features"];
+}
+
+export interface DrawUpdateEvent {
+  features: FeatureCollection["features"];
+  action: "move" | "change_coordinates";
+}
+
+export interface DrawDeleteEvent {
+  features: FeatureCollection["features"];
+}
+
+export interface DrawModeChangeEvent {
+  mode: string;
+}
+
+export type DrawEventHandler =  | ((event: DrawCreateEvent) => void)
+  | ((event: DrawUpdateEvent) => void)
+  | ((event: DrawDeleteEvent) => void)
+  | ((event: DrawModeChangeEvent) => void);
 export type AddressSelectHandler = (address: SearchAddress) => void;
 
 // Component ref types
@@ -201,7 +223,7 @@ export interface MapRef {
   map: mapboxgl.Map | null;
   draw: MapboxDraw | null;
   flyTo: (coordinates: Coordinates, zoom?: number) => void;
-  fitBounds: (bounds: BoundingBox, options?: any) => void;
+  fitBounds: (bounds: BoundingBox, options?: FitBoundsOptions) => void;
 }
 
 // supplier
