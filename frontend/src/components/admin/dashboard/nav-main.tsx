@@ -28,14 +28,14 @@ export function NavMain({
           <SidebarMenuItem className="flex items-center gap-2">
             <SidebarMenuButton
               tooltip="Quick Create"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+              className="bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 active:from-amber-600 active:to-orange-700 min-w-8 duration-200 ease-linear font-semibold"
             >
               <IconCirclePlusFilled />
               <span>Quick Create</span>
             </SidebarMenuButton>
             <Button
               size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
+              className="size-8 group-data-[collapsible=icon]:opacity-0 border-amber-300 text-amber-700 hover:bg-amber-50"
               variant="outline"
             >
               <IconMail />
@@ -46,8 +46,8 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
-                {item.icon && <item.icon />}
+              <SidebarMenuButton tooltip={item.title} className="hover:bg-amber-50 hover:text-amber-700 text-gray-700 font-medium">
+                {item.icon && <item.icon className="text-amber-600" />}
                 <Link href={item.url}>
                   <span>{item.title}</span>
                 </Link>

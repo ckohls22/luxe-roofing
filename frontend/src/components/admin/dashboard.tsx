@@ -284,24 +284,24 @@ export function AdminDashboard() {
     switch (status) {
       case "approved":
         return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+          <Badge className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 font-medium">
             Approved
           </Badge>
         );
       case "pending":
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+          <Badge className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 font-medium">
             Pending
           </Badge>
         );
       case "rejected":
         return (
-          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+          <Badge className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100 font-medium">
             Rejected
           </Badge>
         );
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary" className="bg-gray-50 text-gray-700 border-gray-200">{status}</Badge>;
     }
   };
 
@@ -311,37 +311,43 @@ export function AdminDashboard() {
         <AppSidebar />
         <div className="flex-1">
           {/* Header */}
-          <header className="flex h-16 items-center justify-between border-b bg-background px-6">
+          <header className="flex h-16 items-center justify-between border-b border-amber-200 bg-white shadow-sm px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">LQ</span>
+                </div>
+                <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
+              </div>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
+                  className="relative h-8 w-8 rounded-full hover:bg-amber-50"
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 border-2 border-amber-200">
                     <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
-                    <AvatarFallback>AD</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold">AD</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+              <DropdownMenuContent className="w-56 border-amber-200" align="end" forceMount>
+                <DropdownMenuItem className="hover:bg-amber-50">Profile</DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-amber-50">Settings</DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-amber-50 text-red-600">Sign out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 space-y-4 p-4 sm:space-y-6 sm:p-6">
+          <main className="flex-1 space-y-4 p-4 sm:space-y-6 sm:p-6 bg-amber-50/30">
             {/* Monthly Leads Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Monthly Leads Chart</CardTitle>
-                <CardDescription>
+            <Card className="bg-white shadow-lg border-amber-200">
+              <CardHeader className="border-b border-amber-100">
+                <CardTitle className="text-gray-900 font-bold">Monthly Leads Chart</CardTitle>
+                <CardDescription className="text-amber-800">
                   Lead generation performance over the last 6 months
                 </CardDescription>
               </CardHeader>
@@ -350,19 +356,19 @@ export function AdminDashboard() {
                   config={{
                     leads: {
                       label: "Leads",
-                      color: "hsl(var(--chart-1))",
+                      color: "#f59e0b",
                     },
                   }}
                   className="h-[300px]"
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthlyLeadsData}>
-                      <XAxis dataKey="month" />
-                      <YAxis />
+                      <XAxis dataKey="month" className="text-gray-600" />
+                      <YAxis className="text-gray-600" />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar
                         dataKey="leads"
-                        fill="var(--color-leads)"
+                        fill="#f59e0b"
                         radius={4}
                       />
                     </BarChart>
@@ -373,72 +379,78 @@ export function AdminDashboard() {
 
             {/* KPI Cards */}
             <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              <Card>
+              <Card className="bg-white shadow-lg border-amber-200 hover:shadow-xl transition-shadow duration-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-gray-900">
                     Total Leads
                   </CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 text-white" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">318</div>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+12.5%</span> from last
+                  <div className="text-2xl font-bold text-gray-900">318</div>
+                  <p className="text-xs text-amber-800">
+                    <span className="text-green-600 font-semibold">+12.5%</span> from last
                     month
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white shadow-lg border-amber-200 hover:shadow-xl transition-shadow duration-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-gray-900">
                     Total Users
                   </CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">1,247</div>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+8.2%</span> from last
+                  <div className="text-2xl font-bold text-gray-900">1,247</div>
+                  <p className="text-xs text-amber-800">
+                    <span className="text-green-600 font-semibold">+8.2%</span> from last
                     month
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white shadow-lg border-amber-200 hover:shadow-xl transition-shadow duration-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-gray-900">
                     Suppliers
                   </CardTitle>
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                    <Building2 className="h-4 w-4 text-white" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">89</div>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="text-red-600">-2.1%</span> from last month
+                  <div className="text-2xl font-bold text-gray-900">89</div>
+                  <p className="text-xs text-amber-800">
+                    <span className="text-red-600 font-semibold">-2.1%</span> from last month
                   </p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Leads Table */}
-            <Card>
-              <CardHeader>
+            <Card className="bg-white shadow-lg border-amber-200">
+              <CardHeader className="border-b border-amber-100">
                 <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                   <div>
-                    <CardTitle>Leads Table</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-gray-900 font-bold">Leads Table</CardTitle>
+                    <CardDescription className="text-amber-800">
                       Recent leads and their current status
                     </CardDescription>
                   </div>
                   <div className="flex w-full max-w-sm items-center space-x-2">
                     <div className="relative flex-1">
-                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-amber-600" />
                       <Input
                         placeholder="Search leads..."
                         value={searchTerm}
                         onChange={(e) => handleSearch(e.target.value)}
-                        className="pl-8"
+                        className="pl-8 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
                       />
                     </div>
                   </div>

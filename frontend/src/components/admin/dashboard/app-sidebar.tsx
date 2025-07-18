@@ -11,7 +11,6 @@ import {
   IconFileWord,
   IconFolder,
   IconHelp,
-  IconInnerShadowTop,
   IconListDetails,
   IconReport,
   IconSearch,
@@ -36,14 +35,14 @@ import Link from "next/link";
 
 const data = {
   user: {
-    name: "shadcn",
+    name: "LuxeRoofing",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/luxeroofinglogo.jpg",
   },
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/admin/dashboard",
       icon: IconDashboard,
     },
     {
@@ -62,8 +61,8 @@ const data = {
       icon: IconChartBar,
     },
     {
-      title: "Projects",
-      url: "#",
+      title: "Leads",
+      url: "/admin/leads",
       icon: IconFolder,
     },
     {
@@ -158,28 +157,30 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
+    <Sidebar collapsible="offcanvas" className="border-r border-amber-200" {...props}>
+      <SidebarHeader className="border-b border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:!p-3 hover:bg-amber-100 transition-colors"
             >
-              <Link href="/admin/dashboard">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+              <Link href="/admin/dashboard" className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">LQ</span>
+                </div>
+                <span className="text-base font-bold text-gray-900">LuxelQ Admin</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-white">
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-amber-200 bg-amber-50">
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>

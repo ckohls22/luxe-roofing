@@ -17,10 +17,6 @@ export const metadata: Metadata = {
   },
   description:
     "Professional roof area calculation tool using satellite imagery and advanced mapping technology.",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0066cc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0066cc" },
-  ],
   keywords: ["roof calculator", "area measurement", "construction", "roofing"],
   authors: [{ name: "LuxeIQ Team" }],
   robots: "index, follow",
@@ -31,7 +27,7 @@ export const metadata: Metadata = {
     description:
       "Professional roof area calculation tool using satellite imagery.",
   },
-  viewport: "width=device-width, initial-scale=1",
+
   icons: {
     icon: "/favicon.ico",
   },

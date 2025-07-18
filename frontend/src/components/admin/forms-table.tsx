@@ -59,47 +59,47 @@ export function FormsTable({
   };
 
   return (
-    <div>
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="bg-white shadow-lg rounded-lg border border-amber-200">
+      <table className="min-w-full divide-y divide-amber-200">
+        <thead className="bg-gradient-to-r from-amber-50 to-orange-50">
           <tr>
             <th
               onClick={() => handleSort("firstName")}
-              className="px-6 py-3 text-left cursor-pointer"
+              className="px-6 py-3 text-left cursor-pointer font-semibold text-gray-900 hover:bg-amber-100 transition-colors"
             >
               First Name
               {currentSort.sortBy === "firstName" && (
-                <span>{currentSort.sortOrder === "asc" ? " ↑" : " ↓"}</span>
+                <span className="text-amber-600">{currentSort.sortOrder === "asc" ? " ↑" : " ↓"}</span>
               )}
             </th>
             <th
               onClick={() => handleSort("lastName")}
-              className="px-6 py-3 text-left cursor-pointer"
+              className="px-6 py-3 text-left cursor-pointer font-semibold text-gray-900 hover:bg-amber-100 transition-colors"
             >
               Last Name
               {currentSort.sortBy === "lastName" && (
-                <span>{currentSort.sortOrder === "asc" ? " ↑" : " ↓"}</span>
+                <span className="text-amber-600">{currentSort.sortOrder === "asc" ? " ↑" : " ↓"}</span>
               )}
             </th>
-            <th className="px-6 py-3 text-left">Email</th>
+            <th className="px-6 py-3 text-left font-semibold text-gray-900">Email</th>
             <th
               onClick={() => handleSort("createdAt")}
-              className="px-6 py-3 text-left cursor-pointer"
+              className="px-6 py-3 text-left cursor-pointer font-semibold text-gray-900 hover:bg-amber-100 transition-colors"
             >
               Created At
               {currentSort.sortBy === "createdAt" && (
-                <span>{currentSort.sortOrder === "asc" ? " ↑" : " ↓"}</span>
+                <span className="text-amber-600">{currentSort.sortOrder === "asc" ? " ↑" : " ↓"}</span>
               )}
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-amber-100">
           {forms.map((form) => (
-            <tr key={form.id}>
-              <td className="px-6 py-4">{form.firstName}</td>
-              <td className="px-6 py-4">{form.lastName}</td>
-              <td className="px-6 py-4">{form.email}</td>
-              <td className="px-6 py-4">
+            <tr key={form.id} className="hover:bg-amber-50 transition-colors">
+              <td className="px-6 py-4 text-gray-900 font-medium">{form.firstName}</td>
+              <td className="px-6 py-4 text-gray-900 font-medium">{form.lastName}</td>
+              <td className="px-6 py-4 text-amber-800">{form.email}</td>
+              <td className="px-6 py-4 text-gray-600">
                 {new Date(form.createdAt).toLocaleDateString()}
               </td>
             </tr>
@@ -108,8 +108,8 @@ export function FormsTable({
       </table>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <div>
+      <div className="flex justify-between items-center mt-4 p-4 bg-amber-50 border-t border-amber-200">
+        <div className="text-sm text-amber-800 font-medium">
           Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
           {Math.min(pagination.page * pagination.limit, pagination.totalCount)}{" "}
           of {pagination.totalCount} entries
@@ -118,14 +118,14 @@ export function FormsTable({
           <button
             onClick={() => handlePageChange(pagination.page - 1)}
             disabled={pagination.page === 1}
-            className="px-4 py-2 border rounded disabled:opacity-50"
+            className="px-4 py-2 border border-amber-300 rounded-lg bg-white text-amber-700 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
           >
             Previous
           </button>
           <button
             onClick={() => handlePageChange(pagination.page + 1)}
             disabled={pagination.page === pagination.totalPages}
-            className="px-4 py-2 border rounded disabled:opacity-50"
+            className="px-4 py-2 border border-amber-300 rounded-lg bg-white text-amber-700 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
           >
             Next
           </button>

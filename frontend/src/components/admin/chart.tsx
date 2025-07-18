@@ -32,20 +32,20 @@ const chartData = [
 const chartConfig = {
   desktop: {
     label: "Desktop",
-    color: "var(--chart-1)",
+    color: "#f59e0b",
   },
   mobile: {
     label: "Mobile",
-    color: "var(--chart-2)",
+    color: "#ea580c",
   },
 } satisfies ChartConfig;
 
 export function ChartAreaStacked() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Area Chart - Stacked</CardTitle>
-        <CardDescription>
+    <Card className="bg-white shadow-lg border-amber-200">
+      <CardHeader className="border-b border-amber-100">
+        <CardTitle className="text-gray-900 font-bold">Area Chart - Stacked</CardTitle>
+        <CardDescription className="text-amber-800">
           Showing total visitors for the last 6 months
         </CardDescription>
       </CardHeader>
