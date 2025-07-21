@@ -7,7 +7,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ materialId: string }> }
 ) {
-  const {materialId} = await params;
+  const { materialId } = await params;
 
   try {
     const formData = await request.formData();
@@ -15,6 +15,7 @@ export async function PATCH(
     const type = formData.get("type") as string | null;
     const warranty = formData.get("warranty") as string | null;
     const topFeatures = formData.get("topFeatures") as string | null;
+    const price = formData.get("price") as string;
 
     const materialImageFile = formData.get("materialImage") as File | null;
     const showCaseFile = formData.get("showCase") as File | null;
@@ -34,6 +35,7 @@ export async function PATCH(
       ...(type ? { type } : {}),
       ...(warranty ? { warranty } : {}),
       ...(topFeatures ? { topFeatures } : {}),
+      ...(price ? { price } : {}),
       ...(materialImage ? { materialImage } : {}),
       ...(showCase ? { showCase } : {}),
       updatedAt: new Date(),

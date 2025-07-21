@@ -66,6 +66,7 @@ const materialSchema = z.object({
   supplierId: z.string(),
   materialImage: z.string(),
   type: z.string(),
+  price: z.string(),
   warranty: z.string(),
   topFeatures: z.string(),
   showCase: z.string(),
@@ -110,6 +111,7 @@ const materialFormSchema = z.object({
     .max(150, "Must be 150 characters or less"),
   materialImage: z.string().optional(),
   showCase: z.string().optional(),
+  price: z.string(),
   materialImageFile: z.instanceof(File).optional(),
   showCaseFile: z.instanceof(File).optional(),
 });
@@ -496,6 +498,7 @@ function MaterialEditDialog({
   onUpdate: () => void;
   trigger: React.ReactNode;
 }) {
+  console.log("Material:::::", material);
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -505,6 +508,7 @@ function MaterialEditDialog({
       type: material.type,
       warranty: material.warranty,
       topFeatures: material.topFeatures,
+      price: material.price,
       materialImage: material.materialImage,
       showCase: material.showCase,
     },
@@ -518,6 +522,7 @@ function MaterialEditDialog({
       formData.append("type", data.type);
       formData.append("warranty", data.warranty);
       formData.append("topFeatures", data.topFeatures);
+      formData.append("price", data.price);
 
       if (data.materialImageFile) {
         formData.append("materialImageFile", data.materialImageFile);
@@ -586,6 +591,19 @@ function MaterialEditDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Warranty</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>

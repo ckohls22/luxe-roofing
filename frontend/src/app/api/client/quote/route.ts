@@ -1,149 +1,147 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import {
-  createQuoteWithNumber,
-  getQuotesWithFilters,
-  getQuoteStats,
-} from "@/db/quotesQueries";
-import { calculateQuotePrice } from "@/utils/price-calculator";
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db/drizzle';
+import { forms, materials, roofPolygons, suppliers } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { createQuoteWithNumber } from '@/db/quotesQueries';
+import { RoofPolygon } from '@/types';
 
-const createQuoteSchema = z.object({
-  formId: z.string().uuid(),
-  materialId: z.string().uuid(),
-  supplierId: z.string().uuid(),
-  roofArea: z.number().positive(),
-  slope: z.enum(["flat", "shallow", "medium", "steep"]),
-  materialCostPerUnit: z.number().positive(),
-  status: z
-    .enum(["draft", "sent", "viewed", "accepted", "rejected", "expired"])
-    .optional(),
-});
+// Define a slope factor mapping for pricing calculations
+const SLOPE_FACTOR: Record<string, number> = {
+  'Flat': 0.4,      // Lowest factor for flat roofs (easiest to work on)
+  'Shallow': 0.6,   // Slightly more difficult
+  'Medium': 0.8,    // Moderate difficulty
+  'Steep': 1.0      // Highest factor for steep roofs (most difficult)
+};
 
-const getQuotesSchema = z.object({
-  page: z
-    .string()
-    .optional()
-    .transform((val) => (val ? parseInt(val) : 1)),
-  limit: z
-    .string()
-    .optional()
-    .transform((val) => (val ? parseInt(val) : 10)),
-  status: z
-    .enum(["draft", "sent", "viewed", "accepted", "rejected", "expired"])
-    .optional(),
-  supplierId: z.string().uuid().optional(),
-  materialId: z.string().uuid().optional(),
-  formId: z.string().uuid().optional(),
-  minCost: z
-    .string()
-    .optional()
-    .transform((val) => (val ? parseFloat(val) : undefined)),
-  maxCost: z
-    .string()
-    .optional()
-    .transform((val) => (val ? parseFloat(val) : undefined)),
-});
+// Default factor if slope is not specified or recognized
+const DEFAULT_SLOPE_FACTOR = 0.7;
 
-// GET /api/quotes
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const queryParams = Object.fromEntries(searchParams);
-
-    // Special endpoint for stats
-    if (queryParams.stats === "true") {
-      const stats = await getQuoteStats();
-      return NextResponse.json({
-        success: true,
-        data: stats,
-      });
-    }
-
-    const validatedParams = getQuotesSchema.parse(queryParams);
-    const quotes = await getQuotesWithFilters(validatedParams);
-
-    return NextResponse.json({
-      success: true,
-      data: quotes.data,
-      pagination: quotes.pagination,
-    });
-  } catch (error) {
-    console.error("Error fetching quotes:", error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid query parameters",
-          details: error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Internal server error",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/quotes
+/**
+ * POST /api/client/quote
+ * 
+ * Creates a new quote based on form, material, and supplier data
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = createQuoteSchema.parse(body);
-
-    // Calculate the material cost based on slope formula
-    const calculatedPrice = calculateQuotePrice({
-      roofArea: validatedData.roofArea,
-      slope: validatedData.slope,
-      materialCostPerUnit: validatedData.materialCostPerUnit,
-    });
-
-    const quote = await createQuoteWithNumber({
-      formId: validatedData.formId,
-      materialId: validatedData.materialId,
-      supplierId: validatedData.supplierId,
-      materialCost: calculatedPrice.toString(),
-      status: validatedData.status || "draft",
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          ...quote,
-          calculatedPrice,
-          roofArea: validatedData.roofArea,
-          slope: validatedData.slope,
-          materialCostPerUnit: validatedData.materialCostPerUnit,
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Error creating quote:", error);
-
-    if (error instanceof z.ZodError) {
+    const { formId, materialId, supplierId } = body;
+    
+    // Input validation
+    if (!formId || !materialId || !supplierId) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid request data",
-          details: error.errors,
-        },
+        { success: false, message: 'Missing required parameters: formId, materialId, supplierId' }, 
         { status: 400 }
       );
     }
 
+    // Fetch required data from the database
+    // 1. Get material information for pricing
+    const materialData = await db.query.materials.findFirst({
+      where: eq(materials.id, materialId),
+    });
+    
+    if (!materialData) {
+      return NextResponse.json(
+        { success: false, message: 'Material not found' },
+        { status: 404 }
+      );
+    }
+
+    // 2. Get supplier information
+    const supplierData = await db.query.suppliers.findFirst({
+      where: eq(suppliers.id, supplierId),
+    });
+    
+    if (!supplierData) {
+      return NextResponse.json(
+        { success: false, message: 'Supplier not found' },
+        { status: 404 }
+      );
+    }
+
+    // 3. Get form information to verify the form exists
+    const formData = await db.query.forms.findFirst({
+      where: eq(forms.id, formId),
+    });
+    
+    if (!formData) {
+      return NextResponse.json(
+        { success: false, message: 'Form not found' },
+        { status: 404 }
+      );
+    }
+
+    // 4. Get roof polygon data to calculate area and determine the slope
+    const roofData = await db.query.roofPolygons.findFirst({
+      where: eq(roofPolygons.formId, formId),
+    });
+    
+    if (!roofData) {
+      return NextResponse.json(
+        { success: false, message: 'Roof data not found for this form' },
+        { status: 404 }
+      );
+    }
+
+    // Parse the JSONB polygon data
+    const polygons = roofData.polygons as RoofPolygon[];
+    if (!Array.isArray(polygons) || polygons.length === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid roof polygon data' },
+        { status: 400 }
+      );
+    }
+
+    // Calculate total area and apply slope factors for pricing
+    let totalCost = 0;
+    let totalArea = 0;
+
+    for (const polygon of polygons) {
+      // Extract area and slope from the polygon
+      const area = polygon.area?.squareFeet || 0;
+      const slope = polygon.slope || 'Medium';
+      
+      // Get the slope factor (defaulting if not found)
+      const slopeFactor = SLOPE_FACTOR[slope] || DEFAULT_SLOPE_FACTOR;
+      
+      // Calculate cost for this polygon
+      // Base price is extracted from material price (stored as string, e.g. "$10/sqft")
+      const basePriceMatch = materialData.price?.match(/\$(\d+(\.\d+)?)/i);
+      const basePrice = basePriceMatch ? parseFloat(basePriceMatch[1]) : 5; // Default to $5 if not found
+      
+      const polygonCost = area * basePrice * slopeFactor;
+      
+      totalCost += polygonCost;
+      totalArea += area;
+    }
+
+    // Round the cost to 2 decimal places and convert to string
+    const materialCost = totalCost.toFixed(2);
+
+    // Create the quote using the createQuoteWithNumber function which automatically
+    // generates a unique quote number
+    const quote = await createQuoteWithNumber({
+      formId,
+      materialId,
+      supplierId,
+      materialCost,
+      status: 'draft'
+    });
+
+    return NextResponse.json({
+      success: true,
+      quote,
+      details: {
+        totalArea: totalArea.toFixed(2),
+        supplierName: supplierData.name,
+        materialType: materialData.type,
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Error creating quote:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: "Internal server error",
-      },
+      { success: false, message: error.message || 'Failed to create quote' },
       { status: 500 }
     );
   }
