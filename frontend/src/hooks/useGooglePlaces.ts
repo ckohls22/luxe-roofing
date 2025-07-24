@@ -1,20 +1,14 @@
-// src/hooks/useGooglePlaces.ts
-// Custom hook for loading Google Places API dynamically
 'use client'
+
 import { useState, useEffect } from 'react'
 import { UseGooglePlacesReturn } from '@/types'
 
-/**
- * Custom hook for loading Google Places API
- * Provides loading state and error handling
- */
 export const useGooglePlaces = (): UseGooglePlacesReturn => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
-    // Check if Google Places is already loaded
     if (window.google?.maps?.places) {
       setIsLoaded(true)
       return
@@ -27,13 +21,22 @@ export const useGooglePlaces = (): UseGooglePlacesReturn => {
       return
     }
 
-    // Create script element
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
-    script.async = true
-    script.defer = true
+    const src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
+    const existingScript = document.querySelector(`script[src^="${src}"]`) as HTMLScriptElement | null
 
-    // Handle successful load
+    if (existingScript) {
+      existingScript.addEventListener('load', () => setIsLoaded(true))
+      existingScript.addEventListener('error', () => {
+        setError('Failed to load Google Places API')
+        setLoadError(true)
+      })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.async = true
+    script.src = src
+
     script.onload = () => {
       if (window.google?.maps?.places) {
         setIsLoaded(true)
@@ -44,20 +47,20 @@ export const useGooglePlaces = (): UseGooglePlacesReturn => {
       }
     }
 
-    // Handle load error
-    script.onerror = () => {
+    script.onerror = (e) => {
+      console.error('Google Places API load failed:', e)
       setError('Failed to load Google Places API')
       setLoadError(true)
     }
 
-    // Add script to document
     document.head.appendChild(script)
 
-    // Cleanup
+    // Optional cleanup
     return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script)
-      }
+      // comment this out if script should persist across the app
+      // if (script.parentNode) {
+      //   script.parentNode.removeChild(script)
+      // }
     }
   }, [])
 

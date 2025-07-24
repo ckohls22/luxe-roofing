@@ -1,10 +1,12 @@
 import { ConfigureRoofs } from "@/components/features/quote-calculator/ConfigureRoofs";
-import SearchProvider from "@/components/features/quote-calculator/providers/SearchProvider";
+import QuoteProvider from "@/components/features/quote-calculator/providers/QuoteProvider";
 import RoofTypeSelector from "@/components/features/quote-calculator/RoofTypeSelector";
 import { SearchBox } from "@/components/features/quote-calculator/SearchBox";
 import Image from "next/image";
 
 import FeaturesSection from "@/components/ui/feature-section";
+import { ShowResult } from "@/components/features/quote-calculator/ShowResult";
+import { ShowLeadForm } from "@/components/features/quote-calculator/ShowLeadForm";
 
 export default function HomePage() {
   return (
@@ -26,15 +28,16 @@ export default function HomePage() {
           Now with luxe roofing get your roof quote in just few clicks
         </p>
       </div>
-      <SearchProvider>
+      <QuoteProvider>
         <div className="min-w-10/12 p-5 box-border overflow-hidden bg-amber-200 flex flex-col items-center">
           <RoofTypeSelector />
 
           <SearchBox />
         </div>
-
         <ConfigureRoofs />
-      </SearchProvider>
+        <ShowLeadForm/>
+        <ShowResult/>
+      </QuoteProvider>
 
       <FeaturesSection />
 

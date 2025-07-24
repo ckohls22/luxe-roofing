@@ -16,7 +16,7 @@ import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { AddressContext } from "./providers/SearchProvider";
+import { AddressContext } from "./providers/QuoteProvider";
 import { SearchAddress } from "@/types";
 import { RoofPolygon, RoofType } from "@/types";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -59,7 +59,7 @@ export default function LeadForm({
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaKey, setCaptchaKey] = useState(0);
   // Consume currentStep from provider
-  const { selectedAddress, roofPolygons, roofType, currentStep, nextStep } =
+  const { selectedAddress, roofPolygons, roofType, currentStep, setCurrentStep } =
     useContext(AddressContext);
 
   const {
@@ -142,7 +142,7 @@ export default function LeadForm({
       setSubmitStatus("success");
       resetForm();
       onSubmit?.(payload);
-      nextStep();
+      setCurrentStep('show-result')
 
       const prev = JSON.parse(
         localStorage.getItem("roof_quote_history") || "[]"
@@ -151,6 +151,7 @@ export default function LeadForm({
         "roof_quote_history",
         JSON.stringify([...prev, payload])
       );
+      localStorage.setItem("formId", "temp data to be changed")
     } catch (e: unknown) {
       console.error("Submission error:", e);
       setSubmitStatus("error");

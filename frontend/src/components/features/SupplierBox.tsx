@@ -329,6 +329,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleGetQuote = async () => {
+    console.log(selectedMaterial)
     if (!selectedMaterial) return;
 
     setIsSubmitting(true);
@@ -486,7 +487,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
             <Button
               onClick={handleGetQuote}
               disabled={isSubmitting || !selectedMaterial}
-              className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 text-white font-semibold py-6 rounded-full disabled:opacity-50 max-w-[200px]"
+              className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 text-white font-semibold py-6 rounded-full disabled:opacity-50 max-w-[200px] cursor-pointer"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center space-x-2">
@@ -503,7 +504,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
             <Button
               onClick={handleGetQuote}
               disabled={isSubmitting || !selectedMaterial}
-              className="flex-1 bg-white hover:bg-gray-100  text-black font-semibold py-6 rounded-full border border-gray-300 disabled:opacity-50 max-w-[200px]"
+              className="flex-1 bg-white hover:bg-gray-100  text-black font-semibold py-6 rounded-full border border-gray-300 disabled:opacity-50 max-w-[200px] cursor-pointer"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center space-x-2">

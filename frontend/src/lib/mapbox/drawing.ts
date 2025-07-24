@@ -9,15 +9,16 @@ import { DrawingStyles } from "@/types";
  * Provides consistent visual representation
  */
 export const roofDrawingStyles: DrawingStyles[] = [
+ 
   // Polygon fill style
   {
     id: "gl-draw-polygon-fill",
     type: "fill",
-    filter: ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
+    filter: ["all", ["==", "$type", "Polygon"], ["!=", "mode", "dynamic"]],
     paint: {
       "fill-color": "#FFAB91",
       "fill-outline-color": "#FF8A65",
-      "fill-opacity": 0.3,
+      "fill-opacity": 0.4,
     },
   },
   // Polygon stroke style
@@ -42,6 +43,7 @@ export const roofDrawingStyles: DrawingStyles[] = [
       "circle-stroke-width": 2,
     },
   },
+
 ];
 
 /**
@@ -75,7 +77,7 @@ export const createDrawEventHandlers = (
   "draw.create": onUpdate,
   "draw.update": onUpdate,
   "draw.delete": onDelete,
-  "draw.modechange": (e: {mode:string}) => {
+  "draw.modechange": (e: { mode: string }) => {
     // Handle mode changes for better UX
     console.log("Draw mode changed to:", e.mode);
   },

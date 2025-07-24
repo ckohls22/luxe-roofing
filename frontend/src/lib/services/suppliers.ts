@@ -17,6 +17,6 @@ export const suppliersService = {
     apiClient.get<SuppliersResponse>('/client/suppliers'),
 
   submitQuote: (data: SubmitQuoteRequest) =>
-    apiClient.post<{ success: boolean }>('/quotes', data),
+    apiClient.post<{ success: boolean }>('/client/quote', data),
 
 };
