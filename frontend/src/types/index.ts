@@ -4,6 +4,7 @@
 import { RefObject } from "react";
 import { Map as mapboxMap, Expression, FitBoundsOptions } from "mapbox-gl";
 import type { FeatureCollection } from "geojson";
+// import { number } from "zod/v4";
 // import { Material } from "./supplierAndMaterialTypes";
 
 // Mapbox related types
@@ -37,6 +38,7 @@ export interface RoofPolygon {
   centerPoint: [number, number];
   slope?: string;
 }
+
 
 export type RoofType = "residential" | "industrial" | "commercial";
 
@@ -108,6 +110,7 @@ export interface MapContainerProps {
   onLoadingChange: (loading: boolean) => void;
   selectedPolygonIndex?: number | null;
   roofPolygons?: RoofPolygon[];
+  onBuildingDetected:(coordinates : Coordinates[][]) => void;
 }
 
 export interface AddressSearchProps {
@@ -122,6 +125,8 @@ export interface UseMapboxReturn {
   mapRef: RefObject<mapboxMap | null>;
   isLoaded: boolean;
   error: string | null;
+  // isInitializing : boolean;
+  // retryInitialization : () => void;
 }
 
 export interface UseGooglePlacesReturn {

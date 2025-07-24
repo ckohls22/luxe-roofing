@@ -3,10 +3,10 @@
 
 import { useContext } from "react";
 import { House, Factory } from "lucide-react";
-import { Button } from "@/components/ui"; // adjust import if needed
-import { AddressContext } from "./providers/SearchProvider";
+import { Button } from "@/components/ui"; 
+import { AddressContext } from "./providers/QuoteProvider";
 
-type RoofType = "residential" | "industrial" | "commercial";
+type RoofType = "residential" | "industrial";
 
 export default function RoofTypeSelector() {
   const { roofType, setRoofType } = useContext(AddressContext);

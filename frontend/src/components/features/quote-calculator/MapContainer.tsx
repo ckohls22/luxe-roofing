@@ -32,9 +32,9 @@ export function MapContainer({
   onLoadingChange,
 }: MapContainerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const { mapRef, isLoaded, error } = useMapbox(mapContainerRef);
   const drawRef = useRef<MapboxDraw | null>(null);
   const labelsRef = useRef<mapboxgl.Marker[]>([]);
-  const { mapRef, isLoaded, error } = useMapbox(mapContainerRef);
   const [localError, setLocalError] = useState<string | null>(null);
   const [showBuildingNotFound, setShowBuildingNotFound] = useState(false);
 

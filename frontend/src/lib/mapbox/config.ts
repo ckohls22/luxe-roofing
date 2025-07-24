@@ -13,7 +13,8 @@ export const mapboxConfig: MapboxConfig = {
   style: "mapbox://styles/mapbox/satellite-streets-v11",
   center: [-77.0365, 38.8977], // Washington, D.C. as default
   zoom: 16,
-  maxZoom: 22,
+  maxZoom: 18,
+  
 };
 
 /**
@@ -50,7 +51,7 @@ export const createMapOptions = (
     zoom: mapboxConfig.zoom,
     maxZoom: mapboxConfig.maxZoom,
     // Optimized settings for roof calculation
-    interactive: true,
+    interactive: false,
     scrollZoom: false,
     boxZoom: false,
     dragRotate: false,
