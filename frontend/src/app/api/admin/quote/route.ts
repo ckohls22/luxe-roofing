@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/drizzle';
-import { quotes, forms, materials, suppliers } from '@/db/schema';
-import { eq, and, desc, count, sql } from 'drizzle-orm';
+import { quotes } from '@/db/schema';
+import { and, count, sql } from 'drizzle-orm';
 import {
-  getQuotes,
+  
   getQuoteWithDetails,
   updateQuote,
   deleteQuote,
@@ -18,8 +18,26 @@ export async function GET(request: NextRequest) {
   try {
     // Extract query parameters
     const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    
+    // Handle page and limit parameters safely, ensuring they're always valid numbers
+    let page = 1;
+    if (searchParams.get('page')) {
+      const parsedPage = parseInt(searchParams.get('page') || '1', 10);
+      if (!isNaN(parsedPage) && parsedPage > 0) {
+        page = parsedPage;
+      }
+    }
+    
+    let limit = 10;
+    if (searchParams.get('limit')) {
+      const parsedLimit = parseInt(searchParams.get('limit') || '10', 10);
+      if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        limit = parsedLimit;
+        // Allow higher limits (up to 1000) for dashboard components
+        if (limit > 1000) limit = 1000;
+      }
+    }
+    
     const status = searchParams.get('status');
     const supplierId = searchParams.get('supplierId');
     const materialId = searchParams.get('materialId');
@@ -27,9 +45,27 @@ export async function GET(request: NextRequest) {
     const minCost = searchParams.get('minCost') ? parseFloat(searchParams.get('minCost')!) : undefined;
     const maxCost = searchParams.get('maxCost') ? parseFloat(searchParams.get('maxCost')!) : undefined;
 
+    // Define the type to match getQuotesWithFilters parameter
+    type QuoteFilters = {
+      status?: "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired";
+      supplierId?: string;
+      materialId?: string;
+      formId?: string;
+      minCost?: number;
+      maxCost?: number;
+      page?: number;
+      limit?: number;
+    };
+    
     // Build filters object
-    const filters: any = { page, limit };
-    if (status) filters.status = status;
+    const filters: QuoteFilters = { page, limit };
+    // Type guard for status to ensure it matches expected values
+    if (status) {
+      const validStatuses = ["draft", "sent", "viewed", "accepted", "rejected", "expired"];
+      if (validStatuses.includes(status)) {
+        filters.status = status as "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired";
+      }
+    }
     if (supplierId) filters.supplierId = supplierId;
     if (materialId) filters.materialId = materialId;
     if (formId) filters.formId = formId;
@@ -58,10 +94,10 @@ export async function GET(request: NextRequest) {
       data: enhancedData,
       pagination: result.pagination,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching quotes:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to fetch quotes' },
+      { success: false, message: error || 'Failed to fetch quotes' },
       { status: 500 }
     );
   }
@@ -116,10 +152,10 @@ export async function POST(request: NextRequest) {
       success: true,
       quote: newQuote,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating quote:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to create quote' },
+      { success: false, message: error || 'Failed to create quote' },
       { status: 500 }
     );
   }
@@ -157,10 +193,10 @@ export async function PATCH(request: NextRequest) {
       success: true,
       quote: updatedQuote,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating quote:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to update quote' },
+      { success: false, message: error || 'Failed to update quote' },
       { status: 500 }
     );
   }
@@ -196,10 +232,10 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Quote deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting quote:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to delete quote' },
+      { success: false, message: error || 'Failed to delete quote' },
       { status: 500 }
     );
   }

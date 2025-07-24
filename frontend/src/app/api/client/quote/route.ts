@@ -138,10 +138,10 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating quote:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to create quote' },
+      { success: false, message: error || 'Failed to create quote' },
       { status: 500 }
     );
   }

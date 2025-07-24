@@ -54,7 +54,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
@@ -124,7 +123,7 @@ export function QuotesTable() {
     pageSize: 10,
   });
   const [totalPages, setTotalPages] = React.useState(0);
-  const [totalItems, setTotalItems] = React.useState(0);
+  // Removed totalItems state as it's not being used anywhere
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]); 
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -247,7 +246,7 @@ export function QuotesTable() {
       if (result.success) {
         setData(result.data);
         setTotalPages(result.pagination.totalPages);
-        setTotalItems(result.pagination.total);
+        // No longer tracking totalItems
       } else {
         toast.error("Failed to fetch quotes");
       }
@@ -325,9 +324,13 @@ export function QuotesTable() {
   };
 
   // Effect for fetching data on component mount and when dependencies change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoizedFetchQuotes = React.useCallback(fetchQuotes, []);
+  
   React.useEffect(() => {
-    fetchQuotes();
-  }, [pagination.pageIndex, pagination.pageSize, statusFilter]);
+    memoizedFetchQuotes();
+  // Adding memoizedFetchQuotes to the dependency array instead of fetchQuotes directly
+  }, [pagination.pageIndex, pagination.pageSize, statusFilter, memoizedFetchQuotes]);
 
   // Setup table
   const table = useReactTable({

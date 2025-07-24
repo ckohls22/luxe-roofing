@@ -1,14 +1,14 @@
-// app/api/forms/route.ts
+// app/api/admin/leads/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getAllForms } from "@/db/queries";
 import { z } from "zod"; // For input validation
 
-// Input validation schema
+// Input validation schema with safe defaults
 const QuerySchema = z.object({
-  page: z.coerce.number().positive().optional(),
-  limit: z.coerce.number().positive().max(100).optional(), // Limit max items
-  sortBy: z.enum(["createdAt", "firstName", "lastName"]).optional(),
-  sortOrder: z.enum(["asc", "desc"]).optional(),
+  page: z.coerce.number().optional().default(1),
+  limit: z.coerce.number().min(1).max(1000).optional().default(10),
+  sortBy: z.enum(["createdAt", "firstName", "lastName"]).optional().default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
 export async function GET(request: NextRequest) {
@@ -16,13 +16,16 @@ export async function GET(request: NextRequest) {
     // Get URL search params
     const searchParams = request.nextUrl.searchParams;
 
-    // Parse and validate query parameters
-    const validatedParams = QuerySchema.safeParse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      sortBy: searchParams.get("sortBy"),
-      sortOrder: searchParams.get("sortOrder"),
-    });
+    // Prepare query parameters with defaults for missing values
+    const queryParams = {
+      page: searchParams.get("page") ? Number(searchParams.get("page")) : undefined,
+      limit: searchParams.get("limit") ? Number(searchParams.get("limit")) : undefined,
+      sortBy: searchParams.get("sortBy") || "createdAt",
+      sortOrder: searchParams.get("sortOrder") || "desc",
+    };
+
+    // Parse and validate with defaults
+    const validatedParams = QuerySchema.safeParse(queryParams);
 
     if (!validatedParams.success) {
       return NextResponse.json(
@@ -37,11 +40,17 @@ export async function GET(request: NextRequest) {
     // Get forms with pagination
     const result = await getAllForms(validatedParams.data);
 
-    return NextResponse.json(result);
+    // Return the structure as expected by the client
+    return NextResponse.json({
+      success: true,
+      forms: result.forms, // Keep the 'forms' property as expected by clients
+      data: result.forms,  // Also include 'data' for newer components
+      pagination: result.pagination
+    });
   } catch (error) {
     console.error("Error fetching forms:", error);
     return NextResponse.json(
-      { error: "Failed to fetch forms" },
+      { success: false, error: "Failed to fetch forms" },
       { status: 500 }
     );
   }
