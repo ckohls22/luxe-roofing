@@ -340,15 +340,15 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
         return;
       }
 
-      // const quoteData = {
-      //   supplierId: supplier.id,
-      //   materialId: selectedMaterial.id,
-      //   formId,
-      // };
+      const quoteData = {
+        supplierId: supplier.id,
+        materialId: selectedMaterial.id,
+        formId,
+      };
 
-      // const { data, error } = await suppliersService.submitQuote(quoteData);
-      const data = { success: true };
-      const error = false;
+      const { data, error } = await suppliersService.submitQuote(quoteData);
+      // const data = { success: true };
+      // const error = false;
 
       if (error) {
         toast.error(error);

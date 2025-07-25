@@ -39,6 +39,16 @@ type SubmissionPayload = FormData & {
   captchaToken: string;
 };
 
+// Define the shape of the response
+interface FormSubmissionResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    createdAt: string;
+    submissionId: string;
+  };
+}
+
 interface ContactFormProps {
   onSubmit?: (data: SubmissionPayload) => void;
   initialData?: Partial<FormData>;
@@ -132,7 +142,7 @@ export default function LeadForm({
       });
 
       // Add this debug log
-      const result = await response.json();
+      const result:FormSubmissionResponse = await response.json();
       console.log("Server response:", result);
 
       if (!response.ok || !result.success) {
@@ -151,7 +161,8 @@ export default function LeadForm({
         "roof_quote_history",
         JSON.stringify([...prev, payload])
       );
-      localStorage.setItem("formId", "temp data to be changed")
+
+      localStorage.setItem("formId", result.data?.submissionId || "no formid found")
     } catch (e: unknown) {
       console.error("Submission error:", e);
       setSubmitStatus("error");
