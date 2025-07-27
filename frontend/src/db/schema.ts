@@ -14,7 +14,9 @@ import {
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-// Enums
+/* ------------------------------------------------------------------ */
+/*  ENUMS                                                             */
+/* ------------------------------------------------------------------ */
 export const adminStatusEnum = pgEnum("admin_status", ["active", "inactive"]);
 export const auditActionEnum = pgEnum("audit_action", [
   "login",
@@ -22,7 +24,6 @@ export const auditActionEnum = pgEnum("audit_action", [
   "password_change",
   "profile_update",
 ]);
-
 export const quoteStatusEnum = pgEnum("quote_status", [
   "draft",
   "sent",
@@ -31,6 +32,15 @@ export const quoteStatusEnum = pgEnum("quote_status", [
   "rejected",
   "expired",
 ]);
+export const roofTypeEnum = pgEnum("roof_type", [
+  "residential",
+  "industrial",
+  "commercial",
+]);
+
+/* ------------------------------------------------------------------ */
+/*  ADMIN TABLES                                                      */
+/* ------------------------------------------------------------------ */
 
 // Admin table (single admin)
 export const admin = pgTable("admin", {
@@ -75,6 +85,10 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+/* ------------------------------------------------------------------ */
+/*  SUPPLIERS & MATERIALS TABLES                                     */
+/* ------------------------------------------------------------------ */
+
 // suppliers table
 export const suppliers = pgTable("suppliers", {
   id: uuid().defaultRandom().primaryKey(),
@@ -104,55 +118,11 @@ export const materials = pgTable("materials", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Relations
-export const adminRelations = relations(admin, ({ many }) => ({
-  sessions: many(adminSessions),
-  passwordResetTokens: many(passwordResetTokens),
-}));
-
-export const adminSessionsRelations = relations(adminSessions, ({ one }) => ({
-  admin: one(admin, {
-    fields: [adminSessions.adminId],
-    references: [admin.id],
-  }),
-}));
-
-export const passwordResetTokensRelations = relations(
-  passwordResetTokens,
-  ({ one }) => ({
-    admin: one(admin, {
-      fields: [passwordResetTokens.adminId],
-      references: [admin.id],
-    }),
-  })
-);
-
-export const suppliersRelations = relations(suppliers, ({ many }) => ({
-  materials: many(materials),
-  quotes: many(quotes),
-}));
-// Define material -> supplier (many-to-one)
-export const materialRelations = relations(materials, ({ one, many }) => ({
-  supplier: one(suppliers, {
-    fields: [materials.supplierId],
-    references: [suppliers.id],
-  }), // each material belongs to one supplier
-  quotes: many(quotes),
-}));
-
-// // lead form
 /* ------------------------------------------------------------------ */
-/*  ENUMS                                                             */
+/*  FORMS & RELATED TABLES                                           */
 /* ------------------------------------------------------------------ */
-export const roofTypeEnum = pgEnum("roof_type", [
-  "residential",
-  "industrial",
-  "commercial",
-]);
 
-/* ------------------------------------------------------------------ */
-/*  TABLE: forms — MAIN TABLE for "Get a Quote" form submissions      */
-/* ------------------------------------------------------------------ */
+// TABLE: forms — MAIN TABLE for "Get a Quote" form submissions
 export const forms = pgTable("forms", {
   id: uuid("id").defaultRandom().primaryKey(),
   firstName: varchar("first_name", { length: 100 }).notNull(),
@@ -164,9 +134,7 @@ export const forms = pgTable("forms", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-/* ------------------------------------------------------------------ */
-/*  TABLE: addresses — user‑picked Google / Mapbox locations          */
-/* ------------------------------------------------------------------ */
+// TABLE: addresses — user‑picked Google / Mapbox locations
 export const addresses = pgTable("addresses", {
   id: serial("id").primaryKey(),
   /** FK → forms.id */
@@ -179,13 +147,11 @@ export const addresses = pgTable("addresses", {
   lat: numeric("lat", { precision: 10, scale: 6 }).notNull(),
   lng: numeric("lng", { precision: 10, scale: 6 }).notNull(),
   /** Google Places ID (unique) */
-  placeId: varchar("place_id", { length: 128 }).notNull().unique(),
+  placeId: varchar("place_id", { length: 128 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-/* ------------------------------------------------------------------ */
-/*  TABLE: roof_polygons — stores array of RoofPolygon per form       */
-/* ------------------------------------------------------------------ */
+// TABLE: roof_polygons — stores array of RoofPolygon per form
 export const roofPolygons = pgTable("roof_polygons", {
   id: uuid("id").defaultRandom().primaryKey(),
   /** FK → forms.id */
@@ -209,9 +175,10 @@ export const roofPolygons = pgTable("roof_polygons", {
 });
 
 /* ------------------------------------------------------------------ */
-/*  TABLE: quotes — stores quotes created by users                    */
+/*  QUOTES TABLE                                                      */
 /* ------------------------------------------------------------------ */
 
+// TABLE: quotes — stores quotes created by users
 export const quotes = pgTable("quotes", {
   id: uuid("id").defaultRandom().primaryKey(),
 
@@ -241,11 +208,51 @@ export const quotes = pgTable("quotes", {
 });
 
 /* ------------------------------------------------------------------ */
-/*  RELATIONS — keeps TS INTELLISENSE happy                            */
+/*  RELATIONS                                                         */
 /* ------------------------------------------------------------------ */
+
+// Admin Relations
+export const adminRelations = relations(admin, ({ many }) => ({
+  sessions: many(adminSessions),
+  passwordResetTokens: many(passwordResetTokens),
+}));
+
+export const adminSessionsRelations = relations(adminSessions, ({ one }) => ({
+  admin: one(admin, {
+    fields: [adminSessions.adminId],
+    references: [admin.id],
+  }),
+}));
+
+export const passwordResetTokensRelations = relations(
+  passwordResetTokens,
+  ({ one }) => ({
+    admin: one(admin, {
+      fields: [passwordResetTokens.adminId],
+      references: [admin.id],
+    }),
+  })
+);
+
+// Suppliers & Materials Relations
+export const suppliersRelations = relations(suppliers, ({ many }) => ({
+  materials: many(materials),
+  quotes: many(quotes),
+}));
+
+export const materialRelations = relations(materials, ({ one, many }) => ({
+  supplier: one(suppliers, {
+    fields: [materials.supplierId],
+    references: [suppliers.id],
+  }), // each material belongs to one supplier
+  quotes: many(quotes),
+}));
+
+// Forms & Related Relations
 export const formsRelations = relations(forms, ({ many }) => ({
   addresses: many(addresses),
   roofPolygons: many(roofPolygons),
+  quotes: many(quotes),
 }));
 
 export const addressesRelations = relations(addresses, ({ one }) => ({
@@ -262,6 +269,7 @@ export const roofPolygonsRelations = relations(roofPolygons, ({ one }) => ({
   }),
 }));
 
+// Quotes Relations
 export const quotesRelations = relations(quotes, ({ one }) => ({
   form: one(forms, {
     fields: [quotes.formId],
@@ -277,7 +285,10 @@ export const quotesRelations = relations(quotes, ({ one }) => ({
   }),
 }));
 
-// Type exports for use in your application
+/* ------------------------------------------------------------------ */
+/*  TYPE EXPORTS                                                      */
+/* ------------------------------------------------------------------ */
+
 export type MaterialForm = typeof materials.$inferInsert;
 export type Form = typeof forms.$inferSelect;
 export type NewForm = typeof forms.$inferInsert;
@@ -285,7 +296,6 @@ export type Address = typeof addresses.$inferSelect;
 export type NewAddress = typeof addresses.$inferInsert;
 export type RoofPolygons = typeof roofPolygons.$inferSelect;
 export type NewRoofPolygons = typeof roofPolygons.$inferInsert;
-
 export type Quote = typeof quotes.$inferSelect;
 export type NewQuote = typeof quotes.$inferInsert;
 export type UpdateQuote = Partial<NewQuote>;
@@ -293,5 +303,6 @@ export type UpdateQuote = Partial<NewQuote>;
 /* ------------------------------------------------------------------ */
 /*  ZOD SCHEMAS (for validation)                                      */
 /* ------------------------------------------------------------------ */
+
 export const insertQuoteSchema = createInsertSchema(quotes);
 export const selectQuoteSchema = createSelectSchema(quotes);
