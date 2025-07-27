@@ -235,6 +235,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
             size={20}
           />
           <Input
+          id="Get-Quote"
             ref={inputRef}
             type="text"
             placeholder="Enter your address..."

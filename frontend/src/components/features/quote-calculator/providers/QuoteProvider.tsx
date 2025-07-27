@@ -207,7 +207,7 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
 
   const handleRoofDetected = useCallback(
     (roofCoordinates : Position[][])=>{
-      if(roofCoordinates && roofCoordinates.length > 0){
+      if(roofCoordinates){
         console.log("roof detected and updated " , roofCoordinates)
         setRoofDetected(roofCoordinates)
       }
@@ -217,7 +217,7 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
   // Roof Polygons Management Functions
   const handleAreaCalculated = useCallback(
     (polygons: RoofPolygon[]) => {
-      if (polygons.length > 0) {
+      if (polygons) {
         setRoofPolygons(polygons);
         console.log("Roof polygons calculated:", polygons);
       }else{ console.log("no polygon detected")}

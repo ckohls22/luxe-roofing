@@ -1,7 +1,7 @@
 "use client";
 
-import {  ArrowRight, Edit, MapPin } from "lucide-react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight,  MapPin } from "lucide-react";
+import { useContext, useEffect, useRef } from "react";
 import { AddressContext } from "./providers/QuoteProvider";
 // import { MapContainer } from "./MapContainer";
 import { RoofAreaDisplay } from "./RoofAreaDisplay";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui";
 // import LeadForm from "./LeadForm";
 // import SupplierBox from "../SupplierBox";
 // import { RoofPolygon } from "@/types/index";
-import { MapBoxComp } from "@/components/features/quote-calculator/MapBoxComp"
+import { MapBoxComp } from "@/components/features/quote-calculator/MapBoxComp";
 // import GoogleMapComponent, {
 //   GoogleMapComponentRef,
 // } from "@/app/(client)/detector/GoogleMapComp";
@@ -26,7 +26,6 @@ export function ConfigureRoofs() {
   // const [polygonData, setPolygonData] = useState<Coordinate[][]>([]);
   // const [shouldLoadMap, setShouldLoadMap] = useState(false);
   // const mainbuilding: Position[][] = [];
-  const [isEditable, setIsEditable] = useState<boolean>(true);
   const {
     selectedAddress,
     currentStep,
@@ -70,9 +69,9 @@ export function ConfigureRoofs() {
   // }, [canProceedToNextStep, nextStep]);
 
   // Handle back to search
-  // const handleBackToSearch = () => {
-  //   setCurrentStep("search");
-  // };
+  const handleBackToSearch = () => {
+    setCurrentStep("search");
+  };
 
   // Effect to validate step and address - revert to search if no address
   useEffect(() => {
@@ -226,26 +225,26 @@ export function ConfigureRoofs() {
                   zoom={10}
                   initialPolygons={[]}
                 /> */}
-                  <MapBoxComp
-                    selectedAddress={selectedAddress}
-                    onBuildingDetected={handleRoofDetected}
-                  />
+                <MapBoxComp
+                  selectedAddress={selectedAddress}
+                  onBuildingDetected={handleRoofDetected}
+                />
                 <GoogleMapComponent
                   ref={mapRef}
                   apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY!}
                   onPolygonsChange={handleAreaCalculated}
-                  center={{ lat: 38.8977, lng: -77.0365 }} 
+                  center={{ lat: 38.8977, lng: -77.0365 }}
                   zoom={17}
-                  editable={isEditable}
+                  // editable={isEditable}
                   // initialPolygons={roofDetected}
                 />
               </div>
             </div>
 
             {/* Show area display only if polygons exist */}
-            {roofPolygons && (
-              <>
-                <div className="bg-amber-200  p-7 relative w-full  flex flex-col items-center">
+            <>
+              <div className="bg-amber-200  p-7 relative w-full  flex flex-col items-center">
+                {roofPolygons && (
                   <div className="lg:max-w-10/12 max-w-[350px] ">
                     <RoofAreaDisplay
                       roofPolygons={roofPolygons}
@@ -254,45 +253,30 @@ export function ConfigureRoofs() {
                       onSlopeChange={handleSlopeChange}
                     />
                   </div>
-                  <div className="flex gap-3 mt-6 w-full">
-                    {/* <Button
+                )}
+                <div className="flex gap-3 mt-6 w-full">
+                  <Button
                       onClick={handleBackToSearch}
                       variant="outline"
                       className="flex-1  rounded-full text-md p-7"
                     >
                       <ArrowLeft size={18} className="ml-2" />
                       Back
-                    </Button> */}
-                    <Button
-                      onClick={()=>setIsEditable(true)}
-                      variant="outline"
-                      className="flex-1  rounded-full text-md p-7"
-                    >
-                      <Edit size={18} className="ml-2" />
-                      Edit Roofs
                     </Button>
-                    <Button
-                      onClick={()=>setIsEditable(false)}
-                      variant="outline"
-                      className="flex-1  rounded-full text-md p-7"
-                    >
-                      <Edit size={18} className="ml-2" />
-                      close Editing
-                    </Button>
-                    <Button
-                      className="flex-1 bg-black rounded-full text-md p-7 disabled:bg-gray-800"
-                      disabled={
-                        roofPolygons && roofPolygons.length > 0 ? false : true
-                      }
-                      onClick={() => setCurrentStep("lead-form")}
-                    >
-                      Next Step
-                      <ArrowRight size={18} className="ml-2" />
-                    </Button>
-                  </div>
+                
+                  <Button
+                    className="flex-1 bg-black rounded-full text-md p-7 disabled:bg-gray-800"
+                    disabled={
+                      roofPolygons && roofPolygons.length > 0 ? false : true
+                    }
+                    onClick={() => setCurrentStep("lead-form")}
+                  >
+                    Next Step
+                    <ArrowRight size={18} className="ml-2" />
+                  </Button>
                 </div>
-              </>
-            )}
+              </div>
+            </>
           </div>
         </div>
       </>

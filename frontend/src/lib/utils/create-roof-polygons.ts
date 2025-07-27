@@ -76,15 +76,11 @@ function generateRoofLabel(index: number): string {
   if (index === 1) return "Second Roof";
   if (index === 2) return "Third Roof";
   
-  const suffixes = ["th", "st", "nd", "rd"];
-  const lastDigit = (index + 1) % 10;
-  const lastTwoDigits = (index + 1) % 100;
-  
-  let suffix = "th";
-  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-    suffix = suffixes[Math.min(lastDigit, 3)] || "th";
-  }
-  
+  // const suffixes = ["th", "st", "nd", "rd"];
+  // const lastDigit = (index + 1) % 10;
+ 
+  const suffix = "th";
+
   return `${index + 1}${suffix} Roof`;
 }
 

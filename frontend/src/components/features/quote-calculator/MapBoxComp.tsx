@@ -83,6 +83,8 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
           // Use the current onBuildingDetected callback
           stableOnBuildingDetected(detectedRoofs);
         } else {
+          const emptyRoofs: Position[][] = [];
+          stableOnBuildingDetected(emptyRoofs);
           console.log("No building found");
           if (!signal.aborted && mountedRef.current) {
             map.jumpTo({ center: coords, zoom: 19 });

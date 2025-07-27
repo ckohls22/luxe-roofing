@@ -329,7 +329,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleGetQuote = async () => {
-    console.log(selectedMaterial)
+    console.log(selectedMaterial);
     if (!selectedMaterial) return;
 
     setIsSubmitting(true);
@@ -502,21 +502,16 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
               )}
             </Button>
             <Button
-              onClick={handleGetQuote}
+              onClick={() => {
+                toast.info("This feature is coming soon!");
+              }}
               disabled={isSubmitting || !selectedMaterial}
               className="flex-1 bg-white hover:bg-gray-100  text-black font-semibold py-6 rounded-full border border-gray-300 disabled:opacity-50 max-w-[200px] cursor-pointer"
             >
-              {isSubmitting ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Sending...</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  {/* <Sparkles className="w-4 h-4" /> */}
-                  <span>Talk to a Pro</span>
-                </div>
-              )}
+              <div className="flex items-center justify-center space-x-2">
+                {/* <Sparkles className="w-4 h-4" /> */}
+                <span>Talk to a Pro</span>
+              </div>
             </Button>
           </div>
         </CardContent>
