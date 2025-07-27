@@ -51,7 +51,6 @@ export const StormAlerts: React.FC<StormAlertsProps> = ({ lat, lon }) => {
       try {
         const res = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`, {
           headers: {
-            "User-Agent": "roof-inspector-bot (admin@yourdomain.com)",
             Accept: "application/ld+json",
           },
         });
