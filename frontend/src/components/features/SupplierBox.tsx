@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui";
@@ -25,6 +25,8 @@ import { toast } from "sonner";
 import { suppliersService } from "@/lib/services/suppliers";
 import type { Supplier, Material } from "@/types";
 import Image from "next/image";
+import { StormAlerts } from "./StormAlerts";
+import { AddressContext } from "./quote-calculator/providers/QuoteProvider";
 
 // Constants
 const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/placeholder";
@@ -322,6 +324,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     supplier.materials?.[0] || null
   );
+  const {selectedAddress} = useContext(AddressContext)
   const [activeTab, setActiveTab] = useState<
     "details" | "installation" | "contact"
   >("details");
@@ -383,6 +386,10 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
 
   return (
     <>
+    <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
+
+      <StormAlerts lat={selectedAddress?.coordinates[1] || 38.8977} lng={selectedAddress?.coordinates[0] || -77.0365} />
+    </div>
       <Card className="w-full max-w-2xl bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
         <CardContent className="p-6">
           {/* Header */}

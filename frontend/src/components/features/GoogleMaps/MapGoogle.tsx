@@ -686,6 +686,7 @@ const GoogleMapComponent = forwardRef<
 
       notifyChange();
 
+      console.log("Saving changes to polygons...");
       if (onSaveChanges) {
         const currentPolygons = getCurrentPolygons();
         const roofPolygons = createRoofPolygons(currentPolygons);
