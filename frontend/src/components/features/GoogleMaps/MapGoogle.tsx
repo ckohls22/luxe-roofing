@@ -318,6 +318,10 @@ const GoogleMapComponent = forwardRef<
       }
     }, [getCurrentPolygons, onPolygonsChange]);
 
+    useEffect(() => {
+      notifyChange();
+    }, [polygonsData, notifyChange]);
+
     // Handle map clicks for deselection
     const handleMapClick = useCallback((): void => {
       if (!selectedPolygon) return;
@@ -858,6 +862,7 @@ const GoogleMapComponent = forwardRef<
 
       // if (newPolygonsData.length > 0) {
       setPolygonsData(newPolygonsData);
+      
       // }
       //   if (onPolygonsChange && newPolygonsData.length > 0) {
       // const newPolygonsCoordinates = newPolygonsData.map((data) => {
@@ -872,7 +877,7 @@ const GoogleMapComponent = forwardRef<
       // onPolygonsChange(roofPolygons);
       // }
       // setTimeout(() => notifyChange(), 50);
-      notifyChange();
+      // notifyChange();
     }, [
       latLngToCoord,
       onPolygonsChange,
