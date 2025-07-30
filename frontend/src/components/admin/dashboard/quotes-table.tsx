@@ -83,30 +83,37 @@ export type Quote = z.infer<typeof quoteSchema>;
 // Status badge component
 const StatusBadge = ({ status }: { status: string }) => {
   let className = "capitalize";
-  
+
   switch (status) {
     case "draft":
-      className += " bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200";
+      className +=
+        " bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200";
       break;
     case "sent":
-      className += " bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300";
+      className +=
+        " bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300";
       break;
     case "viewed":
-      className += " bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-300";
+      className +=
+        " bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-300";
       break;
     case "accepted":
-      className += " bg-green-100 text-green-800 hover:bg-green-200 border border-green-300";
+      className +=
+        " bg-green-100 text-green-800 hover:bg-green-200 border border-green-300";
       break;
     case "rejected":
-      className += " bg-red-100 text-red-800 hover:bg-red-200 border border-red-300";
+      className +=
+        " bg-red-100 text-red-800 hover:bg-red-200 border border-red-300";
       break;
     case "expired":
-      className += " bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300";
+      className +=
+        " bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300";
       break;
     default:
-      className += " bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200";
+      className +=
+        " bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200";
   }
-  
+
   return (
     <Badge variant="outline" className={className}>
       {status}
@@ -125,8 +132,11 @@ export function QuotesTable() {
   const [totalPages, setTotalPages] = React.useState(0);
   // Removed totalItems state as it's not being used anywhere
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]); 
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [editingQuote, setEditingQuote] = React.useState<Quote | null>(null);
   const [deleteQuoteId, setDeleteQuoteId] = React.useState<string | null>(null);
@@ -217,8 +227,8 @@ export function QuotesTable() {
               Edit
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => setDeleteQuoteId(row.original.id)} 
+            <DropdownMenuItem
+              onClick={() => setDeleteQuoteId(row.original.id)}
               className="text-red-600"
             >
               <IconTrash className="mr-2 h-4 w-4" />
@@ -236,7 +246,7 @@ export function QuotesTable() {
     try {
       const page = pagination.pageIndex + 1;
       const limit = pagination.pageSize;
-      
+
       let url = `/api/admin/quote?page=${page}&limit=${limit}`;
       if (statusFilter) url += `&status=${statusFilter}`;
 
@@ -326,11 +336,16 @@ export function QuotesTable() {
   // Effect for fetching data on component mount and when dependencies change
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoizedFetchQuotes = React.useCallback(fetchQuotes, []);
-  
+
   React.useEffect(() => {
     memoizedFetchQuotes();
-  // Adding memoizedFetchQuotes to the dependency array instead of fetchQuotes directly
-  }, [pagination.pageIndex, pagination.pageSize, statusFilter, memoizedFetchQuotes]);
+    // Adding memoizedFetchQuotes to the dependency array instead of fetchQuotes directly
+  }, [
+    pagination.pageIndex,
+    pagination.pageSize,
+    statusFilter,
+    memoizedFetchQuotes,
+  ]);
 
   // Setup table
   const table = useReactTable({
@@ -360,19 +375,12 @@ export function QuotesTable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-amber-800">Quotes</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-amber-800">
+            Quotes
+          </h2>
           <p className="text-muted-foreground">
             Manage customer quotes and pricing
           </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button 
-            className="bg-gradient-to-r from-amber-500 to-orange-600 text-white"
-            onClick={() => router.push("/admin/quotes/new")}
-          >
-            <IconPlus className="mr-2 h-4 w-4" />
-            New Quote
-          </Button>
         </div>
       </div>
 
@@ -381,20 +389,18 @@ export function QuotesTable() {
           <Input
             placeholder="Filter quotes..."
             className="max-w-sm"
-            value={(table.getColumn("quoteNumber")?.getFilterValue() as string) ?? ""}
+            value={
+              (table.getColumn("quoteNumber")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
               table.getColumn("quoteNumber")?.setFilterValue(event.target.value)
             }
           />
-          <Select 
-            value={statusFilter} 
-            onValueChange={setStatusFilter}
-          >
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
-            
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="viewed">Viewed</SelectItem>
@@ -515,8 +521,7 @@ export function QuotesTable() {
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {totalPages || 1}
+          Page {table.getState().pagination.pageIndex + 1} of {totalPages || 1}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -559,7 +564,10 @@ export function QuotesTable() {
       </div>
 
       {/* Edit Quote Dialog */}
-      <Dialog open={!!editingQuote} onOpenChange={(open) => !open && setEditingQuote(null)}>
+      <Dialog
+        open={!!editingQuote}
+        onOpenChange={(open) => !open && setEditingQuote(null)}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Quote</DialogTitle>
@@ -573,10 +581,7 @@ export function QuotesTable() {
                 <Label htmlFor="status" className="text-right">
                   Status
                 </Label>
-                <Select
-                  name="status"
-                  defaultValue={editingQuote?.status}
-                >
+                <Select name="status" defaultValue={editingQuote?.status}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -603,30 +608,36 @@ export function QuotesTable() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">Save changes</Button>
+              <Button
+                type="submit"
+                className="bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+              >
+                Save changes
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteQuoteId} onOpenChange={(open) => !open && setDeleteQuoteId(null)}>
+      <Dialog
+        open={!!deleteQuoteId}
+        onOpenChange={(open) => !open && setDeleteQuoteId(null)}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Delete Quote</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this quote? This action cannot be undone.
+              Are you sure you want to delete this quote? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setDeleteQuoteId(null)}
-            >
+            <Button variant="outline" onClick={() => setDeleteQuoteId(null)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleDelete} 
+            <Button
+              onClick={handleDelete}
               className="bg-red-500 hover:bg-red-600"
             >
               Delete

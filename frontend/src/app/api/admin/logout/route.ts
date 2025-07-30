@@ -19,18 +19,8 @@ export async function POST() {
       );
     }
 
-    // Verify and decode token
-    // const { payload } = await jwtVerify(token, JWT_SECRET);
-
-    // Get client metadata
-
-    // const forwarded = request.headers.get("x-forwarded-for");
-    // const realIp = request.headers.get("x-real-ip");
-
-    // Deactivate session in database
     await deactivateSession(token);
 
-    // Clear cookie
     (await cookieStore).delete("admin-token");
 
     return NextResponse.json({
@@ -40,7 +30,6 @@ export async function POST() {
   } catch (error) {
     console.error("Logout error:", error);
 
-    // Clear cookie even if there's an error
     const cookieStore = cookies();
     (await cookieStore).delete("admin-token");
 

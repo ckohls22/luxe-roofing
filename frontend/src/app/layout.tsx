@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className="min-h-screen bg-gradient-to-br antialiased font-sans">
         <div className="flex flex-col min-h-screen">
           <main id="main-content" className="flex-1">
+            <Toaster />
             {children}
           </main>
         </div>

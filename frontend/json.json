@@ -1,0 +1,26 @@
+{
+  "success": true,
+  "data": {
+    "contacts": [
+      {
+        "id": "4E5IWdCaEMCVoDLWcNiP",
+        "dateAdded": "2025-07-30T17:08:06.000Z",
+        "type": "lead",
+        "locationId": "rEfXN239os2jr2KHXDOh",
+        "email": "fendrick.ar@gmail.com",
+        "emailLowerCase": "fendrick.ar@gmail.com",
+        "country": "US",
+        "address1": "43-44 Kissena Blvd, Flushing, NY 11355, USA",
+        "fullNameLowerCase": "adi raj",
+        "lastName": "raj",
+        "source": "API Integration",
+        "firstNameLowerCase": "adi",
+        "tags": ["api-created", "new-lead"],
+        "phone": "+18584458575",
+        "lastNameLowerCase": "raj",
+        "firstName": "adi",
+        "customField": []
+      }
+    ]
+  }
+}
