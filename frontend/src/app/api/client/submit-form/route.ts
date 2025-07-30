@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createFormSubmission } from "@/db/queries";
 
 import { createOrUpdateHubSpotContact } from "@/lib/hubspot/hubspot";
+import { GHLContact } from "@/lib/ghl/ghl.types";
+import { GHLService } from "@/lib/ghl/ghl-service";
 
 // Define base schemas
 // const searchAddressSchema = z.object({
@@ -232,25 +234,22 @@ export async function POST(request: NextRequest) {
     // };
 
     // Send to HubSpot (don't fail the entire request if this fails)
-    let hubspotResult = null;
-    try {
-      hubspotResult = await createOrUpdateHubSpotContact({
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        email: payload.email,
-        phone: payload.phone,
-        address: payload.address.address,
-      });
 
-      console.log(
-        `HubSpot contact ${hubspotResult.action}:`,
-        hubspotResult.contact.id
-      );
-    } catch (hubspotError) {
-      console.error("HubSpot integration failed:", hubspotError);
-      // Log the error but don't fail the entire request
-      // You might want to implement a retry mechanism or queue here
-    }
+    const contactData: GHLContact = {
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      email: payload.email,
+      phone: payload.phone,
+      address1: payload.address.address,
+    };
+
+    const ghlService = new GHLService();
+    console.log(
+      await ghlService.processContactSubmission(
+        contactData,
+        process.env.GHL_FORM_ID!
+      )
+    );
 
     // Record successful submission for rate limiting
     const now = Date.now();
