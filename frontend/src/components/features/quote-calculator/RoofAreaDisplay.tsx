@@ -192,10 +192,11 @@ export const RoofAreaDisplay: React.FC<RoofAreaDisplayProps> = ({
               key={roof.id || index}
               className="p-4 flex justify-center"
             >
+
               <Card
                 className={`p-4 border rounded-xl shadow-sm transition-opacity duration-200 gap-2 max-w-[300px] min-w-[280px] w-full ${
                   isDisabled ? "opacity-50 grayscale" : "bg-white"
-                } ${isEditing ? "ring-2 ring-amber-400" : ""}`}
+                } ${isEditing ? "ring-2 ring-amber-400": ""}`}
                 style={{
                   pointerEvents: isDisabled && !isEditing ? "none" : "auto",
                 }}
@@ -315,10 +316,3 @@ export const RoofAreaDisplay: React.FC<RoofAreaDisplayProps> = ({
     </Carousel>
   );
 };
-
-// Example usage in parent component:
-// const [roofPolygons, setRoofPolygons] = useState<RoofPolygon[]>(...);
-// const handleLabelChange = (index: number, newLabel: string) => {
-//   setRoofPolygons(prev => prev.map((r, i) => i === index ? { ...r, label: newLabel } : r));
-// };
-// <RoofAreaDisplay roofPolygons={roofPolygons} onLabelChange={handleLabelChange} ... />

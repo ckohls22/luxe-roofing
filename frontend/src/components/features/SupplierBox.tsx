@@ -166,6 +166,7 @@ const MaterialSelector: React.FC<{
         }`}
       >
         <ImageWithFallback
+          key={material.id}
           src={material.materialImage || PLACEHOLDER_IMAGE_URL}
           alt={material.type || "Material"}
           width={64}
@@ -324,7 +325,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     supplier.materials?.[0] || null
   );
-  const {selectedAddress} = useContext(AddressContext)
+  const { selectedAddress } = useContext(AddressContext);
   const [activeTab, setActiveTab] = useState<
     "details" | "installation" | "contact"
   >("details");
@@ -386,10 +387,12 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
 
   return (
     <>
-    <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
-
-      <StormAlerts lat={selectedAddress?.coordinates[1] || 38.8977} lng={selectedAddress?.coordinates[0] || -77.0365} />
-    </div>
+      <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
+        <StormAlerts
+          lat={selectedAddress?.coordinates[1] || 38.8977}
+          lng={selectedAddress?.coordinates[0] || -77.0365}
+        />
+      </div>
       <Card className="w-full max-w-2xl bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
         <CardContent className="p-6">
           {/* Header */}

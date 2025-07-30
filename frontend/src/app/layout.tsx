@@ -31,6 +31,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 interface RootLayoutProps {
@@ -44,7 +50,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={poppins.variable}>
-      <body className="min-h-screen bg-gradient-to-br  antialiased font-sans">
+      <body className="min-h-screen bg-gradient-to-br antialiased font-sans">
         <div className="flex flex-col min-h-screen">
           <main id="main-content" className="flex-1">
             {children}

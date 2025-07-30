@@ -14,7 +14,10 @@ interface MapBoxProps {
 
 export type Position = [number, number];
 
-export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps) {
+export function MapBoxComp({
+  selectedAddress,
+  onBuildingDetected,
+}: MapBoxProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const mountedRef = useRef<boolean>(true);
@@ -23,27 +26,31 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
   const { mapRef, isLoaded, error } = useMapbox(mapContainerRef);
 
   // Memoize coordinates to prevent unnecessary re-processing
-  const coordinates = useMemo((): [number, number] => [
-    selectedAddress.coordinates[0],
-    selectedAddress.coordinates[1]
-  ], [selectedAddress.coordinates]);
+  const coordinates = useMemo(
+    (): [number, number] => [
+      selectedAddress.coordinates[0],
+      selectedAddress.coordinates[1],
+    ],
+    [selectedAddress.coordinates]
+  );
 
   // Memoize coordinates string for comparison
   const coordinatesString = useMemo(() => coordinates.join(","), [coordinates]);
 
   function convertGeoJSON(input: GeoJSON.Position[][]): Position[][] {
-    return input.map(polygon =>
-      polygon.map(([lng, lat]) => [lng, lat])
-    );
+    return input.map((polygon) => polygon.map(([lng, lat]) => [lng, lat]));
   }
 
   // Stable callback that doesn't change on every render
-  const stableOnBuildingDetected = useCallback((building: Position[][]) => {
-    console.log("running stable buiding detected")
-    if (mountedRef.current) {
-      onBuildingDetected(building);
-    }
-  }, [onBuildingDetected]); // Empty dependencies - we'll handle updates differently
+  const stableOnBuildingDetected = useCallback(
+    (building: Position[][]) => {
+      console.log("running stable buiding detected");
+      if (mountedRef.current) {
+        onBuildingDetected(building);
+      }
+    },
+    [onBuildingDetected]
+  ); // Empty dependencies - we'll handle updates differently
 
   // Create abort controller for cancelling operations
   const createAbortController = useCallback(() => {
@@ -51,7 +58,7 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     // Create new controller
     abortControllerRef.current = new AbortController();
     return abortControllerRef.current;
@@ -60,26 +67,19 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
   const detectAndDrawBuilding = useCallback(
     async (coords: [number, number], map: MapboxMap, signal: AbortSignal) => {
       try {
-        
         console.log("Starting building detection for:", coords);
-        
+
         map.jumpTo({ center: coords, zoom: 17 });
-        
-        // if (signal.aborted || !mountedRef.current) return;
-        
+
         if (signal.aborted || !mountedRef.current) return;
         await waitForSourceLoaded(map, "custom-buildings", signal);
-        
-        // if (signal.aborted || !mountedRef.current) return;
 
         const building = await detectBuildingAtLocation(map, coords);
-
-        // if (signal.aborted || !mountedRef.current) return;
 
         if (building && building.geometry?.coordinates) {
           const detectedRoofs = convertGeoJSON(building.geometry.coordinates);
           console.log("Building found:", detectedRoofs);
-          
+
           // Use the current onBuildingDetected callback
           stableOnBuildingDetected(detectedRoofs);
         } else {
@@ -93,8 +93,6 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
       } catch (err) {
         if (!signal.aborted && mountedRef.current) {
           console.error("Building detection failed:", err);
-          // Optionally jump to higher zoom on error
-          // map.jumpTo({ center: coords, zoom: 19 });
         }
       }
     },
@@ -117,7 +115,7 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
     lastProcessedCoordinatesRef.current = coordinatesString;
 
     const abortController = createAbortController();
-    
+
     detectAndDrawBuilding(coordinates, mapRef.current, abortController.signal);
 
     // Cleanup function
@@ -126,19 +124,18 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
     };
   }, [
     mapRef,
-    isLoaded, 
+    isLoaded,
     coordinatesString, // Use string comparison instead of array
-   coordinates,
+    coordinates,
     error,
     detectAndDrawBuilding,
-    createAbortController
+    createAbortController,
   ]);
-
 
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
-    
+
     return () => {
       mountedRef.current = false;
       if (abortControllerRef.current) {
@@ -148,18 +145,17 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
   }, []);
 
   // Show error state with retry option
-  if (error ) {
+  if (error) {
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded">
         <p className="text-red-700 mb-2">Failed to load map: {error}</p>
-       
       </div>
     );
   }
 
   return (
     <div className="w-full h-full absolute">
-      {( !isLoaded) && (
+      {!isLoaded && (
         <div className="flex items-center justify-center p-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
@@ -167,11 +163,11 @@ export function MapBoxComp({ selectedAddress, onBuildingDetected }: MapBoxProps)
           </div>
         </div>
       )}
-      
-      <div 
-        ref={mapContainerRef} 
+
+      <div
+        ref={mapContainerRef}
         className={`w-full h-full hidden`} // ✅ Show when loaded
-        style={{ minHeight: '400px' }}
+        style={{ minHeight: "400px" }}
       />
     </div>
   );
@@ -185,7 +181,7 @@ const waitForSourceLoaded = (
 ): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     if (signal?.aborted) {
-      reject(new Error('Operation aborted'));
+      reject(new Error("Operation aborted"));
       return;
     }
 
@@ -197,7 +193,7 @@ const waitForSourceLoaded = (
     const onSourceData = (e: MapSourceDataEvent) => {
       if (signal?.aborted) {
         map.off("sourcedata", onSourceData);
-        reject(new Error('Operation aborted'));
+        reject(new Error("Operation aborted"));
         return;
       }
 
@@ -209,109 +205,10 @@ const waitForSourceLoaded = (
 
     const onAbort = () => {
       map.off("sourcedata", onSourceData);
-      reject(new Error('Operation aborted'));
+      reject(new Error("Operation aborted"));
     };
 
     map.on("sourcedata", onSourceData);
-    signal?.addEventListener('abort', onAbort, { once: true });
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
 };
-// "use client";
-// import React, { useRef, useEffect,  useCallback } from "react";
-// import { useMapbox } from "@/hooks";
-// import { Map as MapboxMap, MapSourceDataEvent } from "mapbox-gl";
-// import { detectBuildingAtLocation } from "@/lib/mapbox/building-detection";
-// import {  SearchAddress } from "@/types";
-// // import { flipGeoJSONCoordinates } from "@/utils/GoogleMapUtils";
-// // import { Coordinate } from "@/types/googlemapTypes";
-
-// interface MapBoxProps {
-//   selectedAddress : SearchAddress;
-//   onBuildingDetected: (building: Position[][]) => void;
-// }
-
-// export type Position = [number, number];
-
-// export function MapBoxComp({
-//   selectedAddress,
-//   onBuildingDetected
-// }: MapBoxProps) {
-//   const mapContainerRef = useRef<HTMLDivElement>(null);
-//   const { mapRef, isLoaded, error  } = useMapbox(mapContainerRef);
-
-//   function convertGeoJSON(input: GeoJSON.Position[][]): Position[][] {
-//   return input.map(polygon =>
-//     polygon.map(([lng, lat]) => [lng, lat])
-//   );
-// }
-
-
-//   const detectAndDrawBuilding = useCallback(
-//     async (coordinates: [number, number] , map : MapboxMap) => {
-//       try {
-//         map.jumpTo({ center: coordinates, zoom: 17 });
-//         await waitForSourceLoaded(map, "custom-buildings");
-
-//         const building = await detectBuildingAtLocation(map, coordinates);
-
-//         if (building && building.geometry?.coordinates) {
-//           // const detectedRoofs : Coordinate[][] = flipGeoJSONCoordinates( building.geometry?.coordinates);
-//           const detectedRoofs = convertGeoJSON(building?.geometry.coordinates);
-//           console.log("building found", detectedRoofs);
-
-//           onBuildingDetected(detectedRoofs);
-//         } else {
-//           console.log("no building found");
-//           map.jumpTo({ center: coordinates, zoom: 19 });
-//         }
-//       } catch (err) {
-//         console.error("Building detection failed:", err);
-
-//         // map.jumpTo({ center: coordinates, zoom: 19 });
-//       }
-//     },
-//     [onBuildingDetected]
-//   );
-
-//   useEffect(() => {
-//     // if( !isLoaded || isInitializing) return;
-//     // if(error){
-//     //   retryInitialization();
-//     //   return;
-//     // }
-//     const map = mapRef?.current
-//     if( !map) return;
-//     console.log("running building detection")
-//     detectAndDrawBuilding([selectedAddress.coordinates[0], selectedAddress.coordinates[1]] , map);
-//   }, [detectAndDrawBuilding, selectedAddress , mapRef, isLoaded, error]);
-
-//   return (
-//     <div>
-//       <br />
-//       <br />
-//       <br />
-//       <br />
-      
-//         <div ref={mapContainerRef}  className="relative w-[500px] h-[500px]"  />
-//     </div>
-//   );
-// }
-
-// const waitForSourceLoaded = (
-//   map: MapboxMap,
-//   sourceId: string
-// ): Promise<void> => {
-//   return new Promise<void>((resolve) => {
-//     if (map.isSourceLoaded(sourceId)) {
-//       resolve();
-//       return;
-//     }
-//     const onSourceData = (e: MapSourceDataEvent) => {
-//       if (e.sourceId === sourceId && map.isSourceLoaded(sourceId)) {
-//         map.off("sourcedata", onSourceData);
-//         resolve();
-//       }
-//     };
-//     map.on("sourcedata", onSourceData);
-//   });
-// };

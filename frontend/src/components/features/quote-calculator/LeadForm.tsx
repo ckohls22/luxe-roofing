@@ -69,8 +69,13 @@ export default function LeadForm({
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaKey, setCaptchaKey] = useState(0);
   // Consume currentStep from provider
-  const { selectedAddress, roofPolygons, roofType, currentStep, setCurrentStep } =
-    useContext(AddressContext);
+  const {
+    selectedAddress,
+    roofPolygons,
+    roofType,
+    currentStep,
+    setCurrentStep,
+  } = useContext(AddressContext);
 
   const {
     register,
@@ -142,7 +147,7 @@ export default function LeadForm({
       });
 
       // Add this debug log
-      const result:FormSubmissionResponse = await response.json();
+      const result: FormSubmissionResponse = await response.json();
       console.log("Server response:", result);
 
       if (!response.ok || !result.success) {
@@ -152,7 +157,7 @@ export default function LeadForm({
       setSubmitStatus("success");
       resetForm();
       onSubmit?.(payload);
-      setCurrentStep('show-result')
+      setCurrentStep("show-result");
 
       const prev = JSON.parse(
         localStorage.getItem("roof_quote_history") || "[]"
@@ -162,7 +167,10 @@ export default function LeadForm({
         JSON.stringify([...prev, payload])
       );
 
-      localStorage.setItem("formId", result.data?.submissionId || "no formid found")
+      localStorage.setItem(
+        "formId",
+        result.data?.submissionId || "no formid found"
+      );
     } catch (e: unknown) {
       console.error("Submission error:", e);
       setSubmitStatus("error");

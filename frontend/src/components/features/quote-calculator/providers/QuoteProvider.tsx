@@ -5,7 +5,12 @@ import { SearchAddress, RoofPolygon } from "@/types";
 import { Position } from "geojson";
 
 // Define the application steps
-export type AppStep = "search" | "select-roof" | "edit-roof" | "lead-form" | "show-result";
+export type AppStep =
+  | "search"
+  | "select-roof"
+  | "edit-roof"
+  | "lead-form"
+  | "show-result";
 
 // type RoofType = "residential" | "industrial" | "commercial";
 type RoofType = "residential" | "industrial";
@@ -29,11 +34,11 @@ interface AddressContextType {
   // onSearchBoxFocus: (val: boolean) => void;
 
   // detect roof
-  roofDetected : Position[][],
+  roofDetected: Position[][];
   handleRoofDetected: (coordinates: Position[][]) => void;
 
   // Roof Polygons Management
-  roofPolygons: RoofPolygon[]; 
+  roofPolygons: RoofPolygon[];
   setRoofPolygons: (polygons: RoofPolygon[]) => void;
   handleAreaCalculated: (polygons: RoofPolygon[]) => void;
   handleLabelChange: (index: number, newLabel: string) => void;
@@ -76,8 +81,8 @@ const defaultContextValue: AddressContextType = {
   // onSearchBoxFocus: () => {},
 
   //roof detected
-  roofDetected:[],
-  handleRoofDetected:()=>{},
+  roofDetected: [],
+  handleRoofDetected: () => {},
 
   // Roof Polygons Management
   roofPolygons: [], // Fixed: Consistent with interface
@@ -131,30 +136,6 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Step sequence definition
-//   const stepSequence = useMemo<AppStep[]>(() => [
-//   "search",
-//   "select-roof",
-//   "edit-roof",
-//   "lead-form",
-//   "show-result",
-// ], []);
-
-  // Step Management Functions
-  // const nextStep = useCallback(() => {
-  //   const currentIndex = stepSequence.indexOf(currentStep);
-  //   if (currentIndex < stepSequence.length - 1) {
-  //     setCurrentStep(stepSequence[currentIndex + 1]);
-  //   }
-  // }, [currentStep, stepSequence]);
-
-  // const previousStep = useCallback(() => {
-  //   const currentIndex = stepSequence.indexOf(currentStep);
-  //   if (currentIndex > 0) {
-  //     setCurrentStep(stepSequence[currentIndex - 1]);
-  //   }
-  // }, [currentStep, stepSequence]);
-
   const resetToSearch = useCallback(() => {
     setCurrentStep("search");
     setSelectedAddress(null);
@@ -163,35 +144,6 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  // Step Validation
-  // const canProceedToNextStep = useCallback(() => {
-  //   switch (currentStep) {
-  //     case "search":
-  //       return selectedAddress !== null;
-  //     case "edit-roof":
-  //       return roofPolygons.length > 0;
-  //     case "lead-form":
-  //       return true; // Can always proceed from lead form
-  //     case "show-result":
-  //       return false; // Final step
-  //     default:
-  //       return false;
-  //   }
-  // }, [currentStep, selectedAddress, roofPolygons]);
-
-  // const getStepProgress = useCallback(() => {
-  //   const currentIndex = stepSequence.indexOf(currentStep);
-  //   return ((currentIndex + 1) / stepSequence.length) * 100;
-  // }, [currentStep, stepSequence]);
-
-  // Address Management Functions
-  // const handleAddressSelected = useCallback((address: SearchAddress) => {
-  //   setSelectedAddress(address);
-  //   setError(null);
-  //   setRoofPolygons([]);
-  //   setCurrentStep("select-roof");
-  // }, []);
-
   // Enhanced setSelectedAddress to handle null values
   const handleAddressSelected = useCallback((addr: SearchAddress | null) => {
     setSelectedAddress(addr);
@@ -199,31 +151,28 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
       // Clear related data when address is cleared
       setRoofPolygons([]);
       setError(null);
-    }else{
-      setCurrentStep('select-roof')
+    } else {
+      setCurrentStep("select-roof");
     }
-    console.log(addr , " address changed")
+    console.log(addr, " address changed");
   }, []);
 
-  const handleRoofDetected = useCallback(
-    (roofCoordinates : Position[][])=>{
-      if(roofCoordinates){
-        console.log("roof detected and updated " , roofCoordinates)
-        setRoofDetected(roofCoordinates)
-      }
-    },[]
-  )
+  const handleRoofDetected = useCallback((roofCoordinates: Position[][]) => {
+    if (roofCoordinates) {
+      console.log("roof detected and updated ", roofCoordinates);
+      setRoofDetected(roofCoordinates);
+    }
+  }, []);
 
   // Roof Polygons Management Functions
-  const handleAreaCalculated = useCallback(
-    (polygons: RoofPolygon[]) => {
-      if (polygons) {
-        setRoofPolygons(polygons);
-        console.log("Roof polygons calculated:", polygons);
-      }else{ console.log("no polygon detected")}
-    },
-    []
-  );
+  const handleAreaCalculated = useCallback((polygons: RoofPolygon[]) => {
+    if (polygons) {
+      setRoofPolygons(polygons);
+      console.log("Roof polygons calculated:", polygons);
+    } else {
+      console.log("no polygon detected");
+    }
+  }, []);
 
   const handleLabelChange = useCallback((index: number, newLabel: string) => {
     setRoofPolygons((prev) =>
@@ -248,9 +197,6 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
   // const onSearchBoxFocus = useCallback((val: boolean) => {
   //   setSearchFocus(val);
   // }, []);
-
-
-
 
   const contextValue: AddressContextType = {
     // Step Management
@@ -293,16 +239,13 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
     setShowLeadForm: () => {}, // no-op, deprecated
     error,
     setError,
-
-    // Step Validation
-    // getStepProgress,
   };
 
   return (
     <>
-    <AddressContext.Provider value={contextValue}>
-      {children}
-    </AddressContext.Provider>
+      <AddressContext.Provider value={contextValue}>
+        {children}
+      </AddressContext.Provider>
     </>
   );
 }

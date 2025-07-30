@@ -10,12 +10,9 @@ import { MapPin, Search, X } from "lucide-react";
 export const SearchBox = () => {
   const {
     handleAddressSelected,
-    // onSearchBoxFocus,
     isLoading,
     currentStep,
     setCurrentStep,
-    // selectedAddress,
-    // setSelectedAddress,
     clearRoofPolygons,
     error,
     setError,
