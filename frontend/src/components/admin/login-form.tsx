@@ -26,14 +26,12 @@ export function LoginForm({
     setError,
     formState: { errors },
   } = useForm<LoginFormData>();
-  const { login } = useAdminAuth();
-  // const [serverError, setServerError] = useState<string | null>(null);
+  const { login, isLoading } = useAdminAuth();
 
   const onSubmit = async (data: LoginFormData) => {
     const result = await login(data);
 
     if (!result.success && result.errors) {
-      // Set field-specific errors from API response
       Object.entries(result.errors).forEach(([field, messages]) => {
         if (field === "username" || field === "password") {
           setError(field, {
@@ -54,15 +52,19 @@ export function LoginForm({
                 <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mb-4">
                   <span className="text-white font-bold text-xl">LQ</span>
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Welcome back
+                </h1>
                 <p className="text-amber-800">
                   Login to LuxelQ Admin Dashboard
                 </p>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email" className="font-medium text-gray-900">Email</Label>
+                <Label htmlFor="username" className="font-medium text-gray-900">
+                  Username
+                </Label>
                 <Input
-                  id="email"
+                  id="username"
                   placeholder="m@example.com"
                   className="border-amber-200 focus:border-amber-500 focus:ring-amber-500"
                   {...register("username", { required: "Email is required" })}
@@ -75,13 +77,12 @@ export function LoginForm({
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password" className="font-medium text-gray-900">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto text-sm text-amber-700 hover:text-amber-800 underline-offset-2 hover:underline"
+                  <Label
+                    htmlFor="password"
+                    className="font-medium text-gray-900"
                   >
-                    Forgot your password?
-                  </a>
+                    Password
+                  </Label>
                 </div>
                 <Input
                   id="password"
@@ -98,11 +99,12 @@ export function LoginForm({
                   </p>
                 )}
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+                disabled={isLoading}
               >
-                Login to Dashboard
+                {isLoading ? "Logging in..." : "Login to Dashboard"}
               </Button>
             </div>
           </form>
@@ -117,7 +119,9 @@ export function LoginForm({
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-white">
                 <h2 className="text-3xl font-bold mb-2">LuxelQ Admin</h2>
-                <p className="text-lg opacity-90">Manage your roofing business</p>
+                <p className="text-lg opacity-90">
+                  Manage your roofing business
+                </p>
               </div>
             </div>
           </div>

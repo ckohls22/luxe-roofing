@@ -1,27 +1,17 @@
 "use client";
 
-import * as React from "react";
 import {
   IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
   IconFolder,
-  IconHelp,
   IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
 } from "@tabler/icons-react";
+import * as React from "react";
 
-import { NavDocuments } from "@/components/admin/dashboard/nav-documents";
 import { NavMain } from "@/components/admin/dashboard/nav-main";
-import { NavSecondary } from "@/components/admin/dashboard/nav-secondary";
-import { NavUser } from "@/components/admin/dashboard/nav-user";
+import { Button } from "@/components/ui";
 import {
   Sidebar,
   SidebarContent,
@@ -31,8 +21,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
 
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import Link from "next/link";
 const data = {
   user: {
     name: "LuxeRoofing",
@@ -56,19 +47,9 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
       title: "Leads",
       url: "/admin/leads",
       icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
     },
   ],
   navClouds: [
@@ -119,45 +100,17 @@ const data = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { logout, isLoading } = useAdminAuth();
+
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-amber-200" {...props}>
+    <Sidebar
+      collapsible="offcanvas"
+      className="border-r border-amber-200"
+      {...props}
+    >
       <SidebarHeader className="border-b border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -169,7 +122,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">LQ</span>
                 </div>
-                <span className="text-base font-bold text-gray-900">LuxelQ Admin</span>
+                <span className="text-base font-bold text-gray-900">
+                  LuxelQ Admin
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -177,11 +132,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="bg-white">
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter className="border-t border-amber-200 bg-amber-50">
-        <NavUser user={data.user} />
+        <Button
+          onClick={logout}
+          className="border-t border-amber-200 bg-amber-700 hover:bg-amber-800 cursor-pointer"
+          disabled={isLoading}
+        >
+          {isLoading ? "Logging out..." : "Log Out"}
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );

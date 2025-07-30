@@ -266,20 +266,6 @@ export function AdminDashboard() {
     setCurrentPage(1);
   };
 
-  // Simulate API call structure (ready for future implementation)
-  // const fetchLeads = async (page: number, search: string) => {
-  //   setIsLoading(true);
-  //   // Future API call would go here
-  //   const response = await fetch(
-  //     `/api/leads?page=${page}&search=${search}&limit=${itemsPerPage}`
-  //   );
-  //   const data = await response.json();
-
-  //   // Simulate loading delay
-  //   await new Promise((resolve) => setTimeout(resolve, 300));
-  //   setIsLoading(false);
-  // };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
@@ -301,7 +287,14 @@ export function AdminDashboard() {
           </Badge>
         );
       default:
-        return <Badge variant="secondary" className="bg-gray-50 text-gray-700 border-gray-200">{status}</Badge>;
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-gray-50 text-gray-700 border-gray-200"
+          >
+            {status}
+          </Badge>
+        );
     }
   };
 
@@ -318,7 +311,9 @@ export function AdminDashboard() {
                 <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">LQ</span>
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Admin Dashboard
+                </h1>
               </div>
             </div>
             <DropdownMenu>
@@ -329,14 +324,26 @@ export function AdminDashboard() {
                 >
                   <Avatar className="h-8 w-8 border-2 border-amber-200">
                     <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
-                    <AvatarFallback className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold">AD</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold">
+                      AD
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 border-amber-200" align="end" forceMount>
-                <DropdownMenuItem className="hover:bg-amber-50">Profile</DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-amber-50">Settings</DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-amber-50 text-red-600">Sign out</DropdownMenuItem>
+              <DropdownMenuContent
+                className="w-56 border-amber-200"
+                align="end"
+                forceMount
+              >
+                <DropdownMenuItem className="hover:bg-amber-50">
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-amber-50">
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-amber-50 text-red-600">
+                  Sign out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
@@ -346,7 +353,9 @@ export function AdminDashboard() {
             {/* Monthly Leads Chart */}
             <Card className="bg-white shadow-lg border-amber-200">
               <CardHeader className="border-b border-amber-100">
-                <CardTitle className="text-gray-900 font-bold">Monthly Leads Chart</CardTitle>
+                <CardTitle className="text-gray-900 font-bold">
+                  Monthly Leads Chart
+                </CardTitle>
                 <CardDescription className="text-amber-800">
                   Lead generation performance over the last 6 months
                 </CardDescription>
@@ -366,11 +375,7 @@ export function AdminDashboard() {
                       <XAxis dataKey="month" className="text-gray-600" />
                       <YAxis className="text-gray-600" />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar
-                        dataKey="leads"
-                        fill="#f59e0b"
-                        radius={4}
-                      />
+                      <Bar dataKey="leads" fill="#f59e0b" radius={4} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -391,8 +396,8 @@ export function AdminDashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">318</div>
                   <p className="text-xs text-amber-800">
-                    <span className="text-green-600 font-semibold">+12.5%</span> from last
-                    month
+                    <span className="text-green-600 font-semibold">+12.5%</span>{" "}
+                    from last month
                   </p>
                 </CardContent>
               </Card>
@@ -409,8 +414,8 @@ export function AdminDashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">1,247</div>
                   <p className="text-xs text-amber-800">
-                    <span className="text-green-600 font-semibold">+8.2%</span> from last
-                    month
+                    <span className="text-green-600 font-semibold">+8.2%</span>{" "}
+                    from last month
                   </p>
                 </CardContent>
               </Card>
@@ -427,7 +432,8 @@ export function AdminDashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">89</div>
                   <p className="text-xs text-amber-800">
-                    <span className="text-red-600 font-semibold">-2.1%</span> from last month
+                    <span className="text-red-600 font-semibold">-2.1%</span>{" "}
+                    from last month
                   </p>
                 </CardContent>
               </Card>
@@ -438,7 +444,9 @@ export function AdminDashboard() {
               <CardHeader className="border-b border-amber-100">
                 <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                   <div>
-                    <CardTitle className="text-gray-900 font-bold">Leads Table</CardTitle>
+                    <CardTitle className="text-gray-900 font-bold">
+                      Leads Table
+                    </CardTitle>
                     <CardDescription className="text-amber-800">
                       Recent leads and their current status
                     </CardDescription>

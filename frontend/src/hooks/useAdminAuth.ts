@@ -66,16 +66,21 @@ export function useAdminAuth() {
   };
 
   const logout = async () => {
+    setIsLoading(true);
     try {
-      await fetch("/api/admin/auth/logout", {
+      await fetch("/api/admin/logout", {
         method: "POST",
       });
 
       toast.success("Logged out successfully");
       router.push("/admin/login");
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
       toast.error("Error during logout");
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
