@@ -1,7 +1,42 @@
-import { updateMaterialById } from "@/db/queries";
+import { updateMaterialById, deleteMaterialById } from "@/db/queries";
 import { materials } from "@/db/schema";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { NextRequest, NextResponse } from "next/server";
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ materialId: string }> }
+) {
+  try {
+    const { materialId } = await params;
+
+    // Delete the material record
+    const deleted = await deleteMaterialById(materialId);
+
+    // If nothing was deleted, return 404
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "Material not found" },
+        { status: 404 }
+      );
+    }
+
+    // Return success response
+    return NextResponse.json(
+      { success: true, message: "Material deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting material:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to delete material",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PATCH(
   request: NextRequest,

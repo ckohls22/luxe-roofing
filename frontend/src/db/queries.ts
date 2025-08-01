@@ -279,6 +279,16 @@ export const updateMaterialById = async (
   return result[0] ?? null;
 };
 
+// Delete Material by id
+export const deleteMaterialById = async (id: string): Promise<boolean> => {
+  const result = await db
+    .delete(materials)
+    .where(eq(materials.id, id))
+    .returning({ id: materials.id });
+  
+  return result.length > 0;
+};
+
 // Input Validation for supplier and material
 export const supplierUpdateSchema = createInsertSchema(suppliers).partial();
 export const materialUpdateSchema = createInsertSchema(materials).partial();

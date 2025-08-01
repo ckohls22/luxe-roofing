@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createFormSubmission } from "@/db/queries";
 
-import { createOrUpdateHubSpotContact } from "@/lib/hubspot/hubspot";
 import { GHLContact } from "@/lib/ghl/ghl.types";
 import { GHLService } from "@/lib/ghl/ghl-service";
 

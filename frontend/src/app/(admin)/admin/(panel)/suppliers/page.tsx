@@ -57,25 +57,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Drawer } from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -84,7 +73,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -94,7 +82,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+
 import Link from "next/link";
 
 // Updated schema for supplier data
@@ -241,13 +229,9 @@ const columns: ColumnDef<Supplier>[] = [
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>
-            <Link href={`/admin/suppliers/${row.original.id}`}>Edit</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem> View Details</DropdownMenuItem>
-          <DropdownMenuItem>Contact</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          <Link href={`/admin/suppliers/${row.original.id}`}>
+            <DropdownMenuItem className="cursor-pointer">Edit</DropdownMenuItem>
+          </Link>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
@@ -464,10 +448,12 @@ function DataTable() {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add Supplier</span>
-          </Button>
+          <Link href={"/admin/add-supplier"}>
+            <Button variant="outline" size="sm" className="cursor-pointer">
+              <IconPlus />
+              <span className="hidden lg:inline">Add Supplier</span>
+            </Button>
+          </Link>
         </div>
       </div>
       <TabsContent
@@ -619,95 +605,9 @@ function TableCellViewer({ item }: { item: Supplier }) {
 
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
-      <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.name}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-1">
-          <DrawerTitle className="flex items-center gap-3">
-            <Avatar className="size-10">
-              <AvatarImage src={item.logoUrl} alt={item.name} />
-              <AvatarFallback>
-                {item.name.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            {item.name}
-          </DrawerTitle>
-          <DrawerDescription>
-            Supplier details and information
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <Separator />
-          <form className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" defaultValue={item.name} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" defaultValue={item.description} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="installation">Installation</Label>
-              <Textarea id="installation" defaultValue={item.installation} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue={item.email} />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" type="tel" defaultValue={item.phone} />
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="logoUrl">Logo URL</Label>
-              <Input id="logoUrl" type="url" defaultValue={item.logoUrl} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="createdAt">Created</Label>
-                <Input
-                  id="createdAt"
-                  value={new Date(item.createdAt).toLocaleString()}
-                  disabled
-                />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="updatedAt">Updated</Label>
-                <Input
-                  id="updatedAt"
-                  value={new Date(item.updatedAt).toLocaleString()}
-                  disabled
-                />
-              </div>
-            </div>
-          </form>
-        </div>
-        <DrawerFooter>
-          <Button
-            onClick={() => {
-              toast.promise(
-                new Promise((resolve) => setTimeout(resolve, 1000)),
-                {
-                  loading: `Updating ${item.name}...`,
-                  success: "Supplier updated successfully!",
-                  error: "Failed to update supplier",
-                }
-              );
-            }}
-          >
-            Save Changes
-          </Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
+      <Button variant="link" className="text-foreground w-fit px-0 text-left">
+        {item.name}
+      </Button>
     </Drawer>
   );
 }

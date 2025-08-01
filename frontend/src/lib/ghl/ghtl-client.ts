@@ -1,5 +1,13 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { GHLApiResponse, GHLContact } from "./ghl.types";
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+import {
+  GHLApiResponse,
+  GHLContact,
+  GHLContactCreationResponse,
+  GHLContactResponse,
+  GHLContactsApiResponse,
+  GHLFormSubmissionResponse,
+  FormSubmissionData
+} from "./ghl.types";
 
 export class GHLClient {
   private client: AxiosInstance;
@@ -40,7 +48,7 @@ export class GHLClient {
   /**
    * Create a new contact in GHL
    */
-  async createContact(contactData: GHLContact): Promise<GHLApiResponse<any>> {
+  async createContact(contactData: GHLContact): Promise<GHLApiResponse<GHLContactCreationResponse>> {
     try {
       const payload = {
         firstName: contactData.firstName,
@@ -66,12 +74,15 @@ export class GHLClient {
 
       return {
         success: true,
-        data: response.data,
+        data: response.data as GHLContactCreationResponse,
       };
-    } catch (error: any) {
+    } catch (error) {
+      const axiosError = error as AxiosError;
       return {
         success: false,
-        error: error.response?.data?.message || error.message,
+        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
+          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
+          : String(axiosError.message),
       };
     }
   }
@@ -82,8 +93,8 @@ export class GHLClient {
   async createFormSubmission(
     contactId: string,
     formId: string,
-    submissionData: Record<string, any>
-  ): Promise<GHLApiResponse<any>> {
+    submissionData: FormSubmissionData
+  ): Promise<GHLApiResponse<GHLFormSubmissionResponse>> {
     try {
       const payload = {
         contactId,
@@ -110,12 +121,15 @@ export class GHLClient {
 
       return {
         success: true,
-        data: response.data,
+        data: response.data as GHLFormSubmissionResponse,
       };
-    } catch (error: any) {
+    } catch (error) {
+      const axiosError = error as AxiosError;
       return {
         success: false,
-        error: error.response?.data?.message || error.message,
+        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
+          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
+          : String(axiosError.message),
       };
     }
   }
@@ -123,7 +137,7 @@ export class GHLClient {
   /**
    * Get contact by email to avoid duplicates
    */
-  async getContactByEmail(email: string): Promise<GHLApiResponse<any>> {
+  async getContactByEmail(email: string): Promise<GHLApiResponse<GHLContactsApiResponse>> {
     try {
       const response: AxiosResponse = await this.client.get(
         `/contacts/lookup?email=${encodeURIComponent(email)}&locationId=${
@@ -133,15 +147,18 @@ export class GHLClient {
 
       return {
         success: true,
-        data: response.data,
+        data: response.data as GHLContactsApiResponse,
       };
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        return { success: true, data: null }; // Contact not found
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.status === 404) {
+        return { success: true, data: {} as GHLContactsApiResponse };
       }
       return {
         success: false,
-        error: error.response?.data?.message || error.message,
+        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
+          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
+          : String(axiosError.message),
       };
     }
   }
@@ -152,7 +169,7 @@ export class GHLClient {
   async updateContact(
     contactId: string,
     contactData: Partial<GHLContact>
-  ): Promise<GHLApiResponse<any>> {
+  ): Promise<GHLApiResponse<GHLContactResponse>> {
     try {
       const response: AxiosResponse = await this.client.put(
         `/contacts/${contactId}`,
@@ -164,12 +181,15 @@ export class GHLClient {
 
       return {
         success: true,
-        data: response.data,
+        data: response.data as GHLContactResponse,
       };
-    } catch (error: any) {
+    } catch (error) {
+      const axiosError = error as AxiosError;
       return {
         success: false,
-        error: error.response?.data?.message || error.message,
+        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
+          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
+          : String(axiosError.message),
       };
     }
   }
