@@ -309,7 +309,7 @@ export const SearchBox = () => {
   if (googleError) {
     return (
       <div className="bg-transparent border border-red-500 p-2 rounded-lg lg:w-1/2 w-full text-center text-red-500  ">
-        {googleError}. Please check your internet connection and try again.
+        {searchError}. Please check your internet connection and try again.
       </div>
       // <Alert variant="destructive" title="Address Search Unavailable" className="bg-transparent border border-red-200 w-full ">
       // </Alert>
@@ -390,8 +390,8 @@ export const SearchBox = () => {
 
       {/* Error message */}
       {currentError && (
-        <div className="bg-transparent border border-red-500 p-2 rounded-lg lg:w-1/2 w-full text-center text-red-500  ">
-          {googleError}.
+        <div className="bg-transparent  p-2 rounded-lg lg:w-1/2 w-full text-center text-red-500  ">
+          {currentError}
         </div>
       )}
 

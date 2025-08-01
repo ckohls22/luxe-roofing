@@ -374,7 +374,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   // Early return if no materials
   if (!supplier.materials?.length) {
     return (
-      <Card className="w-full max-w-2xl white shadow-lg">
+      <Card className="w-full max-w-2xl white shadow-md">
         <CardContent className="p-6 text-center">
           <Package className="w-12 h-12 mx-auto mb-4 text-amber-400" />
           <p className="text-gray-600">
@@ -393,7 +393,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
           lng={selectedAddress?.coordinates[0] || -77.0365}
         />
       </div>
-      <Card className="w-full max-w-2xl bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
+      <Card className="w-full max-w-2xl bg-white shadow-none hover:shadow-sm rounded-none">
         <CardContent className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -571,7 +571,7 @@ const SupplierBox: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-4">
+      <div className="w-full max-w-2xl mx-auto p-4">
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
             <LoadingCard key={i} />
@@ -583,7 +583,7 @@ const SupplierBox: React.FC = () => {
 
   if (error) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-4">
+      <div className="w-full max-w-2xl mx-auto p-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <div className="text-red-600 font-semibold mb-2">
             Error Loading Suppliers
@@ -603,7 +603,7 @@ const SupplierBox: React.FC = () => {
 
   if (!suppliers.length) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-4">
+      <div className="w-full max-w-2xl mx-auto p-4">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
           <div className="text-yellow-600 font-semibold mb-2">
             No Suppliers Available

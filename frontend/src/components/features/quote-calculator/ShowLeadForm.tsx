@@ -15,7 +15,8 @@ export function ShowLeadForm() {
   if (currentStep == "lead-form") {
     return (
       <div className="flex justify-center items-center mt-6">
-        <div className="w-full lg:w-7/12 md:w-3/4 bg-white   rounded-lg shadow-md border p-7">
+        <div className="w-full lg:w-5/12 md:w-3/4 bg-white shadow-sm border p-7">
+        
           <LeadForm onSubmit={handleLeadSubmit} />
         </div>
       </div>

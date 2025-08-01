@@ -302,7 +302,7 @@ export default function LeadForm({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-full p-7 bg-gradient-to-r from-orange-400 to-orange-600 disabled:opacity-50"
+            className="w-full rounded-full p-7 bg-gradient-to-r from-orange-400 to-orange-600 disabled:opacity-50 text-lg"
           >
             {isSubmitting ? (
               <>

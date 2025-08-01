@@ -9,7 +9,7 @@ interface RootLayoutProps {
 
 const poppins = Poppins({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'], // load required weights
+  weight: ['100','200', '300', '400', '500', '600', '700','800'], // load required weights
   variable: '--font-poppins',          // optional, for CSS variable usage
   display: 'swap',
 })
