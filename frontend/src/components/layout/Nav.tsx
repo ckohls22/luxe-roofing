@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from "lucide-react";
 
 import {
   NavigationMenu,
@@ -41,26 +40,26 @@ const blogs: { title: string; href: string }[] = [
     href: "https://www.luxeroofpros.com/knowledge-center/blog-post-title-one-ksk85",
   },
 ];
-const services = [
-  {
-    title: "Luxury Synthetic Shingle Roofing",
-    href: "/services/synthetic-shingle",
-    description:
-      "Superior roofing solutions that blend beauty, performance, and sustainability with synthetic shake or slate roofs.",
-  },
-  {
-    title: "Storm Damage Roof Replacement",
-    href: "#service",
-    description:
-      "Professional insurance claim handling with expert storm damage assessment and replacement services.",
-  },
-  {
-    title: "Asphalt Shingle Roofing",
-    href: "#service",
-    description:
-      "Budget-friendly traditional roofing solutions with full transparency and comparison to premium systems.",
-  },
-];
+// const services = [
+//   {
+//     title: "Luxury Synthetic Shingle Roofing",
+//     href: "/services/synthetic-shingle",
+//     description:
+//       "Superior roofing solutions that blend beauty, performance, and sustainability with synthetic shake or slate roofs.",
+//   },
+//   {
+//     title: "Storm Damage Roof Replacement",
+//     href: "#service",
+//     description:
+//       "Professional insurance claim handling with expert storm damage assessment and replacement services.",
+//   },
+//   {
+//     title: "Asphalt Shingle Roofing",
+//     href: "#service",
+//     description:
+//       "Budget-friendly traditional roofing solutions with full transparency and comparison to premium systems.",
+//   },
+// ];
 
 export function MainNavigationMenu() {
   return (
@@ -72,7 +71,7 @@ export function MainNavigationMenu() {
             <ul className="grid gap-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <li className="row-span-3">
                 <NavigationMenuLink asChild>
-                  <a
+                  <Link
                     className="from-muted/50 to-muted flex h-full w-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-hidden select-none focus:shadow-md"
                     href="/"
                   >
@@ -80,10 +79,10 @@ export function MainNavigationMenu() {
                       Luxe Roofing
                     </div>
                     <p className="text-muted-foreground text-sm leading-tight">
-                      Premium roofing solutions that enhance your home's curb
+                      Premium roofing solutions that enhance your homes curb
                       appeal and value with superior craftsmanship.
                     </p>
-                  </a>
+                  </Link>
                 </NavigationMenuLink>
               </li>
               <ListItem href="#service" title="Asphalt Shingle Roofing">
@@ -95,7 +94,7 @@ export function MainNavigationMenu() {
                 title="Luxury Synthetic Shingle"
               >
                 Superior roofing solutions that blend beauty, performance, and
-                sustainability with synthetic shake or slate roofs."
+                sustainability with synthetic shake or slate roofs.
               </ListItem>
               {/* <ListItem href="/docs/primitives/typography" title="Storm Damage Roof Replacement">
                 Professional insurance claim handling with expert storm damage assessment and replacement services.

@@ -1,10 +1,8 @@
 import React from "react";
 import {
   ArrowRight,
-  Shield,
   Users,
   Award,
-  Clock,
   CheckCircle,
   Star,
 } from "lucide-react";
@@ -78,7 +76,7 @@ const WhyChooseUs = () => {
             return (
               <div
                 key={index}
-                className={`group relative overflow-hidden rounded-sm p-8 hover:shadow-md transition-all duration-300 hover:-translate-y-2 border border-gray-200 `}
+                className={'group relative overflow-hidden rounded-sm p-8 hover:shadow-md transition-all duration-300 hover:-translate-y-2 border border-gray-200 '}
               >
                 {/* Decorative Background Pattern */}
                 <div className="absolute inset-0 opacity-20">
