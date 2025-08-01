@@ -26,8 +26,8 @@ export class GHLService {
    */
   async processContactSubmission(
     contactData: GHLContact,
-    formId: string,
-    additionalData: Record<string, string | number | boolean> = {}
+    // formId: string,
+    // additionalData: Record<string, string | number | boolean> = {}
   ): Promise<{
     success: boolean;
     contactId?: string;
