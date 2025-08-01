@@ -4,7 +4,7 @@ import RoofTypeSelector from "@/components/features/quote-calculator/RoofTypeSel
 import { SearchBox } from "@/components/features/quote-calculator/SearchBox";
 import Image from "next/image";
 
-import FeaturesSection from "@/components/ui/feature-section";
+// import FeaturesSection from "@/components/ui/feature-section";
 import { ShowResult } from "@/components/features/quote-calculator/ShowResult";
 import { ShowLeadForm } from "@/components/features/quote-calculator/ShowLeadForm";
 import WhyChooseUs from "@/components/ui/feature-section";
