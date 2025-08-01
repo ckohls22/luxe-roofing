@@ -5,8 +5,6 @@ import {
   GHLContactCreationResponse,
   GHLContactResponse,
   GHLContactsApiResponse,
-  GHLFormSubmissionResponse,
-  FormSubmissionData,
 } from "./ghl.types";
 
 export class GHLClient {

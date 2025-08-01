@@ -71,15 +71,7 @@ export class GHLService {
       }
 
       // Step 2: Create form submission
-      const submissionData = {
-        firstName: contactData.firstName,
-        lastName: contactData.lastName,
-        email: contactData.email,
-        phone: contactData.phone,
-        address1: contactData.address1,
-        ...additionalData,
-      };
-
+    
       return {
         success: true,
         contactId,
