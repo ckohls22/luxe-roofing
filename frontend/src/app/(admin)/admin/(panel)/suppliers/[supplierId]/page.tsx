@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconArrowLeft,
@@ -109,8 +109,8 @@ const materialFormSchema = z.object({
     .string()
     .min(1, "Top features is required")
     .max(150, "Must be 150 characters or less"),
-  materialImage: z.string().optional(),
-  showCase: z.string().optional(),
+  materialImage: z.string().nullable().optional(),
+  showCase: z.string().nullable().optional(),
   price: z.string(),
   materialImageFile: z.instanceof(File).optional(),
   showCaseFile: z.instanceof(File).optional(),
@@ -125,17 +125,19 @@ type MaterialFormData = z.infer<typeof materialFormSchema>;
 function ImageUpload({
   isEditing,
   value,
+  onChange,
   onFileChange,
   label,
   accept = "image/*",
 }: {
   isEditing: boolean;
-  value?: string;
+  value?: string | null;
   onChange?: (value: string) => void;
   onFileChange?: (file: File | null) => void;
   label: string;
   accept?: string;
 }) {
+  // Handle both string and null values safely
   const [preview, setPreview] = React.useState<string | null>(value || null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -144,15 +146,19 @@ function ImageUpload({
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result as string);
+        const result = reader.result as string;
+        setPreview(result);
+        // Update both the URL string and the file object
+        onChange?.(result);
+        onFileChange?.(file);
       };
       reader.readAsDataURL(file);
-      onFileChange?.(file);
     }
   };
 
   const handleRemove = () => {
     setPreview(null);
+    onChange?.(""); // Set to empty string instead of null
     onFileChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -200,14 +206,123 @@ function ImageUpload({
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isEditing}
+            disabled={!isEditing}
+            className="border-amber-500 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
           >
-            <IconUpload className="size-4" />
+            <IconUpload className="size-4 mr-2" />
             Upload Image
           </Button>
         </div>
       </div>
     </div>
+  );
+}
+
+// Rich Text Editor Component for Installation
+function InstallationRichTextEditor({
+  form,
+  isEditing,
+}: {
+  form: UseFormReturn<SupplierFormData>;
+  isEditing: boolean;
+}) {
+  // Get initial value from form
+  const initialValue = form.getValues().installation || "";
+  const [editorContent, setEditorContent] = React.useState(initialValue);
+
+  // Update form when editor content changes
+  React.useEffect(() => {
+    form.setValue("installation", editorContent);
+  }, [editorContent, form]);
+
+  // Handle editor changes
+  const handleEditorChange = (e: React.FocusEvent<HTMLDivElement>) => {
+    setEditorContent(e.currentTarget.innerHTML);
+  };
+
+  // Handle formatting actions
+  const handleFormatClick = (command: string, value?: string) => {
+    document.execCommand(command, false, value || "");
+  };
+
+  // Handle link insertion
+  const handleLinkClick = () => {
+    const url = window.prompt("Enter link URL");
+    if (url) document.execCommand("createLink", false, url);
+  };
+
+  return (
+    <FormField
+      control={form.control}
+      name="installation"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Installation</FormLabel>
+          <FormControl>
+            {isEditing ? (
+              <div className="rich-text-editor-toolbar">
+                <div className="rich-text-editor-buttons">
+                  <button
+                    type="button"
+                    onClick={() => handleFormatClick("bold")}
+                    className="rich-text-button"
+                  >
+                    <strong>B</strong>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormatClick("italic")}
+                    className="rich-text-button"
+                  >
+                    <em>I</em>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormatClick("underline")}
+                    className="rich-text-button"
+                  >
+                    <u>U</u>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormatClick("insertOrderedList")}
+                    className="rich-text-button"
+                  >
+                    OL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormatClick("insertUnorderedList")}
+                    className="rich-text-button"
+                  >
+                    UL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLinkClick}
+                    className="rich-text-button"
+                  >
+                    Link
+                  </button>
+                </div>
+                <div
+                  className="rich-text-editor-content"
+                  contentEditable
+                  dangerouslySetInnerHTML={{ __html: editorContent }}
+                  onBlur={handleEditorChange}
+                />
+              </div>
+            ) : (
+              <div
+                className="prose max-w-none border rounded-md p-3 min-h-[100px] bg-white"
+                dangerouslySetInnerHTML={{ __html: field.value }}
+              />
+            )}
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }
 
@@ -222,6 +337,7 @@ function useSupplierDetail(id: string) {
       setLoading(true);
       setError(null);
 
+      console.log(`Fetching supplier with ID: ${id}`);
       const response = await fetch(`/api/admin/suppliers/${id}`);
 
       if (!response.ok) {
@@ -229,12 +345,30 @@ function useSupplierDetail(id: string) {
       }
 
       const data = await response.json();
-      const validatedData = supplierResponseSchema.parse(data);
-      setSupplier(validatedData.supplier);
+      console.log("Supplier API response:", data);
+
+      // More graceful error handling for missing data
+      if (!data || !data.supplier) {
+        throw new Error("Invalid server response: missing supplier data");
+      }
+
+      // Safely initialize materials array if it doesn't exist
+      if (!data.supplier.materials) {
+        data.supplier.materials = [];
+      }
+
+      try {
+        const validatedData = supplierResponseSchema.parse(data);
+        setSupplier(validatedData.supplier);
+      } catch (validationErr) {
+        console.error("Schema validation error:", validationErr);
+        // Fall back to using unvalidated data if schema validation fails
+        setSupplier(data.supplier);
+      }
     } catch (err) {
       console.error("Error fetching supplier:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
-      toast.error("Failed to load supplier details");
+      toast.error("Failed to load supplier details. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -452,19 +586,7 @@ function SupplierEditForm({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="installation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Installation</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} disabled={!isEditing} rows={3} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <InstallationRichTextEditor form={form} isEditing={isEditing} />
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Created</Label>
@@ -498,7 +620,6 @@ function MaterialEditDialog({
   onUpdate: () => void;
   trigger: React.ReactNode;
 }) {
-  console.log("Material:::::", material);
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -516,24 +637,28 @@ function MaterialEditDialog({
 
   const handleSubmit = async (data: MaterialFormData) => {
     setIsSubmitting(true);
+    console.log("Edit form data being submitted:", data);
 
     try {
       const formData = new FormData();
+      formData.append("id", material.id);
+      formData.append("supplierId", material.supplierId);
       formData.append("type", data.type);
       formData.append("warranty", data.warranty);
       formData.append("topFeatures", data.topFeatures);
       formData.append("price", data.price);
 
+      // Handle image fields consistently - use files first if they exist, fall back to URLs
       if (data.materialImageFile) {
-        formData.append("materialImageFile", data.materialImageFile);
-      } else if (data.materialImage) {
-        formData.append("materialImage", data.materialImage);
+        formData.append("materialImage", data.materialImageFile);
+      } else {
+        formData.append("materialImage", data.materialImage || material.materialImage || "");
       }
 
       if (data.showCaseFile) {
-        formData.append("showCaseFile", data.showCaseFile);
-      } else if (data.showCase) {
-        formData.append("showCase", data.showCase);
+        formData.append("showCase", data.showCaseFile);
+      } else {
+        formData.append("showCase", data.showCase || material.showCase || "");
       }
 
       const response = await fetch(`/api/admin/materials/${material.id}`, {
@@ -559,7 +684,7 @@ function MaterialEditDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Edit Material</DialogTitle>
           <DialogDescription>
@@ -567,10 +692,7 @@ function MaterialEditDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="grid gap-4"
-          >
+          <form className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -633,7 +755,7 @@ function MaterialEditDialog({
                   <FormItem>
                     <FormControl>
                       <ImageUpload
-                        isEditing={false}
+                        isEditing={true}
                         value={field.value}
                         onChange={field.onChange}
                         onFileChange={(file) =>
@@ -653,7 +775,230 @@ function MaterialEditDialog({
                   <FormItem>
                     <FormControl>
                       <ImageUpload
-                        isEditing={false}
+                        isEditing={true}
+                        value={field.value}
+                        onChange={field.onChange}
+                        onFileChange={(file) =>
+                          form.setValue("showCaseFile", file || undefined)
+                        }
+                        label="Showcase Image"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </form>
+        </Form>
+        <DialogFooter className="mt-6 flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={form.handleSubmit(handleSubmit)}
+            disabled={isSubmitting}
+            className="bg-gradient-to-br from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 transition-colors"
+          >
+            {isSubmitting ? (
+              <IconLoader className="size-4 animate-spin mr-2" />
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Material Add Dialog Component
+function MaterialAddDialog({
+  supplierId,
+  onUpdate,
+  trigger,
+}: {
+  supplierId: string;
+  onUpdate: () => void;
+  trigger: React.ReactNode;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Form schema for material
+  const materialFormSchema = z.object({
+    type: z.string().min(1, "Type is required"),
+    warranty: z.string().min(1, "Warranty is required"),
+    price: z.string().min(1, "Price is required"),
+    topFeatures: z.string().min(1, "Top features are required"),
+    materialImage: z.string().optional(),
+    showCase: z.string().optional(),
+    materialImageFile: z.any().optional(),
+    showCaseFile: z.any().optional(),
+  });
+
+  // Type for form data
+  type MaterialFormData = z.infer<typeof materialFormSchema>;
+
+  // Initial form values
+  const defaultValues: MaterialFormData = {
+    type: "",
+    warranty: "",
+    price: "",
+    topFeatures: "",
+    materialImage: "",
+    showCase: "",
+    materialImageFile: undefined,
+    showCaseFile: undefined,
+  };
+
+  const form = useForm<MaterialFormData>({
+    resolver: zodResolver(materialFormSchema),
+    defaultValues,
+  });
+
+  // Handle form submission
+  const handleSubmit = async (data: MaterialFormData) => {
+    setIsSubmitting(true);
+    console.log("Form data being submitted:", data);
+
+    try {
+      const formData = new FormData();
+      formData.append("supplierId", supplierId);
+      formData.append("type", data.type);
+      formData.append("warranty", data.warranty);
+      formData.append("price", data.price);
+      formData.append("topFeatures", data.topFeatures);
+
+      // Handle image fields consistently - use files first if they exist, fall back to URLs
+      if (data.materialImageFile) {
+        formData.append("materialImage", data.materialImageFile);
+      } else {
+        formData.append("materialImage", data.materialImage || "");
+      }
+
+      if (data.showCaseFile) {
+        formData.append("showCase", data.showCaseFile);
+      } else {
+        formData.append("showCase", data.showCase || "");
+      }
+
+      const response = await fetch(`/api/admin/materials`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      toast.success("Material added successfully");
+      setOpen(false);
+      form.reset();
+      onUpdate();
+    } catch (error) {
+      console.error("Error adding material:", error);
+      toast.error("Failed to add material");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Add New Material</DialogTitle>
+          <DialogDescription>
+            Add details for the new roofing material.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="warranty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Warranty</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="topFeatures"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Top Features</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} rows={3} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="materialImage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <ImageUpload
+                        isEditing={true}
+                        value={field.value}
+                        onChange={field.onChange}
+                        onFileChange={(file) =>
+                          form.setValue("materialImageFile", file || undefined)
+                        }
+                        label="Material Image"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="showCase"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <ImageUpload
+                        isEditing={true}
                         value={field.value}
                         onChange={field.onChange}
                         onFileChange={(file) =>
@@ -670,17 +1015,25 @@ function MaterialEditDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setOpen(false);
+              form.reset();
+            }}
+            className="border-amber-500 text-amber-700 hover:bg-amber-50"
+          >
             Cancel
           </Button>
           <Button
             onClick={form.handleSubmit(handleSubmit)}
             disabled={isSubmitting}
+            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white"
           >
             {isSubmitting ? (
               <IconLoader className="size-4 animate-spin" />
             ) : (
-              "Save Changes"
+              "Add Material"
             )}
           </Button>
         </DialogFooter>
@@ -693,9 +1046,11 @@ function MaterialEditDialog({
 function MaterialsTable({
   materials,
   onUpdate,
+  supplierId,
 }: {
   materials: Material[];
   onUpdate: () => void;
+  supplierId: string;
 }) {
   const handleDelete = async (materialId: string) => {
     if (!confirm("Are you sure you want to delete this material?")) return;
@@ -721,10 +1076,20 @@ function MaterialsTable({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
         <CardTitle>Materials ({materials.length})</CardTitle>
-        <Button variant="outline" size="sm">
-          <IconPlus className="size-4" />
-          Add Material
-        </Button>
+        <MaterialAddDialog
+          supplierId={materials[0]?.supplierId || supplierId}
+          onUpdate={onUpdate}
+          trigger={
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-amber-500 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+            >
+              <IconPlus className="size-4" />
+              Add Material
+            </Button>
+          }
+        />
       </CardHeader>
       <CardContent>
         <div className="overflow-hidden rounded-lg border">
@@ -881,7 +1246,11 @@ export default function SupplierEditPage() {
       <Separator />
 
       {/* Lower Part - Materials Table */}
-      <MaterialsTable materials={supplier.materials} onUpdate={refetch} />
+      <MaterialsTable
+        materials={supplier.materials || []}
+        onUpdate={refetch}
+        supplierId={supplierId}
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -24,7 +24,6 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconPlus,
 } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui";
@@ -122,7 +121,6 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export function QuotesTable() {
-  const router = useRouter();
   const [data, setData] = React.useState<Quote[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({

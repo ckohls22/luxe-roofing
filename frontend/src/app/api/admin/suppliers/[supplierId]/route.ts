@@ -37,20 +37,24 @@ export async function PATCH(
     const phone = formData.get("phone") as string;
     const email = formData.get("email") as string;
 
-    const logoFile = formData.get("logoFile") as File;
-    let logoUrl = "";
-    if (logoFile && logoFile.size > 0) {
-      logoUrl = await uploadToCloudinary(logoFile);
-    }
-
-    const validatedData = supplierUpdateSchema.parse({
+    // Create update data object without logoUrl initially
+    const updateData = {
       name,
       description,
       installation,
       phone,
       email,
-      logoUrl,
-    });
+    };
+
+    // Only handle logoUrl if a new file is actually uploaded
+    const logoFile = formData.get("logoFile") as File;
+    if (logoFile && logoFile.size > 0) {
+      const logoUrl = await uploadToCloudinary(logoFile);
+      Object.assign(updateData, { logoUrl });
+    }
+
+    // Validate the update data
+    const validatedData = supplierUpdateSchema.parse(updateData);
 
     const updated = await updateSupplierById(supplierId, validatedData);
 

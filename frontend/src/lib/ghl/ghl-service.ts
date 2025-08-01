@@ -1,5 +1,9 @@
 import { GHLClient } from "./ghtl-client";
-import { GHLContact } from "./ghl.types";
+import {
+  GHLContact,
+  GHLContactsApiResponse,
+  GHLApiResponse,
+} from "./ghl.types";
 
 export class GHLService {
   private client: GHLClient;
@@ -23,27 +27,29 @@ export class GHLService {
   async processContactSubmission(
     contactData: GHLContact,
     formId: string,
-    additionalData: Record<string, any> = {}
-  ) {
+    additionalData: Record<string, string | number | boolean> = {}
+  ): Promise<{
+    success: boolean;
+    contactId?: string;
+    isNewContact?: boolean;
+    message?: string;
+    error?: string;
+  }> {
     try {
       // Step 1: Check if contact exists
-      const existingContactResponse = await this.client.getContactByEmail(
-        contactData.email
-      );
-      console.log(
-        "existingContactResponse::::>>>>",
-        JSON.stringify(existingContactResponse)
-      );
-      let contactId: string;
+      const existingContactResponse: GHLApiResponse<GHLContactsApiResponse> =
+        await this.client.getContactByEmail(contactData.email);
+
+      let contactId: string | undefined;
       let isNewContact = false;
 
       if (
-        existingContactResponse.data.contacts &&
-        existingContactResponse.data.contacts.id
+        existingContactResponse.data?.contacts &&
+        existingContactResponse.data?.contacts.id
       ) {
         // Update existing contact
         contactId = existingContactResponse.data.contacts.id;
-        console.log(`Updating existing contact: ${contactId}`);
+        // Avoid console.log in production code
 
         const updateResponse = await this.client.updateContact(
           contactId,
@@ -54,15 +60,13 @@ export class GHLService {
         }
       } else {
         // Create new contact
-        console.log("Creating new contact");
         const createResponse = await this.client.createContact(contactData);
-        console.log(createResponse);
 
         if (!createResponse.success) {
           throw new Error(`Failed to create contact: ${createResponse.error}`);
         }
 
-        contactId = createResponse.data.contact.id;
+        contactId = createResponse.data?.contact.id;
         isNewContact = true;
       }
 
@@ -77,7 +81,7 @@ export class GHLService {
       };
 
       const submissionResponse = await this.client.createFormSubmission(
-        contactId,
+        contactId!,
         formId,
         submissionData
       );
@@ -97,11 +101,11 @@ export class GHLService {
           ? "Contact created successfully"
           : "Contact updated successfully",
       };
-    } catch (error: any) {
-      console.error("Error processing contact submission:", error);
+    } catch (error) {
+      // Handle errors more safely without using 'as' assertion
       return {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
