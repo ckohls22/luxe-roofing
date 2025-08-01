@@ -17,28 +17,28 @@ import {
 const blogs: { title: string; href: string }[] = [
   {
     title: "Open Valley Roofs vs. Closed Valley Roofs: Expert Breakdown",
-    href: "/blog/open-vs-closed-valley-roofs",
+    href: "https://www.luxeroofpros.com/knowledge-center/open-valley-roofs-vs-closed-valley-roofs-luxe-roofings-expert-breakdown",
   },
   {
     title: "The Luxury Roof Built to Withstand Wildfires, Hail, and Hurricanes",
-    href: "/blog/luxury-roof-weather-resistant",
+    href: "https://www.luxeroofpros.com/knowledge-center/the-luxury-roof-built-to-withstand-wildfires-hail-and-hurricanes",
   },
   {
     title:
       "Luxury Roofing FAQs: What Every Gated Community Homeowner Should Know",
-    href: "/blog/luxury-roofing-faqs",
+    href: "https://www.luxeroofpros.com/knowledge-center/luxury-roofing-faqs-what-every-gated-community-homeowner-should-know",
   },
   {
     title: "Why High-End Homeowners Are Switching to Brava Synthetic Shake",
-    href: "/blog/brava-synthetic-shake",
+    href: "https://www.luxeroofpros.com/knowledge-center/why-high-end-homeowners-are-switching-to-brava-synthetic-shake",
   },
   {
     title: "Does a DaVinci Roof Increase Home Value?",
-    href: "/blog/davinci-roof-home-value",
+    href: "https://www.luxeroofpros.com/knowledge-center/does-a-davinci-roof-increase-home-valuenbsp",
   },
   {
     title: "Understanding Roofing Warranties: What's Covered and What's Not",
-    href: "/blog/roofing-warranties",
+    href: "https://www.luxeroofpros.com/knowledge-center/blog-post-title-one-ksk85",
   },
 ];
 const services = [
@@ -50,13 +50,13 @@ const services = [
   },
   {
     title: "Storm Damage Roof Replacement",
-    href: "/services/storm-damage",
+    href: "#service",
     description:
       "Professional insurance claim handling with expert storm damage assessment and replacement services.",
   },
   {
     title: "Asphalt Shingle Roofing",
-    href: "/services/asphalt-shingle",
+    href: "#service",
     description:
       "Budget-friendly traditional roofing solutions with full transparency and comparison to premium systems.",
   },
@@ -86,12 +86,12 @@ export function MainNavigationMenu() {
                   </a>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/docs" title="Asphalt Shingle Roofing">
+              <ListItem href="#service" title="Asphalt Shingle Roofing">
                 Budget-friendly traditional roofing solutions with full
                 transparency and comparison to premium systems.
               </ListItem>
               <ListItem
-                href="/docs/installation"
+                href="#service"
                 title="Luxury Synthetic Shingle"
               >
                 Superior roofing solutions that blend beauty, performance, and
@@ -126,7 +126,7 @@ export function MainNavigationMenu() {
             <ul className="grid w-[300px] gap-4">
               <li>
                 <NavigationMenuLink asChild>
-                  <Link href="#">
+                  <Link href="https://www.luxeroofpros.com/financing">
                     <div className="font-medium">Financing</div>
                     <div className="text-muted-foreground">
                       Explore our flexible financing options to make your
@@ -160,13 +160,13 @@ export function MainNavigationMenu() {
             <ul className="grid w-[200px] gap-4">
               <li>
                 <NavigationMenuLink asChild>
-                  <Link href="#">Georgia</Link>
+                  <Link href="https://www.luxeroofpros.com/georgia">Georgia</Link>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#">South Carolina</Link>
+                  <Link href="https://www.luxeroofpros.com/south-carolina">South Carolina</Link>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#">Tennessee</Link>
+                  <Link href="https://www.luxeroofpros.com/tennessee">Tennessee</Link>
                 </NavigationMenuLink>
               </li>
             </ul>
@@ -174,7 +174,7 @@ export function MainNavigationMenu() {
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/docs">Contact Us</Link>
+            <Link href="https://www.luxeroofpros.com/contact">Contact Us</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>

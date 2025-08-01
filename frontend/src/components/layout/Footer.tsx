@@ -22,24 +22,24 @@ const Footer: React.FC = () => (
         </Link>
         <ul className="flex flex-wrap items-center justify-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
           <li>
-            <a href="/about" className="hover:underline me-4 md:me-6">
+            <Link href="https://www.luxeroofpros.com/manifesto" className="hover:underline me-4 md:me-6">
               About
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/privacy" className="hover:underline me-4 md:me-6">
+            <Link href="/" className="hover:underline me-4 md:me-6">
               Privacy Policy
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/licensing" className="hover:underline me-4 md:me-6">
+            <Link href="/" className="hover:underline me-4 md:me-6">
               Licensing
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/contact" className="hover:underline">
+            <Link href="https://www.luxeroofpros.com/contact" className="hover:underline">
               Contact
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

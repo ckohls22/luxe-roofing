@@ -1,68 +1,119 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import React from 'react';
+import { Check } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+
+// Define the service card data
 const services = [
   {
-    title: 'Luxury Synthetic Shingle Roofing',
-    description: `At Luxe Roofing, we are committed to providing our clients with superior roofing solutions that blend beauty, performance, and sustainability. Our team of experts will work with you to select and install the perfect synthetic shake or slate roof that enhances your home’s curb appeal and value.`,
-    image: '/Services/LuxerySyntheticSingleRoofing.webp',
-    linkText: 'synthetic shake or slate',
-    link: '#',
-},
-{
-    title: 'Storm Damage Roof Replacement',
-    description: `Don’t let storm damage compromise your home’s integrity. Trust Luxe Roofing to handle your insurance claim with professionalism and care. Contact us today to schedule your free inspection and take the first step toward restoring your home’s protection and beauty.`,
-    image: '/Services/RoofReplacement.webp',
-    linkText: 'storm damage',
-    link: '#',
-},
-{
-    title: 'Asphalt Shingle Roofing',
-    description: `When exploring roofing options, many homeowners encounter asphalt shingles as a common and budget-friendly solution. At Luxe Roofing, we believe in educating our clients with full transparency—especially when it comes to helping you compare traditional asphalt roofing to premium systems like synthetic shake.`,
-    image: '/Services/AsphaltShingleRoofing.webp',
-    linkText: 'Here’s what you need to know.',
-    link: '#',
-},
+    title: "Luxury Synthetic Shingle Roofing",
+    description:
+      "Enhance your home’s curb appeal and value with high-performance synthetic shake or slate roofing. Luxe Roofing offers sustainable, beautiful roofing solutions tailored to your style.",
+    imageurl: '/Services/LuxerySyntheticSingleRoofing.webp',
+    points: [
+      "Elegant, durable synthetic shake or slate options.",
+      "Expert consultation and installation.",
+      "Sustainable materials that stand the test of time.",
+    ],
+    redirecturl: "https://www.luxeroofpros.com/luxury-synthetic-shingle-roofing",
+  },
+  {
+    title: "Storm Damage Roof Replacement",
+    description:
+      "Restore your roof with confidence after storm damage. Luxe Roofing handles the insurance process and roof replacement with professionalism and care.",
+    imageurl: '/Services/RoofReplacement.webp',
+    points: [
+      "Free inspection and expert evaluation.",
+      "Assistance with insurance claims.",
+      "High-quality replacement to restore protection and aesthetics.",
+    ],
+    redirecturl: "https://www.luxeroofpros.com/storm-damage-roof-replacement",
+  },
+  {
+    title: "Asphalt Shingle Roofing",
+    description:
+      "A practical choice for many homeowners. Learn the pros and cons of asphalt roofing and how it compares to premium alternatives like synthetic systems.",
+    imageurl: '/Services/AsphaltShingleRoofing.webp',
+    points: [
+      "Cost-effective and widely available solution.",
+      "Transparent comparison with premium systems.",
+      "Professional installation and guidance.",
+    ],
+    redirecturl: "https://www.luxeroofpros.com/asphalt-shingle-roofing",
+  },
 ];
 
-export default function ServicesSection() {
+// Service Card Component
+type CardProps = {
+  title: string;
+  description?: string;
+  imageurl: string;
+  points?: string[];
+  redirecturl: string;
+} & React.ComponentProps<typeof Card>;
+
+function ServiceCard({ className, ...props }: CardProps) {
+  const { title, description, imageurl, points = [], redirecturl } = props;
   return (
-    <section className="pt-7 px-4 sm:px-6 lg:px-8" id="services">
-      <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-4xl font-bold mb-12">Our Services</h2>
-        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, index) => (
+    <Card className={cn("w-[380px] h-[600px] pt-0 overflow-hidden rounded-md", className)} {...props} >
+      <Image
+        src={imageurl}
+        alt={title}
+        width={600}
+        height={400}
+        className="h-[250px] object-cover"
+      />
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <div>
+          {points.map((point, index) => (
             <div
               key={index}
-              className="bg-white shadow-sm rounded-sm overflow-hidden hover:shadow-amber-300 transition duration-300 ease-in-out"
+              className="mb-2 grid grid-cols-[25px_1fr] items-start pb-2 last:mb-0 last:pb-0"
             >
-              <div className="h-48 relative">
-                <Image
-                  src={service.image}
-                  alt={service.title}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-t-sm"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {service.description.split(service.linkText)[0]}
-                  <a
-                    href={service.link}
-                    className="text-amber-600 underline hover:text-amber-800 transition"
-                  >
-                    {service.linkText}
-                  </a>
-                  {service.description.split(service.linkText)[1]}
-                </p>
+              <span className="flex h-2 w-2 translate-y-1 rounded-full bg-amber-500" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium leading-none">{point}</p>
               </div>
             </div>
           ))}
         </div>
+      </CardContent>
+      <CardFooter>
+        <Link href={redirecturl} className="w-full">
+          <Button className="w-full rounded-full">
+            <Check className="mr-2 h-4 w-4" /> Explore
+          </Button>
+        </Link>
+      </CardFooter>
+    </Card>
+  );
+}
+
+// Services Grid Component
+export default function ServicesSection() {
+  return (
+    <section className="py-12 px-4 sm:px-8 lg:px-16 bg-gray-50" id="service">
+      <h2 className="text-3xl font-bold text-center mb-10">Our Services</h2>
+      <div className="flex flex-wrap justify-center gap-8">
+        {services.map((service, index) => (
+          <ServiceCard key={index} {...service} />
+        ))}
       </div>
     </section>
   );
