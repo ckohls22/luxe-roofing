@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
 
     await ghlService.processContactSubmission(
       contactData,
-      process.env.GHL_FORM_ID!
+      // process.env.GHL_FORM_ID!
     );
 
     // Record successful submission for rate limiting
