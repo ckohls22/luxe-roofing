@@ -131,7 +131,7 @@ export const StormAlerts: React.FC<StormAlertsProps> = ({ lat, lng }) => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">⛈️ Storm Alerts</h2>
+      <h2 className="text-xl font-bold">🌦️ Storm Alerts</h2>
       {loading && <p>Loading alerts...</p>}
       {!loading && error && <p className="text-red-600">{error}</p>}
       {!loading && !error && alerts.length === 0 && (

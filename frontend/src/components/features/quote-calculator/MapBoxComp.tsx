@@ -107,9 +107,9 @@ export function MapBoxComp({
     }
 
     // Skip if coordinates haven't changed
-    if (coordinatesString === lastProcessedCoordinatesRef.current) {
-      return;
-    }
+    // if (coordinatesString === lastProcessedCoordinatesRef.current) {
+    //   return;
+    // }
 
     console.log("Processing new coordinates:", coordinatesString);
     lastProcessedCoordinatesRef.current = coordinatesString;
@@ -147,7 +147,7 @@ export function MapBoxComp({
   // Show error state with retry option
   if (error) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded">
+      <div className="p-4 bg-red-50 border border-red-200 rounded absolute">
         <p className="text-red-700 mb-2">Failed to load map: {error}</p>
       </div>
     );

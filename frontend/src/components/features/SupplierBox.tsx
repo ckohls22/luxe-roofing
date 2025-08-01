@@ -33,7 +33,7 @@ const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/placeholder";
 const TABS = [
   { key: "details", label: "Details", icon: Package },
   { key: "installation", label: "Installation", icon: Building2 },
-  { key: "contact", label: "Contact", icon: Phone },
+  // { key: "contact", label: "Contact", icon: Phone },
 ] as const;
 
 // Loading Card Component
@@ -473,7 +473,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 py-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center space-x-2 hover:cursor-pointer ${
+                  className={`flex-1 py-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center space-x-2 hover:cursor-pointer max-w-[150px] ${
                     activeTab === tab.key
                       ? "bg-gray-800 text-white shadow-sm"
                       : "text-gray-900 hover:bg-amber-100"

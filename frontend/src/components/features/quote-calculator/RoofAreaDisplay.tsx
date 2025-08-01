@@ -258,7 +258,7 @@ export const RoofAreaDisplay: React.FC<RoofAreaDisplayProps> = ({
                         }`}
                       />
                     </Button>
-                    <Button
+                    {/* <Button
                       size="icon"
                       variant="ghost"
                       aria-label="Delete Roof"
@@ -276,7 +276,7 @@ export const RoofAreaDisplay: React.FC<RoofAreaDisplayProps> = ({
                         <path d="M5 7L6 19a2 2 0 002 2h8a2 2 0 002-2l1-12" />
                         <path d="M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
                       </svg>
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
 

@@ -8,6 +8,7 @@ import FeaturesSection from "@/components/ui/feature-section";
 import { ShowResult } from "@/components/features/quote-calculator/ShowResult";
 import { ShowLeadForm } from "@/components/features/quote-calculator/ShowLeadForm";
 import WhyChooseUs from "@/components/ui/feature-section";
+import ServicesSection from "@/components/layout/ServiceSection";
 
 export default function HomePage() {
   return (
@@ -47,6 +48,7 @@ export default function HomePage() {
         <ShowLeadForm />
         <ShowResult />
       </QuoteProvider>
+      <ServicesSection/>
 
       <WhyChooseUs />
 
