@@ -1,11 +1,11 @@
-'use client'
+"use client";
 import { useContext } from "react";
 import { AddressContext } from "./providers/QuoteProvider";
 import SupplierBox from "../SupplierBox";
 
-export function ShowResult(){
-    const {currentStep} = useContext(AddressContext)
-    if (currentStep == "show-result") {
+export function ShowResult() {
+  const { currentStep } = useContext(AddressContext);
+  if (currentStep == "show-result") {
     return (
       <div className="flex justify-center items-center mt-6">
         <div className="w-full lg:w-9/12 md:w-3/4  ">

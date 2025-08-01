@@ -15,16 +15,8 @@ export function ShowLeadForm() {
   if (currentStep == "lead-form") {
     return (
       <div className="flex justify-center items-center mt-6">
-        <div className="w-full lg:w-7/12 md:w-3/4 bg-white   rounded-lg shadow-md border p-7">
-          {/* <Button
-            variant={"outline"}
-            className="flex-1 rounded-full text-md p-7 border-gray-500 shadow-none md:absolute "
-            disabled={roofPolygons && roofPolygons.length > 0 ? false : true}
-            onClick={() => setCurrentStep("edit-roof")}
-          >
-            <ArrowLeft size={18} className="ml-2" /> Back
-          </Button> */}
-
+        <div className="w-full lg:w-5/12 md:w-3/4 bg-white shadow-sm border p-7">
+        
           <LeadForm onSubmit={handleLeadSubmit} />
         </div>
       </div>

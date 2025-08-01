@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 
 type AlertProps = {
@@ -87,7 +86,9 @@ export const StormAlerts: React.FC<StormAlertsProps> = ({ lat, lng }) => {
         );
 
         if (!res.ok) {
-          throw new Error(`Failed to fetch alerts: ${res.status} ${res.statusText}`);
+          throw new Error(
+            `Failed to fetch alerts: ${res.status} ${res.statusText}`
+          );
         }
 
         // Type assertion, but you can validate further as needed!
@@ -132,20 +133,19 @@ export const StormAlerts: React.FC<StormAlertsProps> = ({ lat, lng }) => {
     <div className="space-y-4">
       <h2 className="text-xl font-bold">⛈️ Storm Alerts</h2>
       {loading && <p>Loading alerts...</p>}
-      {!loading && error && (
-        <p className="text-red-600">{error}</p>
-      )}
+      {!loading && error && <p className="text-red-600">{error}</p>}
       {!loading && !error && alerts.length === 0 && (
         <p className="text-green-600">
           ✅ No active weather alerts in this area.
         </p>
       )}
-      {!loading && !error &&
+      {!loading &&
+        !error &&
         alerts.map((alert) => (
           <div
             key={alert.id}
             className={`rounded-xl shadow-md p-4 border-l-8 ${getSeverityColor(
-              alert.severity,
+              alert.severity
             )}`}
           >
             <h3 className="text-lg font-semibold mb-1">{alert.event}</h3>
@@ -157,7 +157,9 @@ export const StormAlerts: React.FC<StormAlertsProps> = ({ lat, lng }) => {
               <br />
               <strong>Expires:</strong> {formatDate(alert.expires)}
             </p>
-            <p className="text-sm mt-2 whitespace-pre-wrap">{alert.description}</p>
+            <p className="text-sm mt-2 whitespace-pre-wrap">
+              {alert.description}
+            </p>
             {alert.instruction && (
               <div className="mt-3 bg-blue-100 text-blue-900 p-2 rounded text-sm">
                 <strong>Instruction:</strong> {alert.instruction}

@@ -862,22 +862,6 @@ const GoogleMapComponent = forwardRef<
 
       // if (newPolygonsData.length > 0) {
       setPolygonsData(newPolygonsData);
-      
-      // }
-      //   if (onPolygonsChange && newPolygonsData.length > 0) {
-      // const newPolygonsCoordinates = newPolygonsData.map((data) => {
-      //   const path = data.polygon.getPath();
-      //   const coords: Position[] = [];
-      //   for (let i = 0; i < path.getLength(); i++) {
-      //     coords.push(latLngToCoord(path.getAt(i)));
-      //   }
-      //   return coords;
-      // });
-      // const roofPolygons = createRoofPolygons(newPolygonsCoordinates);
-      // onPolygonsChange(roofPolygons);
-      // }
-      // setTimeout(() => notifyChange(), 50);
-      // notifyChange();
     }, [
       latLngToCoord,
       onPolygonsChange,
