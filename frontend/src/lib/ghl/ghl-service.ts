@@ -80,19 +80,6 @@ export class GHLService {
         ...additionalData,
       };
 
-      const submissionResponse = await this.client.createFormSubmission(
-        contactId!,
-        formId,
-        submissionData
-      );
-
-      if (!submissionResponse.success) {
-        console.error(
-          `Failed to create form submission: ${submissionResponse.error}`
-        );
-        // Don't throw error here as contact was created successfully
-      }
-
       return {
         success: true,
         contactId,

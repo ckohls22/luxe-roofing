@@ -243,11 +243,10 @@ export async function POST(request: NextRequest) {
     };
 
     const ghlService = new GHLService();
-    console.log(
-      await ghlService.processContactSubmission(
-        contactData,
-        process.env.GHL_FORM_ID!
-      )
+
+    await ghlService.processContactSubmission(
+      contactData,
+      process.env.GHL_FORM_ID!
     );
 
     // Record successful submission for rate limiting

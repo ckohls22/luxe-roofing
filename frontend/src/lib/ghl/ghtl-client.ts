@@ -6,7 +6,7 @@ import {
   GHLContactResponse,
   GHLContactsApiResponse,
   GHLFormSubmissionResponse,
-  FormSubmissionData
+  FormSubmissionData,
 } from "./ghl.types";
 
 export class GHLClient {
@@ -48,7 +48,9 @@ export class GHLClient {
   /**
    * Create a new contact in GHL
    */
-  async createContact(contactData: GHLContact): Promise<GHLApiResponse<GHLContactCreationResponse>> {
+  async createContact(
+    contactData: GHLContact
+  ): Promise<GHLApiResponse<GHLContactCreationResponse>> {
     try {
       const payload = {
         firstName: contactData.firstName,
@@ -80,9 +82,12 @@ export class GHLClient {
       const axiosError = error as AxiosError;
       return {
         success: false,
-        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
-          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
-          : String(axiosError.message),
+        error:
+          axiosError.response?.data &&
+          typeof axiosError.response.data === "object"
+            ? (axiosError.response.data as { message?: string })?.message ||
+              String(axiosError.message)
+            : String(axiosError.message),
       };
     }
   }
@@ -90,54 +95,13 @@ export class GHLClient {
   /**
    * Create a form submission in GHL
    */
-  async createFormSubmission(
-    contactId: string,
-    formId: string,
-    submissionData: FormSubmissionData
-  ): Promise<GHLApiResponse<GHLFormSubmissionResponse>> {
-    try {
-      const payload = {
-        contactId,
-        formId,
-        locationId: this.locationId,
-        submissionData,
-        // Add metadata
-        meta: {
-          submittedAt: new Date().toISOString(),
-          source: "API Integration",
-        },
-      };
-
-      const response: AxiosResponse = await this.client.post(
-        `https://leadconnectorhq.com/forms/submit`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.GHL_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      return {
-        success: true,
-        data: response.data as GHLFormSubmissionResponse,
-      };
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      return {
-        success: false,
-        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
-          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
-          : String(axiosError.message),
-      };
-    }
-  }
 
   /**
    * Get contact by email to avoid duplicates
    */
-  async getContactByEmail(email: string): Promise<GHLApiResponse<GHLContactsApiResponse>> {
+  async getContactByEmail(
+    email: string
+  ): Promise<GHLApiResponse<GHLContactsApiResponse>> {
     try {
       const response: AxiosResponse = await this.client.get(
         `/contacts/lookup?email=${encodeURIComponent(email)}&locationId=${
@@ -156,9 +120,12 @@ export class GHLClient {
       }
       return {
         success: false,
-        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
-          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
-          : String(axiosError.message),
+        error:
+          axiosError.response?.data &&
+          typeof axiosError.response.data === "object"
+            ? (axiosError.response.data as { message?: string })?.message ||
+              String(axiosError.message)
+            : String(axiosError.message),
       };
     }
   }
@@ -187,9 +154,12 @@ export class GHLClient {
       const axiosError = error as AxiosError;
       return {
         success: false,
-        error: axiosError.response?.data && typeof axiosError.response.data === 'object'
-          ? (axiosError.response.data as { message?: string })?.message || String(axiosError.message)
-          : String(axiosError.message),
+        error:
+          axiosError.response?.data &&
+          typeof axiosError.response.data === "object"
+            ? (axiosError.response.data as { message?: string })?.message ||
+              String(axiosError.message)
+            : String(axiosError.message),
       };
     }
   }

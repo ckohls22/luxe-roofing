@@ -4,9 +4,6 @@ import { forms, materials, roofPolygons, suppliers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createQuoteWithNumber } from "@/db/quotesQueries";
 import { RoofPolygon } from "@/types";
-import axios from "axios";
-const HUBSPOT_API_URL = "https://api.hubapi.com/crm/v3/objects/deals";
-const HUBSPOT_ACCESS_TOKEN = process.env.HUBSPOT_ACCESS_TOKEN!;
 // Define a slope factor mapping for pricing calculations
 const SLOPE_FACTOR: Record<string, number> = {
   Flat: 0.4, // Lowest factor for flat roofs (easiest to work on)
@@ -133,30 +130,6 @@ export async function POST(request: NextRequest) {
       materialCost,
       status: "draft",
     });
-
-    try {
-      await axios.post(
-        HUBSPOT_API_URL,
-        {
-          properties: {
-            dealname: quote.quoteNumber,
-            amount: parseFloat(quote.materialCost as string), // Convert string to number
-            pipeline: "default",
-            dealstage: "appointmentscheduled", // Use specific HubSpot deal stage
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${HUBSPOT_ACCESS_TOKEN}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      console.log("HubSpot deal created successfully");
-    } catch (error) {
-      console.error("HubSpot Error:", error);
-    }
 
     return NextResponse.json({
       success: true,
