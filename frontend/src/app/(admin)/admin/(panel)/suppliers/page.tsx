@@ -93,7 +93,7 @@ const supplierSchema = z.object({
   description: z.string(),
   installation: z.string(),
   phone: z.string(),
-  email: z.string().email(),
+  email: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

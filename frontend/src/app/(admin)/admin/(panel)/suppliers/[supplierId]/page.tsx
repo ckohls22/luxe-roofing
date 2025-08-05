@@ -81,7 +81,7 @@ const supplierDetailSchema = z.object({
   description: z.string(),
   installation: z.string(),
   phone: z.string(),
-  email: z.string().email(),
+  email: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
   materials: z.array(materialSchema),
@@ -652,7 +652,10 @@ function MaterialEditDialog({
       if (data.materialImageFile) {
         formData.append("materialImage", data.materialImageFile);
       } else {
-        formData.append("materialImage", data.materialImage || material.materialImage || "");
+        formData.append(
+          "materialImage",
+          data.materialImage || material.materialImage || ""
+        );
       }
 
       if (data.showCaseFile) {

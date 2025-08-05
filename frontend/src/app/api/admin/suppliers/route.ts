@@ -5,6 +5,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 export async function GET() {
   try {
     const suppliers = await getAllSuppliers();
+
     return NextResponse.json({ suppliers });
   } catch (error) {
     console.error("Error fetching suppliers:", error);
@@ -28,10 +29,10 @@ export async function POST(request: NextRequest) {
     console.log(logoFile, "logoFile");
     let logoUrl = "";
     if (logoFile && logoFile.size > 0) {
-      logoUrl = await uploadToCloudinary(logoFile);
+      logoUrl = (await uploadToCloudinary(logoFile)) || "";
     }
 
-    console.log("Logo URL:", logoUrl);
+    console.log("Logo URL:", logoUrl, typeof logoUrl);
 
     const supplierData = {
       name,
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
       installation,
       phone,
       email,
-      logoUrl: logoUrl || undefined,
+      logoUrl,
     };
 
     const newSupplier = await createSupplier(supplierData);
