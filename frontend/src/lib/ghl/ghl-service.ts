@@ -25,9 +25,9 @@ export class GHLService {
    * Create or update contact and form submission
    */
   async processContactSubmission(
-    contactData: GHLContact,
-    formId: string,
-    additionalData: Record<string, string | number | boolean> = {}
+    contactData: GHLContact
+    // formId: string,
+    // additionalData: Record<string, string | number | boolean> = {}
   ): Promise<{
     success: boolean;
     contactId?: string;

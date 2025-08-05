@@ -325,7 +325,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     supplier.materials?.[0] || null
   );
-  const { selectedAddress } = useContext(AddressContext);
+  
   const [activeTab, setActiveTab] = useState<
     "details" | "installation" | "contact"
   >("details");
@@ -387,12 +387,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
 
   return (
     <>
-      <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
-        <StormAlerts
-          lat={selectedAddress?.coordinates[1] || 38.8977}
-          lng={selectedAddress?.coordinates[0] || -77.0365}
-        />
-      </div>
+     
       <Card className="w-full max-w-2xl bg-white shadow-none hover:shadow-sm rounded-none">
         <CardContent className="p-6">
           {/* Header */}
@@ -416,10 +411,10 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
               </div>
             </div>
             <div className="text-right">
+            
               <div className="text-xl font-bold text-amber-700">
-                {selectedMaterial?.price || "Price on request"}
+                ${selectedMaterial?.price || "Price on request"}
               </div>
-              <div className="text-xs text-gray-500">per unit</div>
             </div>
           </div>
 
@@ -542,6 +537,7 @@ const SupplierBox: React.FC = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selectedAddress } = useContext(AddressContext);
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -619,6 +615,12 @@ const SupplierBox: React.FC = () => {
   return (
     <div className="flex flex-col items-center w-full  mx-auto p-4">
       <div className="space-y-6">
+         <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
+        <StormAlerts
+          lat={selectedAddress?.coordinates[1] || 38.8977}
+          lng={selectedAddress?.coordinates[0] || -77.0365}
+        />
+      </div>
         {suppliers.map((supplier) => (
           <SupplierCard key={supplier.id} supplier={supplier} />
         ))}
