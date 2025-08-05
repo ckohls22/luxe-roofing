@@ -285,7 +285,7 @@ function useSuppliers() {
       setSuppliers(validatedData.suppliers);
     } catch (err) {
       console.error("Error fetching suppliers:", err);
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError("An error occurred");
       toast.error("Failed to load suppliers");
     } finally {
       setLoading(false);
