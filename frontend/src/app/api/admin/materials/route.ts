@@ -39,14 +39,14 @@ export async function POST(request: NextRequest) {
 
     let materialImage = "";
     if (materialImageFile && materialImageFile.size > 0) {
-      materialImage = await uploadToCloudinary(materialImageFile);
+      materialImage = (await uploadToCloudinary(materialImageFile)) || "";
     }
     let showcaseImage = "";
     if (showCase && showCase.size > 0) {
-      showcaseImage = await uploadToCloudinary(showCase);
+      showcaseImage = (await uploadToCloudinary(showCase)) || "";
     }
 
-    console.log(materialImage, showcaseImage);
+    console.log("materialImage", materialImage, "showcaseImage", showcaseImage);
 
     const materialData = {
       supplierId,
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       warranty,
       topFeatures,
       showCase: showcaseImage,
-      materialImage: materialImage || undefined,
+      materialImage,
       price,
     };
 

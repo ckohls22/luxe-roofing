@@ -531,7 +531,7 @@ function SupplierEditForm({
                   <FormItem>
                     <FormControl>
                       <ImageUpload
-                        isEditing={!isEditing}
+                        isEditing={isEditing}
                         value={field.value}
                         onChange={field.onChange}
                         onFileChange={(file) => {
