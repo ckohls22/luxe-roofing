@@ -47,22 +47,22 @@ export function SupplierForm({ onSupplierCreated }: SupplierFormProps) {
     try {
       const formData = new FormData();
       formData.append("name", data.name);
-      if (data.description) formData.append("description", data.description);
-      if (installationContent) formData.append("installation", installationContent);
-      if (data.phone) formData.append("phone", data.phone);
-      if (data.email) formData.append("email", data.email);
+      formData.append("description", data.description || "");
+      formData.append("installation", installationContent || "");
+      formData.append("phone", data.phone || "");
+      formData.append("email", data.email || "");
       if (logoFile) formData.append("logo", logoFile);
 
       const supplier: Supplier = await addSupplier(formData);
       console.log(supplier);
       onSupplierCreated(supplier);
-      
+
       // Reset form
       reset();
       setInstallationContent("");
       setLogoPreview(null);
       setLogoFile(undefined);
-      
+
       // Show success toast
       toast.success("Supplier created successfully!", {
         description: `${data.name} has been added to your suppliers list.`,
@@ -207,9 +207,9 @@ export function SupplierForm({ onSupplierCreated }: SupplierFormProps) {
         </div>
       </div>
 
-      <Button 
-        type="submit" 
-        disabled={isSubmitting} 
+      <Button
+        type="submit"
+        disabled={isSubmitting}
         className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-medium py-3"
       >
         {isSubmitting && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
