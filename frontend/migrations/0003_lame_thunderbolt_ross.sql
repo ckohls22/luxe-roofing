@@ -1,1 +1,0 @@
-ALTER TABLE "addresses" DROP CONSTRAINT "addresses_place_id_unique";

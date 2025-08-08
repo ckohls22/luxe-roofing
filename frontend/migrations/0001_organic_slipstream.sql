@@ -1,1 +1,0 @@
-ALTER TABLE "materials" ADD COLUMN "price" varchar(50);
