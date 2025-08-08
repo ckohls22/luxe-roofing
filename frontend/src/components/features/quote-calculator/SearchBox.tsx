@@ -73,7 +73,7 @@ export const SearchBox = () => {
             "place_id",
             "address_components",
             "types",
-            "name"
+            "name",
           ],
         }
       );
@@ -96,7 +96,6 @@ export const SearchBox = () => {
           setSearchError("Selected address is incomplete");
           return;
         }
-        console.log(place.types)
 
         const address: SearchAddress = {
           address: place.formatted_address,

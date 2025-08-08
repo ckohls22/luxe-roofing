@@ -154,12 +154,10 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
     } else {
       setCurrentStep("select-roof");
     }
-    console.log(addr, " address changed");
   }, []);
 
   const handleRoofDetected = useCallback((roofCoordinates: Position[][]) => {
     if (roofCoordinates) {
-      console.log("roof detected and updated ", roofCoordinates);
       setRoofDetected(roofCoordinates);
     }
   }, []);
@@ -168,9 +166,6 @@ export default function QuoteProvider({ children }: { children: ReactNode }) {
   const handleAreaCalculated = useCallback((polygons: RoofPolygon[]) => {
     if (polygons) {
       setRoofPolygons(polygons);
-      console.log("Roof polygons calculated:", polygons);
-    } else {
-      console.log("no polygon detected");
     }
   }, []);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
 import {
   ColumnDef,
@@ -24,6 +25,7 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
+  IconEye
 } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui";
@@ -121,6 +123,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export function QuotesTable() {
+  const router = useRouter();
   const [data, setData] = React.useState<Quote[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({
@@ -167,7 +170,12 @@ export function QuotesTable() {
       accessorKey: "quoteNumber",
       header: "Quote #",
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("quoteNumber")}</div>
+        <div 
+          className="font-medium text-amber-600 hover:text-amber-800 cursor-pointer"
+          onClick={() => handleViewDetails(row.original)}
+        >
+          {row.getValue("quoteNumber")}
+        </div>
       ),
     },
     {
@@ -220,6 +228,10 @@ export function QuotesTable() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[160px]">
+            <DropdownMenuItem onClick={() => handleViewDetails(row.original)}>
+              <IconEye className="mr-2 h-4 w-4 text-amber-600" />
+              View Details
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <IconEdit className="mr-2 h-4 w-4" />
               Edit
@@ -237,6 +249,11 @@ export function QuotesTable() {
       ),
     },
   ];
+
+  // Handle navigation to quote details page
+  const handleViewDetails = (quote: Quote) => {
+    router.push(`/admin/quotes/${quote.id}`);
+  };
 
   // Fetch quotes data
   const fetchQuotes = async () => {
@@ -386,7 +403,7 @@ export function QuotesTable() {
         <div className="flex flex-1 items-center space-x-2">
           <Input
             placeholder="Filter quotes..."
-            className="max-w-sm"
+            className="max-w-sm border-amber-200 focus:ring-amber-500 focus:border-amber-500"
             value={
               (table.getColumn("quoteNumber")?.getFilterValue() as string) ?? ""
             }

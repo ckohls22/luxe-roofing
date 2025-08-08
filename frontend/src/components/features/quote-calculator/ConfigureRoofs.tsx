@@ -37,7 +37,6 @@ export function ConfigureRoofs() {
         currentStep === "lead-form") &&
       !selectedAddress
     ) {
-      console.log("changing back to search step");
       setCurrentStep("search");
     }
   }, [currentStep, selectedAddress, setCurrentStep]);

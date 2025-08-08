@@ -169,14 +169,13 @@ export const useMapbox = (
 
       // Set up event listeners
       map.on("load", () => {
-        if( !map) return;
+        if (!map) return;
         try {
           addBuildingLayer(map);
           setIsLoaded(true);
           setError(null);
-          
-        } catch(error) {
-          console.warn("unable to load building layer " + error)
+        } catch (error) {
+          console.warn("unable to load building layer " + error);
         }
       });
 
@@ -194,14 +193,13 @@ export const useMapbox = (
   }, [containerRef, config]);
 
   useEffect(() => {
-    console.log("[Mapbox] Initializing map...");
     initializeMap();
 
     // Cleanup on unmount
     return () => {
       if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
+        mapRef.current.remove();
+        mapRef.current = null;
         setIsLoaded(false);
       }
     };

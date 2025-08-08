@@ -44,7 +44,6 @@ export function MapBoxComp({
   // Stable callback that doesn't change on every render
   const stableOnBuildingDetected = useCallback(
     (building: Position[][]) => {
-      console.log("running stable buiding detected");
       if (mountedRef.current) {
         onBuildingDetected(building);
       }
@@ -67,8 +66,6 @@ export function MapBoxComp({
   const detectAndDrawBuilding = useCallback(
     async (coords: [number, number], map: MapboxMap, signal: AbortSignal) => {
       try {
-        console.log("Starting building detection for:", coords);
-
         map.jumpTo({ center: coords, zoom: 17 });
 
         if (signal.aborted || !mountedRef.current) return;
@@ -78,14 +75,12 @@ export function MapBoxComp({
 
         if (building && building.geometry?.coordinates) {
           const detectedRoofs = convertGeoJSON(building.geometry.coordinates);
-          console.log("Building found:", detectedRoofs);
 
           // Use the current onBuildingDetected callback
           stableOnBuildingDetected(detectedRoofs);
         } else {
           const emptyRoofs: Position[][] = [];
           stableOnBuildingDetected(emptyRoofs);
-          console.log("No building found");
           if (!signal.aborted && mountedRef.current) {
             map.jumpTo({ center: coords, zoom: 19 });
           }
@@ -111,7 +106,6 @@ export function MapBoxComp({
     //   return;
     // }
 
-    console.log("Processing new coordinates:", coordinatesString);
     lastProcessedCoordinatesRef.current = coordinatesString;
 
     const abortController = createAbortController();

@@ -72,7 +72,6 @@ export async function createOrUpdateHubSpotContact(
       }
 
       const result = await updateResponse.json();
-      console.log("Successfully updated HubSpot contact:", result.id);
       return { action: "updated", contact: result };
     } else {
       // Create new contact
@@ -95,7 +94,6 @@ export async function createOrUpdateHubSpotContact(
       }
 
       const result = await createResponse.json();
-      console.log("Successfully created HubSpot contact:", result.id);
       return { action: "created", contact: result };
     }
   } catch (error) {

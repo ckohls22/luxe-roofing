@@ -108,7 +108,6 @@ export default function LeadForm({
     }
     if (currentStep !== "lead-form") {
       // Reset form when leaving lead-form step
-      console.log(currentStep);
     }
   }, [currentStep]);
 
@@ -119,7 +118,6 @@ export default function LeadForm({
   };
 
   const onSubmitForm = async (data: FormData) => {
-    console.log(roofPolygons);
     setSubmitError(null);
     if (!selectedAddress) return setSubmitError("Please select an address.");
     if (!captchaToken)
@@ -136,9 +134,6 @@ export default function LeadForm({
       captchaToken,
     };
 
-    // Debug log
-    console.log("Submitting payload:", JSON.stringify(payload, null, 2));
-
     try {
       const response = await fetch("/api/client/submit-form", {
         method: "POST",
@@ -146,9 +141,7 @@ export default function LeadForm({
         body: JSON.stringify(payload),
       });
 
-      // Add this debug log
       const result: FormSubmissionResponse = await response.json();
-      console.log("Server response:", result);
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || `Status ${response.status}`);
