@@ -26,13 +26,10 @@ export async function POST(request: NextRequest) {
     const phone = formData.get("phone") as string;
     const email = formData.get("email") as string;
     const logoFile = formData.get("logo") as File;
-    console.log(logoFile, "logoFile");
     let logoUrl = "";
     if (logoFile && logoFile.size > 0) {
       logoUrl = (await uploadToCloudinary(logoFile)) || "";
     }
-
-    console.log("Logo URL:", logoUrl, typeof logoUrl);
 
     const supplierData = {
       name,

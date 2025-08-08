@@ -9,7 +9,6 @@ export async function GET(
 ) {
   try {
     const { formId } = await params;
-    console.log('Fetching roof polygons for formId:', formId);
 
     // Fetch roof polygons for the specified form
     const result = await db
@@ -18,17 +17,12 @@ export async function GET(
       .where(eq(roofPolygons.formId, formId))
       .limit(1);
 
-    console.log('Database result:', result);
-
     // If no polygons found
     if (!result || result.length === 0) {
-      console.log('No roof polygons found for formId:', formId);
       return NextResponse.json({ polygons: [] });
     }
 
     const polygonData = result[0].polygons;
-    console.log('Raw polygon data from DB:', polygonData);
-    console.log('Polygon data type:', typeof polygonData);
 
     // Return the roof polygons array
     return NextResponse.json({ polygons: polygonData });

@@ -325,7 +325,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     supplier.materials?.[0] || null
   );
-  
+
   const [activeTab, setActiveTab] = useState<
     "details" | "installation" | "contact"
   >("details");
@@ -333,7 +333,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleGetQuote = async () => {
-    console.log(selectedMaterial);
     if (!selectedMaterial) return;
 
     setIsSubmitting(true);
@@ -387,7 +386,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
 
   return (
     <>
-     
       <Card className="w-full max-w-2xl bg-white shadow-none hover:shadow-sm rounded-none">
         <CardContent className="p-6">
           {/* Header */}
@@ -411,7 +409,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
               </div>
             </div>
             <div className="text-right">
-            
               <div className="text-xl font-bold text-amber-700">
                 ${selectedMaterial?.price || "Price on request"}
               </div>
@@ -615,12 +612,12 @@ const SupplierBox: React.FC = () => {
   return (
     <div className="flex flex-col items-center w-full  mx-auto p-4">
       <div className="space-y-6">
-         <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
-        <StormAlerts
-          lat={selectedAddress?.coordinates[1] || 38.8977}
-          lng={selectedAddress?.coordinates[0] || -77.0365}
-        />
-      </div>
+        <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
+          <StormAlerts
+            lat={selectedAddress?.coordinates[1] || 38.8977}
+            lng={selectedAddress?.coordinates[0] || -77.0365}
+          />
+        </div>
         {suppliers.map((supplier) => (
           <SupplierCard key={supplier.id} supplier={supplier} />
         ))}

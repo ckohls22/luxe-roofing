@@ -40,7 +40,6 @@ export function MaterialForm({ supplierId }: MaterialFormProps) {
 
   const onSubmit = async (data: MaterialFormData) => {
     setIsSubmitting(true);
-    console.log(supplierId, "price:", data.price);
 
     try {
       const formData = new FormData();
@@ -53,14 +52,14 @@ export function MaterialForm({ supplierId }: MaterialFormProps) {
       if (showCase) formData.append("showCase", showCase);
 
       await addMaterial(formData);
-      
+
       // Reset form and show success toast
       reset();
       setMaterialPreview(null);
       setShowcasePreview(null);
       setMaterialImage(undefined);
       setShowCase(undefined);
-      
+
       toast.success("Material added successfully!", {
         description: `${data.type} material has been added to the supplier.`,
       });
