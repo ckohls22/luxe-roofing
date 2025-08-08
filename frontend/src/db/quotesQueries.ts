@@ -25,7 +25,9 @@ export async function createQuoteWithNumber(
 ) {
   const year = new Date().getFullYear();
   const count = await getQuoteCountForYear(year);
-  const quoteNumber = `QTE-${year}-${String(count + 1).padStart(3, "0")}`;
+  const date = new Date()
+  const timestamp = date.getTime()
+  const quoteNumber = `QTE-${year}-${String(count + 1).padStart(3, "0")}-${timestamp}`;
 
   return createQuote({
     ...data,
