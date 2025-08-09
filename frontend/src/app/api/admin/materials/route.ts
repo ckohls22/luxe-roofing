@@ -46,8 +46,6 @@ export async function POST(request: NextRequest) {
       showcaseImage = (await uploadToCloudinary(showCase)) || "";
     }
 
-    console.log("materialImage", materialImage, "showcaseImage", showcaseImage);
-
     const materialData = {
       supplierId,
       type,

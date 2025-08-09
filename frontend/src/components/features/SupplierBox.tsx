@@ -331,6 +331,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier, partialVal }) => 
     supplier.materials?.[0] || null
   );
 
+
   const [activeTab, setActiveTab] = useState<
     "details" | "installation" | "contact"
   >("details");
@@ -623,6 +624,12 @@ const SupplierBox: React.FC = () => {
   return (
     <div className="flex flex-col items-center w-full  mx-auto p-4">
       <div className="space-y-6">
+        <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
+          <StormAlerts
+            lat={selectedAddress?.coordinates[1] || 38.8977}
+            lng={selectedAddress?.coordinates[0] || -77.0365}
+          />
+        </div>
         <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
           <StormAlerts
             lat={selectedAddress?.coordinates[1] || 38.8977}

@@ -54,7 +54,6 @@ export function SupplierForm({ onSupplierCreated }: SupplierFormProps) {
       if (logoFile) formData.append("logo", logoFile);
 
       const supplier: Supplier = await addSupplier(formData);
-      console.log(supplier);
       onSupplierCreated(supplier);
 
       // Reset form

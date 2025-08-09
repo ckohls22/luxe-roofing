@@ -90,7 +90,6 @@ async function verifyCaptcha(token: string, ip: string): Promise<boolean> {
     formData.append("remoteip", ip);
     const idempotencyKey = crypto.randomUUID();
     formData.append("idempotency_key", idempotencyKey);
-    console.log("Verifying captcha:", { token, ip, idempotencyKey });
 
     const url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
     const firstResult = await fetch(url, {
@@ -153,28 +152,16 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body = await request.json();
 
-    // Add debug logging
-    // console.log("Received payload:", JSON.stringify(body, null, 2));
-
     // Validate with the updated schema
     const validationResult = formSchema.safeParse(body);
 
     if (!validationResult.success) {
-      // Detailed error logging
-      console.log(
-        "Full validation errors:",
-        JSON.stringify(validationResult.error.format(), null, 2)
-      );
-      // console.log('Received data sample:', JSON.stringify({
-      //   roofPolygons: body.roofPolygons?.slice(0, 1) // Show first polygon for debugging
-      // }, null, 2));
-
       return NextResponse.json(
         {
           success: false,
           message: "Invalid form data",
           errors: validationResult.error.flatten(),
-          receivedData: body, // Include received data in development
+          receivedData: body,
         },
         { status: 400 }
       );
@@ -245,7 +232,7 @@ export async function POST(request: NextRequest) {
     const ghlService = new GHLService();
 
     await ghlService.processContactSubmission(
-      contactData,
+      contactData
       // process.env.GHL_FORM_ID!
     );
 
@@ -256,10 +243,6 @@ export async function POST(request: NextRequest) {
     }
     submissions.get(ip)!.push(now);
 
-    // Log successful submission (you might want to use a proper logger)
-    console.log(`Form submission successful: ${result.form.id} from ${ip}`);
-
-    // Return success response
     return NextResponse.json({
       success: true,
       message: "Form submitted successfully",

@@ -46,7 +46,6 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
       // Handle place selection
       const handlePlaceChanged = () => {
         const place = autocompleteRef.current?.getPlace();
-        console.log("place changed", place);
 
         if (!place?.geometry?.location) {
           setSearchError("Please select a valid address from the dropdown");
@@ -64,7 +63,6 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
         setInputValue(place.formatted_address || inputRef.current?.value || "");
 
         onAddressSelected(address);
-        console.log("address selected");
         setSearchError(null);
       };
 
@@ -117,7 +115,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
       console.error("Input reference is not set");
       return;
     }
-    console.log("search triggered");
+
     if (!inputValue.trim() || !googleLoaded) {
       setSearchError("Please enter an address to search.");
       return;

@@ -26,11 +26,9 @@ export const addBuildingLayer = (map: MapboxMap): void => {
   // Remove existing layer and source if they exist
   if (map.getLayer(BUILDING_DETECTION_CONFIG.layerId)) {
     map.removeLayer(BUILDING_DETECTION_CONFIG.layerId);
-    // console.log("[Mapbox] Removed existing building layer");
   }
   if (map.getSource(BUILDING_DETECTION_CONFIG.sourceId)) {
     map.removeSource(BUILDING_DETECTION_CONFIG.sourceId);
-    // console.log("[Mapbox] Removed existing building source");
   }
 
   // Add building source
@@ -38,7 +36,6 @@ export const addBuildingLayer = (map: MapboxMap): void => {
     type: "vector",
     url: "mapbox://mapbox.mapbox-streets-v8",
   });
-  // console.log("[Mapbox] Added building source");
 
   // Add building layer (invisible but queryable)
   map.addLayer({
@@ -70,7 +67,7 @@ export const addBuildingLayer = (map: MapboxMap): void => {
 //     // Wait for source to be loaded
 //     const checkAndDetect = () => {
 //       if (!map.isSourceLoaded(BUILDING_DETECTION_CONFIG.sourceId)) {
-//         console.log("[Mapbox] Source not loaded yet");
+//         console.log("[Mapbox] Source not loaded yet");s
 //         return;
 //       }
 

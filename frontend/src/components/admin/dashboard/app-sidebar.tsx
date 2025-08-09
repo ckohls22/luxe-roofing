@@ -5,6 +5,7 @@ import {
   IconDashboard,
   IconFileAi,
   IconFileDescription,
+  IconFileInvoice,
   IconFolder,
   IconListDetails,
 } from "@tabler/icons-react";
@@ -42,14 +43,19 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Add Supplier",
-      url: "/admin/add-supplier",
-      icon: IconListDetails,
-    },
-    {
       title: "Leads",
       url: "/admin/leads",
       icon: IconFolder,
+    },
+    {
+      title: "Quotes",
+      url: "/admin/quotes",
+      icon: IconFileInvoice,
+    },
+    {
+      title: "Add Supplier",
+      url: "/admin/add-supplier",
+      icon: IconListDetails,
     },
   ],
   navClouds: [

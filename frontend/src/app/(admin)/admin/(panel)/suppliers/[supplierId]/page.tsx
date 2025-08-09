@@ -337,7 +337,6 @@ function useSupplierDetail(id: string) {
       setLoading(true);
       setError(null);
 
-      console.log(`Fetching supplier with ID: ${id}`);
       const response = await fetch(`/api/admin/suppliers/${id}`);
 
       if (!response.ok) {
@@ -345,7 +344,6 @@ function useSupplierDetail(id: string) {
       }
 
       const data = await response.json();
-      console.log("Supplier API response:", data);
 
       // More graceful error handling for missing data
       if (!data || !data.supplier) {
@@ -637,7 +635,6 @@ function MaterialEditDialog({
 
   const handleSubmit = async (data: MaterialFormData) => {
     setIsSubmitting(true);
-    console.log("Edit form data being submitted:", data);
 
     try {
       const formData = new FormData();
@@ -863,7 +860,6 @@ function MaterialAddDialog({
   // Handle form submission
   const handleSubmit = async (data: MaterialFormData) => {
     setIsSubmitting(true);
-    console.log("Form data being submitted:", data);
 
     try {
       const formData = new FormData();

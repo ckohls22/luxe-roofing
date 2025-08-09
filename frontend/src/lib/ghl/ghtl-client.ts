@@ -25,9 +25,6 @@ export class GHLClient {
     // Request interceptor for logging
     this.client.interceptors.request.use(
       (config) => {
-        console.log(
-          `GHL API Request: ${config.method?.toUpperCase()} ${config.url}`
-        );
         return config;
       },
       (error) => Promise.reject(error)
