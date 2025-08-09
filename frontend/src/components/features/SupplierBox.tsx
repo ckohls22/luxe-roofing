@@ -629,12 +629,6 @@ const SupplierBox: React.FC = () => {
             lng={selectedAddress?.coordinates[0] || -77.0365}
           />
         </div>
-        <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
-          <StormAlerts
-            lat={selectedAddress?.coordinates[1] || 38.8977}
-            lng={selectedAddress?.coordinates[0] || -77.0365}
-          />
-        </div>
         {suppliers.map((supplier) => (
           <SupplierCard key={supplier.id} supplier={supplier} partialVal={partialVal} />
         ))}
