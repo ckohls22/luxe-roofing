@@ -148,8 +148,6 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-import { RoofArea, RoofPolygon as TypedRoofPolygon } from "@/types";
-
 export default function QuoteDetails() {
   const router = useRouter();
   const { quoteId } = useParams() as { quoteId: string };
