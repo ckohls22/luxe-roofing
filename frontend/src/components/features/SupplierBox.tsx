@@ -28,7 +28,6 @@ import Image from "next/image";
 import { StormAlerts } from "./StormAlerts";
 import { AddressContext } from "./quote-calculator/providers/QuoteProvider";
 import { getPartialCalculation } from "@/utils/price-calculator";
-import { RoofPolygon } from "@/types/roof";
 
 // Constants
 

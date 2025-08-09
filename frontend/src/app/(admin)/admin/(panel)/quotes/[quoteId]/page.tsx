@@ -36,34 +36,34 @@ interface ApiRoofPolygon {
 }
 
 // Helper function to convert API polygon data to TypedRoofPolygon
-const convertToTypedPolygon = (polygon: ApiRoofPolygon): TypedRoofPolygon => {
-  // Check if polygon.points exists, if not use an empty array
-  const points = polygon.points || [];
+// const convertToTypedPolygon = (polygon: ApiRoofPolygon): TypedRoofPolygon => {
+//   // Check if polygon.points exists, if not use an empty array
+//   const points = polygon.points || [];
 
-  // Create coordinates safely
-  const coordinates: number[][] =
-    points.length > 0 ? points.map((point) => [point[0], point[1]]) : [[0, 0]]; // Default coordinate if no points exist
+//   // Create coordinates safely
+//   const coordinates: number[][] =
+//     points.length > 0 ? points.map((point) => [point[0], point[1]]) : [[0, 0]]; // Default coordinate if no points exist
 
-  // Safely create area object
-  const formattedArea: RoofArea = {
-    squareFeet: polygon.area?.squareFeet || 0,
-    squareMeters: polygon.area?.squareMeters || 0,
-    formatted: `${polygon.area?.squareFeet?.toFixed(2) || "0.00"} sq ft`,
-  };
+//   // Safely create area object
+//   const formattedArea: RoofArea = {
+//     squareFeet: polygon.area?.squareFeet || 0,
+//     squareMeters: polygon.area?.squareMeters || 0,
+//     formatted: `${polygon.area?.squareFeet?.toFixed(2) || "0.00"} sq ft`,
+//   };
 
-  // Create centerPoint safely
-  const centerPoint: [number, number] =
-    points.length > 0 && points[0] ? points[0] : [0, 0];
+//   // Create centerPoint safely
+//   const centerPoint: [number, number] =
+//     points.length > 0 && points[0] ? points[0] : [0, 0];
 
-  return {
-    id: polygon.id || "unknown",
-    coordinates: coordinates,
-    area: formattedArea,
-    label: `Section ${polygon.id || "unknown"}`,
-    centerPoint: centerPoint,
-    slope: polygon.slope || "Unknown",
-  };
-};
+//   return {
+//     id: polygon.id || "unknown",
+//     coordinates: coordinates,
+//     area: formattedArea,
+//     label: `Section ${polygon.id || "unknown"}`,
+//     centerPoint: centerPoint,
+//     slope: polygon.slope || "Unknown",
+//   };
+// };
 
 interface QuoteDetails {
   quote: {
