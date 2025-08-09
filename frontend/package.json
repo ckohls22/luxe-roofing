@@ -10,8 +10,7 @@
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
     "db:push": "npx drizzle-kit push",
-    "db:seed": "tsx src/db/seed.ts",
-    "postinstall": "npx drizzle-kit push"
+    "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
