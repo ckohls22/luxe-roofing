@@ -1,11 +1,13 @@
 import { Quote } from "@/db/schema";
 
 export interface SlopeMultiplier {
-  flat: 0.4;
-  shallow: 0.6;
-  medium: 0.8;
-  steep: 1;
+  flat: 1.0;
+  shallow: 1.2;
+  medium: 1.4;
+  steep: 1.6;
 }
+
+export const SQUARE_FEET_PER_SQUARE = 100;
 
 export type SlopeType = keyof SlopeMultiplier;
 

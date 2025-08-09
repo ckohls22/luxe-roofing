@@ -27,8 +27,11 @@ import type { Supplier, Material } from "@/types";
 import Image from "next/image";
 import { StormAlerts } from "./StormAlerts";
 import { AddressContext } from "./quote-calculator/providers/QuoteProvider";
+import { getPartialCalculation } from "@/utils/price-calculator";
+import { RoofPolygon } from "@/types/roof";
 
 // Constants
+
 const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/placeholder";
 const TABS = [
   { key: "details", label: "Details", icon: Package },
@@ -159,7 +162,7 @@ const MaterialSelector: React.FC<{
       <button
         key={material.id}
         onClick={() => onSelect(material)}
-        className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden transition-all duration-200 hover:scale-105 ${
+        className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden transition-all duration-200 ${
           selectedMaterial?.id === material.id
             ? "border-amber-500 ring-2 ring-amber-200"
             : "border-gray-200 hover:border-amber-300"
@@ -319,22 +322,27 @@ const QuoteDialog: React.FC<{
 // Main Supplier Card Component
 interface SupplierCardProps {
   supplier: Supplier;
+  partialVal: number
+
 }
 
-const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
+const SupplierCard: React.FC<SupplierCardProps> = ({ supplier, partialVal }) => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     supplier.materials?.[0] || null
   );
-  
+
   const [activeTab, setActiveTab] = useState<
     "details" | "installation" | "contact"
   >("details");
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+
   const handleGetQuote = async () => {
     console.log(selectedMaterial);
-    if (!selectedMaterial) return;
+    if (!selectedMaterial) 
+      return;
 
     setIsSubmitting(true);
     try {
@@ -387,7 +395,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
 
   return (
     <>
-     
       <Card className="w-full max-w-2xl bg-white shadow-none hover:shadow-sm rounded-none">
         <CardContent className="p-6">
           {/* Header */}
@@ -411,13 +418,13 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
               </div>
             </div>
             <div className="text-right">
-            
               <div className="text-xl font-bold text-amber-700">
-                ${selectedMaterial?.price || "Price on request"}
+                {selectedMaterial?.price
+                  ? `$ ${Number(selectedMaterial.price) * partialVal}`
+                  : "Price on Request"}
               </div>
             </div>
           </div>
-
           {/* Showcase Image - Full Width */}
           {selectedMaterial && (
             <div className="mb-6">
@@ -537,7 +544,8 @@ const SupplierBox: React.FC = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { selectedAddress } = useContext(AddressContext);
+  const { selectedAddress, roofPolygons  } = useContext(AddressContext);
+  const partialVal = getPartialCalculation(roofPolygons);
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -615,14 +623,14 @@ const SupplierBox: React.FC = () => {
   return (
     <div className="flex flex-col items-center w-full  mx-auto p-4">
       <div className="space-y-6">
-         <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
-        <StormAlerts
-          lat={selectedAddress?.coordinates[1] || 38.8977}
-          lng={selectedAddress?.coordinates[0] || -77.0365}
-        />
-      </div>
+        <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg">
+          <StormAlerts
+            lat={selectedAddress?.coordinates[1] || 38.8977}
+            lng={selectedAddress?.coordinates[0] || -77.0365}
+          />
+        </div>
         {suppliers.map((supplier) => (
-          <SupplierCard key={supplier.id} supplier={supplier} />
+          <SupplierCard key={supplier.id} supplier={supplier} partialVal={partialVal} />
         ))}
       </div>
     </div>
